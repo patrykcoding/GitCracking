@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">GitCracking</string>
+    <string name="github_login">Login with you GitHub username and password</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
 </resources>
