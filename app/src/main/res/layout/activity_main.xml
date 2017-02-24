@@ -59,5 +59,6 @@
         android:textColor="@android:color/background_light"
         android:layout_marginTop="37dp"
         android:layout_below="@+id/et_password"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="loginButtonClicked"/>
 </RelativeLayout>
