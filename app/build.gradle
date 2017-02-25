@@ -26,5 +26,4 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.1.1'
     testCompile 'junit:junit:4.12'
-    compile files('libs/org.eclipse.egit.github.core-4.7.0-SNAPSHOT.jar')
 }
