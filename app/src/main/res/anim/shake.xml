@@ -4,7 +4,7 @@
     android:interpolator="@android:anim/overshoot_interpolator"
     android:fillAfter="true">
 
-    <translate
+    <!--<translate
         android:startOffset="100"
         android:fromYDelta="0%p"
         android:toYDelta="2%p"
@@ -35,6 +35,43 @@
         android:startOffset="510"
         android:fromYDelta="0%p"
         android:toYDelta="2%p"
+        android:duration="140" />-->
+
+    <rotate
+        android:startOffset="100"
+        android:fromDegrees="0"
+        android:toDegrees="3"
+        android:pivotX="50%"
+        android:duration="50" />
+
+    <rotate
+        android:startOffset="150"
+        android:fromDegrees="0"
+        android:toDegrees="-6"
+        android:pivotX="50%"
+        android:duration="110" />
+
+    <rotate
+        android:startOffset="260"
+        android:fromDegrees="0"
+        android:toDegrees="6"
+        android:pivotX="50%"
+        android:duration="120" />
+
+
+    <rotate
+        android:startOffset="380"
+        android:fromDegrees="0"
+        android:toDegrees="-6"
+        android:pivotX="50%"
+        android:duration="130" />
+
+
+    <rotate
+        android:startOffset="510"
+        android:fromDegrees="0"
+        android:toDegrees="3"
+        android:pivotX="50%"
         android:duration="140" />
 
 </set>
