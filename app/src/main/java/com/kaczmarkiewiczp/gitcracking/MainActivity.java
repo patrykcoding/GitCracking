@@ -11,10 +11,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.Toast;
 import org.eclipse.egit.github.core.Authorization;
-import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.OAuthService;
-import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         if (AccountUtils.isAuth(context))
-            toast("Authenticated"); // TODO debugging
+            toast("Authenticated"); // DEBUG
+        else
+            toast("NOT Authenticated"); // DEBUG
         setContentView(R.layout.activity_main);
     }
 
@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
      * Animate an element
      */
     private void shake(EditText element) {
-        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.shake);
+        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
         element.startAnimation(shake);
     }
 
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Authorization authorization) {
             AccountUtils.addAuthentication(context, authorization.getToken(), username);
-            toast("Login successful"); // TODO debugging
+            toast("Login successful"); // DEBUG
             // TODO go to dashboard
         }
     }
