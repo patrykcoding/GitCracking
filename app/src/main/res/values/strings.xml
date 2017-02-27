@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">GitCracking</string>
     <string name="gitcracking_repo">https://github.com/kaczmarkiewiczp/GitCracking</string>
-    <string name="github_login">Login with you GitHub username and password</string>
+    <string name="github_login">Login with your GitHub username and password</string>
     <string name="username_hint">Username</string>
     <string name="password_hint">Password</string>
 </resources>
