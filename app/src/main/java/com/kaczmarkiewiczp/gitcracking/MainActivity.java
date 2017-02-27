@@ -1,14 +1,10 @@
 package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -22,29 +18,38 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.UUID;
 
-import xdroid.toaster.Toaster;
+import static xdroid.toaster.Toaster.toast;
 
-
+/*
+ * This is the activity that starts first on app startup.
+ * If user is authenticated, it will redirect to main dashboard, otherwise the login screen will
+ * be displayed.
+ */
 public class MainActivity extends AppCompatActivity {
+
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
+        if (AccountUtils.isAuth(context))
+            toast("Authenticated"); // TODO debugging
         setContentView(R.layout.activity_main);
     }
 
     /*
-     * This will be called using the xml onClick attribute
+     * This will be called using the xml onClick attribute.
+     * User has clicked the login button
      */
     public void loginButtonClicked(View view) {
         final EditText usernameView = (EditText) findViewById(R.id.et_username);
         final EditText passwordView = (EditText) findViewById(R.id.et_password);
         String username = usernameView.getText().toString().trim();
         String password = passwordView.getText().toString();
-
         Context context = getApplicationContext();
+
         if (username.length() == 0) {
             shake(usernameView);
             Toast toast = Toast.makeText(context, "Please provide your username", Toast.LENGTH_SHORT);
@@ -67,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
         element.startAnimation(shake);
     }
 
+    /*
+     * Authenticate the user using GitHub API
+     */
     public class LoginTask extends AsyncTask<String, Void, Authorization> {
 
         private String username;
@@ -85,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
 
             OAuthService authService = new OAuthService(client);
 
+            // GitHub requires authorizations to have a unique note
+            // Go through user's authorizations, and delete any authorization that contain our note
             try {
                 for (Authorization authorization : authService.getAuthorizations()) {
                     String note = authorization.getNote();
@@ -99,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
             Authorization auth = new Authorization();
             auth.setNote(description);
-            auth.setUrl("https://github.com/kaczmarkiewiczp/GitCracking"); // TODO strings.xml
+            auth.setUrl(getResources().getString(R.string.gitcracking_repo));
             auth.setScopes(Arrays.asList("user", "repo", "gist"));
 
             try {
@@ -111,20 +121,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+
         @Override
         protected void onPostExecute(Authorization authorization) {
-            if (authorization == null) {
-                // TODO
-                return;
-            }
-
-            // TODO pref name should be a public constant in pref class
-            SharedPreferences sharedPreferences = getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            // TODO create interface constants for 'token' and 'login'
-            editor.putString("token", authorization.getToken());
-            editor.putString("login", username);
-            editor.apply();
+            AccountUtils.addAuthentication(context, authorization.getToken(), username);
+            toast("Login successful"); // TODO debugging
+            // TODO go to dashboard
         }
     }
 }
