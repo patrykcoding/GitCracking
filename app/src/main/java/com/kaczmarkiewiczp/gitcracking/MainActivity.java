@@ -45,19 +45,21 @@ public class MainActivity extends AppCompatActivity {
      * User has clicked the login button
      */
     public void loginButtonClicked(View view) {
-        final EditText usernameView = (EditText) findViewById(R.id.et_username);
-        final EditText passwordView = (EditText) findViewById(R.id.et_password);
-        String username = usernameView.getText().toString().trim();
-        String password = passwordView.getText().toString();
+        final EditText etUsername = (EditText) findViewById(R.id.et_username);
+        final EditText etPassword = (EditText) findViewById(R.id.et_password);
+        String username = etUsername.getText().toString().trim();
+        String password = etPassword.getText().toString();
         Context context = getApplicationContext();
 
         if (username.length() == 0) {
-            shake(usernameView);
+            etUsername.requestFocus();
+            shake(etUsername);
             Toast toast = Toast.makeText(context, "Please provide your username", Toast.LENGTH_SHORT);
             toast.show();
             return;
         } else if (password.length() == 0) {
-            shake(passwordView);
+            etPassword.requestFocus();
+            shake(etPassword);
             Toast toast = Toast.makeText(context, "Please provide your password", Toast.LENGTH_SHORT);
             toast.show();
             return;

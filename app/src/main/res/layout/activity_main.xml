@@ -26,8 +26,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginEnd="16dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="48dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
 
     <EditText
         android:id="@+id/et_username"
@@ -41,8 +42,8 @@
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginStart="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        android:layout_marginTop="176dp"
+        app:layout_constraintHorizontal_bias="0.46"
+        android:layout_marginTop="120dp"
         app:layout_constraintTop_toBottomOf="@+id/tv_login_text" />
 
     <EditText
