@@ -32,10 +32,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
-        if (AccountUtils.isAuth(context))
+        if (AccountUtils.isAuth(context)) {
             toast("Authenticated"); // DEBUG
-        else
-            toast("NOT Authenticated"); // DEBUG
+            //setContentView(R.layout.hello); // DEBUG
+        }
+        toast("NOT Authenticated"); // DEBUG
         setContentView(R.layout.activity_main);
     }
 
