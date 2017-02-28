@@ -17,6 +17,8 @@ import org.eclipse.egit.github.core.service.OAuthService;
 import java.io.IOException;
 import java.util.Arrays;
 
+import xdroid.toaster.Toaster;
+
 import static xdroid.toaster.Toaster.toast;
 
 /*
