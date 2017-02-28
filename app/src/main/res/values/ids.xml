@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- this is supposed to fix some rendering problems shown in the preview window
+source: https://stackoverflow.com/questions/41303347/couldnt-resolve-resource-id-visible-when-using-textinputlayout -->
+<resources>
+    <item name="visible" type="id"/>
+    <item name="masked" type="id"/>
+</resources>
