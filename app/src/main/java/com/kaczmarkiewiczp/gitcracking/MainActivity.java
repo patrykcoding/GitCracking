@@ -1,8 +1,10 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -84,13 +86,26 @@ public class MainActivity extends AppCompatActivity {
 
         private String username;
         private String password;
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setTitle("Authenticating");
+            progressDialog.setMessage("Please wait...");
+            progressDialog.setCancelable(false);
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.show();
+        }
 
         @Override
         protected Authorization doInBackground(String... credentials) {
             this.username = credentials[0];
             this.password = credentials[1];
             GitHubClient client = new GitHubClient();
-
+            
             String appName = getResources().getString(R.string.app_name);
             client.setCredentials(username, password);
             client.setUserAgent(appName);
@@ -129,6 +144,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Authorization authorization) {
+            progressDialog.dismiss();
+
+            if (authorization == null) {
+                return;
+            }
             AccountUtils.addAuthentication(context, authorization.getToken(), username);
             toast("Login successful"); // DEBUG
             // TODO go to dashboard
