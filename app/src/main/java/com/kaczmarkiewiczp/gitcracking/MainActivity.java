@@ -4,12 +4,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Toast;
 import org.eclipse.egit.github.core.Authorization;
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
      * User has clicked the login button
      */
     public void loginButtonClicked(View view) {
-        final EditText etUsername = (EditText) findViewById(R.id.et_username);
+        final AutoCompleteTextView etUsername = (AutoCompleteTextView) findViewById(R.id.et_username);
         final EditText etPassword = (EditText) findViewById(R.id.et_password);
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString();
@@ -57,26 +57,20 @@ public class MainActivity extends AppCompatActivity {
 
         if (username.length() == 0) {
             etUsername.requestFocus();
-            shake(etUsername);
+            Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
+            findViewById(R.id.username_layout).startAnimation(shake);
             Toast toast = Toast.makeText(context, "Please provide your username", Toast.LENGTH_SHORT);
             toast.show();
             return;
         } else if (password.length() == 0) {
             etPassword.requestFocus();
-            shake(etPassword);
+            Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
+            findViewById(R.id.password_layout).startAnimation(shake);
             Toast toast = Toast.makeText(context, "Please provide your password", Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
         new LoginTask().execute(username, password);
-    }
-
-    /*
-     * Animate an element
-     */
-    private void shake(EditText element) {
-        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
-        element.startAnimation(shake);
     }
 
     /*

@@ -33,42 +33,57 @@
         android:textAppearance="@android:style/TextAppearance.Material.Medium"
         android:textColor="@android:color/background_light" />
 
-    <EditText
-        android:id="@+id/et_username"
-        android:hint="@string/username_hint"
-        android:maxLines="1"
-        android:ems="10"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/username_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginStart="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.46"
-        android:layout_marginTop="120dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_login_text"
-        android:inputType="text|textEmailAddress"
-        android:textColor="@android:color/white"
-        android:textColorHint="@color/colorGray" />
+        app:layout_constraintHorizontal_bias="0.15"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/tv_login_text" >
 
-    <EditText
-        android:inputType="textPassword"
-        android:ems="10"
-        android:layout_below="@+id/et_username"
-        android:layout_alignStart="@+id/et_username"
-        android:id="@+id/et_password"
-        android:hint="@string/password_hint"
-        android:maxLines="1"
+        <AutoCompleteTextView
+            android:id="@+id/et_username"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/username_hint"
+            android:inputType="textEmailAddress"
+            android:maxLines="10"
+            android:textColor="@android:color/white" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/password_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/username_layout"
+        android:layout_alignStart="@+id/username_layout"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/et_username"
+        app:layout_constraintTop_toBottomOf="@+id/username_layout"
         android:layout_marginStart="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginEnd="16dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:textColor="@android:color/white"
-        android:textColorHint="@color/colorGray" />
+        >
+
+        <EditText
+            android:id="@+id/et_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password_hint"
+            android:imeActionId="@+id/login"
+            android:imeActionLabel="Sign in"
+            android:imeOptions="actionUnspecified"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:ems="10"
+
+            android:textColor="@android:color/white" />
+
+    </android.support.design.widget.TextInputLayout>
 
     <Button
         android:text="Login"
@@ -78,7 +93,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@+id/et_password"
+        app:layout_constraintTop_toBottomOf="@+id/password_layout"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="16dp"
         app:layout_constraintVertical_bias="0.0"
