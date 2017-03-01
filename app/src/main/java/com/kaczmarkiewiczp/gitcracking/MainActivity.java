@@ -9,6 +9,7 @@ import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -33,23 +34,28 @@ import static xdroid.toaster.Toaster.toast;
  */
 public class MainActivity extends AppCompatActivity {
 
-    Context context;
+    private final String LOG_TAG = "MainActivity";
+    private Context context;
+    private Intent dashboardIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+        dashboardIntent = new Intent(this, Dashboard.class);
+
         if (AccountUtils.isAuth(context)) {
             toast("Authenticated"); // DEBUG
-            Intent intent = new Intent(this, Dashboard.class);
-            startActivity(intent);
+            Log.d(LOG_TAG, "User is authenticated. Redirecting");
+            startActivity(dashboardIntent);
             finish();
+            return;
         }
-        toast("NOT Authenticated"); // DEBUG
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
+        Log.d(LOG_TAG, "User not authenticated");
     }
 
     /*
@@ -149,11 +155,14 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
 
             if (authorization == null) {
+                toast("Login failed");
                 return;
             }
             AccountUtils.addAuthentication(context, authorization.getToken(), username);
             toast("Login successful"); // DEBUG
-            // TODO go to dashboard
+            Log.d(LOG_TAG, "Authentication successful");
+            startActivity(dashboardIntent);
+            finish();
         }
     }
 }
