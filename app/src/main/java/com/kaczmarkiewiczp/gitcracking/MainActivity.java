@@ -2,6 +2,7 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -40,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
         context = this;
         if (AccountUtils.isAuth(context)) {
             toast("Authenticated"); // DEBUG
-            //setContentView(R.layout.hello); // DEBUG
+            Intent intent = new Intent(this, Dashboard.class);
+            startActivity(intent);
+            finish();
         }
         toast("NOT Authenticated"); // DEBUG
         setContentView(R.layout.activity_main);
