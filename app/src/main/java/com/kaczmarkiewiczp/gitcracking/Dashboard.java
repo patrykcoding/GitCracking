@@ -28,12 +28,12 @@ public class Dashboard extends AppCompatActivity {
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("Dashboard"),
-                        new PrimaryDrawerItem().withName("Repositories"),
-                        new PrimaryDrawerItem().withName("Issues"),
-                        new PrimaryDrawerItem().withName("Pull Requests"),
-                        new PrimaryDrawerItem().withName("People"),
-                        new PrimaryDrawerItem().withName("Bookmarks"),
+                        new PrimaryDrawerItem().withName("Dashboard").withIcon(getDrawable(R.drawable.ic_home_black_24dp)),
+                        new PrimaryDrawerItem().withName("Repositories").withIcon(getDrawable(R.drawable.ic_octicon_repo)),
+                        new PrimaryDrawerItem().withName("Issues").withIcon(getDrawable(R.drawable.ic_octicon_issue_24dp)),
+                        new PrimaryDrawerItem().withName("Pull Requests").withIcon(getDrawable(R.drawable.ic_octicon_git_pull_request)),
+                        new PrimaryDrawerItem().withName("People").withIcon(getDrawable(R.drawable.ic_people_black_24dp)),
+                        new PrimaryDrawerItem().withName("Bookmarks").withIcon(getDrawable(R.drawable.ic_star_black_24dp)),
                         new DividerDrawerItem(),
                         new SecondaryDrawerItem().withName("Settings")
                 )
