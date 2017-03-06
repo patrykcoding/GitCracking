@@ -57,6 +57,7 @@
 
         <AutoCompleteTextView
             android:id="@+id/et_username"
+            android:imeOptions="actionNext"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="@string/username_hint"
@@ -83,8 +84,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/password_hint"
-            android:imeActionLabel="Sign in"
-            android:imeOptions="actionUnspecified"
+            android:imeOptions="actionGo"
+            android:imeActionLabel="Login"
             android:inputType="textPassword"
             android:maxLines="1"
             android:ems="10" />
