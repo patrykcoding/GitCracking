@@ -2,10 +2,13 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -87,6 +90,26 @@ public class MainActivity extends AppCompatActivity {
         new LoginTask().execute(username, password);
     }
 
+    private void failedLogin() {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        alertDialog.setTitle("Login Failed");
+        alertDialog.setCancelable(true);
+        alertDialog.setNeutralButton("Dismiss", null);
+        alertDialog.setPositiveButton("Forgot Password",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Uri webpage = Uri.parse("https://github.com/password_reset"); // TODO @strings
+                        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(intent);
+                        }
+                    }
+                });
+        alertDialog.show();
+    }
+
     /*
      * Authenticate the user using GitHub API
      */
@@ -155,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
 
             if (authorization == null) {
-                toast("Login failed");
+                failedLogin();
                 return;
             }
             AccountUtils.addAuthentication(context, authorization.getToken(), username);
