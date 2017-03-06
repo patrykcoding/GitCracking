@@ -15,20 +15,50 @@ import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 
 class UiUtils {
+
+    public static PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
+            .withName("Dashboard")
+            .withIcon(R.drawable.ic_home)
+            .withIdentifier(1);
+    public static PrimaryDrawerItem repositories = new PrimaryDrawerItem().withName("Repositories")
+            .withIcon(R.drawable.ic_git)
+            .withIdentifier(2);
+    public static PrimaryDrawerItem issues = new PrimaryDrawerItem()
+            .withName("Issues")
+            .withIcon(R.drawable.ic_alert_circle_outline)
+            .withIdentifier(3);
+    public  static PrimaryDrawerItem pullRequests = new PrimaryDrawerItem()
+            .withName("Pull Requests")
+            .withIcon(R.drawable.ic_source_pull)
+            .withIdentifier(4);
+    public static PrimaryDrawerItem people = new PrimaryDrawerItem()
+            .withName("People")
+            .withIcon(R.drawable.ic_account_multiple)
+            .withIdentifier(5);
+    public static PrimaryDrawerItem bookmarks = new PrimaryDrawerItem()
+            .withName("Bookmarks")
+            .withIcon(R.drawable.ic_star)
+            .withIdentifier(6);
+    public static SecondaryDrawerItem settings = new SecondaryDrawerItem()
+            .withName("Settings")
+            .withIcon(R.drawable.ic_settings)
+            .withIdentifier(7);
+
+
     static Drawer setupNavigationDrawer(Activity activity, Toolbar toolbar) {
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
                 .withToolbar(toolbar)
                 .withAccountHeader(createAccountHeader(activity))
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("Dashboard").withIcon(activity.getDrawable(R.drawable.ic_home)),
-                        new PrimaryDrawerItem().withName("Repositories").withIcon(activity.getDrawable(R.drawable.ic_git)),
-                        new PrimaryDrawerItem().withName("Issues").withIcon(activity.getDrawable(R.drawable.ic_alert_circle_outline)),
-                        new PrimaryDrawerItem().withName("Pull Requests").withIcon(activity.getDrawable(R.drawable.ic_source_pull)),
-                        new PrimaryDrawerItem().withName("People").withIcon(activity.getDrawable(R.drawable.ic_account_multiple)),
-                        new PrimaryDrawerItem().withName("Bookmarks").withIcon(activity.getDrawable(R.drawable.ic_star)),
+                        dashboard,
+                        repositories,
+                        issues,
+                        pullRequests,
+                        people,
+                        bookmarks,
                         new DividerDrawerItem(),
-                        new SecondaryDrawerItem().withName("Settings").withIcon(activity.getDrawable(R.drawable.ic_settings))
+                        settings
                 );
         return drawerBuilder.build();
     }
