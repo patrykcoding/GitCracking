@@ -99,7 +99,7 @@ class NavBarUtils {
     private Drawer drawer;
     private Activity activity;
 
-    public NavBarUtils(Activity activity, Toolbar toolbar) {
+    NavBarUtils(Activity activity, Toolbar toolbar, int initialSelection) {
         this.activity = activity;
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
@@ -114,7 +114,7 @@ class NavBarUtils {
                         bookmarks,
                         new DividerDrawerItem(),
                         settings
-                );
+                ).withSelectedItem(initialSelection);
         drawer = drawerBuilder.build();
     }
 
@@ -129,6 +129,11 @@ class NavBarUtils {
             case 1:
                 activity.startActivity(new Intent(activity, Dashboard.class));
                 break;
+            case 2:
+                activity.startActivity(new Intent(activity, Repositories.class));
+                break;
+            default:
+                return;
         }
         activity.finish();
     }

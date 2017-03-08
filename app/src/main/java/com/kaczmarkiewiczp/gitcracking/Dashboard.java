@@ -9,6 +9,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.mikepenz.materialdrawer.Drawer;
+
 public class Dashboard extends AppCompatActivity {
 
     private ProgressBar loadingIndicator;
@@ -23,7 +25,7 @@ public class Dashboard extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Dashboard");
         setSupportActionBar(toolbar);
-        new NavBarUtils(this, toolbar);
+        new NavBarUtils(this, toolbar, 1);
         new GitHubDashBoardTask().execute(); // DEBUG
         accountUtils = new AccountUtils(this);
     }
