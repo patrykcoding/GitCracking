@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         dashboardIntent = new Intent(this, Dashboard.class);
-
-        if (AccountUtils.isAuth(context)) {
+        if (AccountUtils.isAuth(this)) {
             toast("Authenticated"); // DEBUG
             Log.d(LOG_TAG, "User is authenticated. Redirecting");
             startActivity(dashboardIntent);
@@ -197,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 failedLogin();
                 return;
             }
-            AccountUtils.addAuthentication(context, authorization.getToken(), username);
+            new AccountUtils(context, authorization);
             toast("Login successful"); // DEBUG
             Log.d(LOG_TAG, "Authentication successful");
             startActivity(dashboardIntent);
