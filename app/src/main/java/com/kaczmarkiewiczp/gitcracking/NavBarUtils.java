@@ -130,6 +130,7 @@ class NavBarUtils {
                 activity.startActivity(new Intent(activity, Dashboard.class));
                 break;
         }
+        activity.finish();
     }
 
     private AccountHeader createAccountHeader(Activity activity) {
