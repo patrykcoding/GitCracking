@@ -101,6 +101,16 @@ class AccountUtils {
         SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("login", login);
+        editor.putString("defaultUser", login);
+        editor.apply();
+    }
+
+    public static void logout(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("token", "");
+        editor.putString("login", "");
+        editor.putString("defaultUser", "");
         editor.apply();
     }
 
