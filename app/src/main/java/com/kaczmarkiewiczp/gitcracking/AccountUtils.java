@@ -31,6 +31,17 @@ class AccountUtils {
         new GetLoginFromGitHub().execute(userService);
     }
 
+    public AccountUtils(Context context) {
+        this.context = context;
+        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
+        this.token = sharedPreferences.getString("token", "");
+        this.login = sharedPreferences.getString("login", "");
+    }
+
+    public String getToken() {
+        return token;
+    }
+
     private void setToken(String token) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();

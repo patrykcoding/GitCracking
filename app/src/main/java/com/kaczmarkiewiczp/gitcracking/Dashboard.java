@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 public class Dashboard extends AppCompatActivity {
 
     private ProgressBar loadingIndicator;
+    private AccountUtils accountUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +25,7 @@ public class Dashboard extends AppCompatActivity {
         setSupportActionBar(toolbar);
         new NavBarUtils(this, toolbar);
         new GitHubDashBoardTask().execute(); // DEBUG
+        accountUtils = new AccountUtils(this);
     }
 
     public class GitHubDashBoardTask extends AsyncTask<Void, Void, Void> {
@@ -37,6 +39,7 @@ public class Dashboard extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             SystemClock.sleep(8000); // DEBUG
+
             return null;
         }
 
