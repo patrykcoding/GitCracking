@@ -3,6 +3,8 @@ package com.kaczmarkiewiczp.gitcracking;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.IpPrefix;
+import android.os.AsyncTask;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
@@ -16,6 +18,13 @@ import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IProfile;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 class NavBarUtils {
 
@@ -111,10 +120,11 @@ class NavBarUtils {
 
     NavBarUtils(Activity activity, Toolbar toolbar, int initialSelection) {
         this.activity = activity;
+        AccountHeader accountHeader = createAccountHeader(activity);
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
                 .withToolbar(toolbar)
-                .withAccountHeader(createAccountHeader(activity))
+                .withAccountHeader(accountHeader)
                 .addDrawerItems(
                         dashboard,
                         repositories,
@@ -125,7 +135,8 @@ class NavBarUtils {
                         new DividerDrawerItem(),
                         settings,
                         logout
-                ).withSelectedItem(initialSelection);
+                )
+                .withSelectedItem(initialSelection);
         drawer = drawerBuilder.build();
     }
 
@@ -153,13 +164,18 @@ class NavBarUtils {
     }
 
     private AccountHeader createAccountHeader(Activity activity) {
+        List<IProfile> profiles = new ArrayList<>();
+        Set<String> accounts = AccountUtils.getAccounts(activity);
+        Iterator<String> iterator = accounts.iterator();
+        while (iterator.hasNext()) {
+            profiles.add(new ProfileDrawerItem().withName(iterator.next()));
+        }
+        profiles.add(new ProfileSettingDrawerItem().withName("Manage Accounts"));
+
         return new AccountHeaderBuilder()
                 .withActivity(activity)
                 .withHeaderBackground(R.drawable.header2)
-                .addProfiles(
-                        new ProfileDrawerItem().withName("Patryk").withEmail("kaczmarkiewiczp@mymacewan.ca"),
-                        new ProfileSettingDrawerItem().withName("Manage Accounts")
-                )
+                .withProfiles(profiles)
                 .withTextColor(Color.BLACK)
                 .build();
     }

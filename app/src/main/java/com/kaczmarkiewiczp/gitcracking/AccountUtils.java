@@ -22,6 +22,9 @@ import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -100,9 +103,20 @@ class AccountUtils {
     private void setLogin(String login) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        Set<String> currentUserList = sharedPreferences.getStringSet("accounts", new HashSet<String>());
+        if (!login.isEmpty() && !currentUserList.contains(login)) {
+            Set<String> newUserList = new HashSet<>(currentUserList);
+            newUserList.add(login);
+            editor.putStringSet("accounts", newUserList);
+        }
         editor.putString("login", login);
         editor.putString("defaultUser", login);
         editor.apply();
+    }
+
+    public static Set<String> getAccounts(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
+        return sharedPreferences.getStringSet("accounts", new HashSet<String>());
     }
 
     public static void logout(Context context) {
