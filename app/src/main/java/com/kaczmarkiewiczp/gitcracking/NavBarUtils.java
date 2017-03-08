@@ -14,38 +14,39 @@ import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 
-class UiUtils {
+class NavBarUtils {
 
-    public static PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
+    public PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
             .withName("Dashboard")
             .withIcon(R.drawable.ic_home)
             .withIdentifier(1);
-    public static PrimaryDrawerItem repositories = new PrimaryDrawerItem().withName("Repositories")
+    public PrimaryDrawerItem repositories = new PrimaryDrawerItem().withName("Repositories")
             .withIcon(R.drawable.ic_git)
             .withIdentifier(2);
-    public static PrimaryDrawerItem issues = new PrimaryDrawerItem()
+    public PrimaryDrawerItem issues = new PrimaryDrawerItem()
             .withName("Issues")
             .withIcon(R.drawable.ic_alert_circle_outline)
             .withIdentifier(3);
-    public  static PrimaryDrawerItem pullRequests = new PrimaryDrawerItem()
+    public PrimaryDrawerItem pullRequests = new PrimaryDrawerItem()
             .withName("Pull Requests")
             .withIcon(R.drawable.ic_source_pull)
             .withIdentifier(4);
-    public static PrimaryDrawerItem people = new PrimaryDrawerItem()
+    public PrimaryDrawerItem people = new PrimaryDrawerItem()
             .withName("People")
             .withIcon(R.drawable.ic_account_multiple)
             .withIdentifier(5);
-    public static PrimaryDrawerItem bookmarks = new PrimaryDrawerItem()
+    public PrimaryDrawerItem bookmarks = new PrimaryDrawerItem()
             .withName("Bookmarks")
             .withIcon(R.drawable.ic_star)
             .withIdentifier(6);
-    public static SecondaryDrawerItem settings = new SecondaryDrawerItem()
+    public SecondaryDrawerItem settings = new SecondaryDrawerItem()
             .withName("Settings")
             .withIcon(R.drawable.ic_settings)
             .withIdentifier(7);
 
+    private Drawer drawer;
 
-    static Drawer setupNavigationDrawer(Activity activity, Toolbar toolbar) {
+    public NavBarUtils(Activity activity, Toolbar toolbar) {
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
                 .withToolbar(toolbar)
@@ -60,10 +61,13 @@ class UiUtils {
                         new DividerDrawerItem(),
                         settings
                 );
-        return drawerBuilder.build();
+        drawer = drawerBuilder.build();
     }
 
-    static private AccountHeader createAccountHeader(Activity activity) {
+    public Drawer getDrawer() {
+        return this.drawer;
+    }
+    private AccountHeader createAccountHeader(Activity activity) {
         AccountHeader accountHeader = new AccountHeaderBuilder()
                 .withActivity(activity)
                 .withHeaderBackground(R.drawable.header2)
