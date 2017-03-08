@@ -95,6 +95,16 @@ class NavBarUtils {
                     return false;
                 }
             });
+    public SecondaryDrawerItem logout = new SecondaryDrawerItem()
+            .withName("Log out")
+            .withIdentifier(8)
+            .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                @Override
+                public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                    drawerItemClicked(view, position, drawerItem);
+                    return false;
+                }
+            });
 
     private Drawer drawer;
     private Activity activity;
@@ -113,7 +123,8 @@ class NavBarUtils {
                         people,
                         bookmarks,
                         new DividerDrawerItem(),
-                        settings
+                        settings,
+                        logout
                 ).withSelectedItem(initialSelection);
         drawer = drawerBuilder.build();
     }
@@ -132,6 +143,9 @@ class NavBarUtils {
             case 2:
                 activity.startActivity(new Intent(activity, Repositories.class));
                 break;
+            case 8:
+                AccountUtils.logout(activity);
+                activity.startActivity(new Intent(activity, MainActivity.class));
             default:
                 return;
         }
