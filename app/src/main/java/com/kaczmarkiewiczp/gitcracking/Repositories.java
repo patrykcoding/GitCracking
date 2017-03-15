@@ -80,8 +80,9 @@ public class Repositories extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            String[] test = {"hello", "world", "foo"};
-            repositoriesAdapter.setRepositoriesData(test);
+            String alpha = "abcdefghijklmnopqrstuvwxyz";
+            String[] a = alpha.split("");
+            repositoriesAdapter.setRepositoriesData(a);
         }
     }
 }
