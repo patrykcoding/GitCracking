@@ -40,7 +40,7 @@ public class Dashboard extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            SystemClock.sleep(8000); // DEBUG
+            //SystemClock.sleep(8000); // DEBUG
 
             return null;
         }
