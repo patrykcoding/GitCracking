@@ -38,7 +38,7 @@
         android:layout_marginTop="256dp"
         android:visibility="invisible"/>
 
-    <android.support.v7.widget.RecyclerView
+    <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:id="@+id/rv_dashboard"
@@ -49,7 +49,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintTop_toBottomOf="@+id/activity_dashboard_toolbar">
-    </android.support.v7.widget.RecyclerView>
+    </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
 
     </android.support.constraint.ConstraintLayout>
 </RelativeLayout>

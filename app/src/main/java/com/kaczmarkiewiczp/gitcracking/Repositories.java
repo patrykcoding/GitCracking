@@ -17,6 +17,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -27,7 +28,7 @@ public class Repositories extends AppCompatActivity {
 
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
-    private RecyclerView recyclerView;
+    private FastScrollRecyclerView recyclerView;
     private RepositoriesAdapter repositoriesAdapter;
 
     @Override
@@ -39,7 +40,7 @@ public class Repositories extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
-        recyclerView = (RecyclerView) findViewById(R.id.rv_repositories);
+        recyclerView = (FastScrollRecyclerView) findViewById(R.id.rv_repositories);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
@@ -80,8 +81,9 @@ public class Repositories extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            String[] test = {"hello", "world", "foo"};
-            repositoriesAdapter.setRepositoriesData(test);
+            String alpha = "abcdefghijklmnopqrstuvwxyz";
+            String[] a = alpha.split("");
+            repositoriesAdapter.setRepositoriesData(a);
         }
     }
 }
