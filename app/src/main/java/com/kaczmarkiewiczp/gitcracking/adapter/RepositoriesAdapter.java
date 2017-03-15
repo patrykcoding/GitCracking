@@ -1,15 +1,17 @@
 package com.kaczmarkiewiczp.gitcracking.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.kaczmarkiewiczp.gitcracking.R;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 
-public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> {
+public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter {
 
     private String[] repositoriesData;
 
@@ -55,5 +57,11 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
     public void setRepositoriesData(String[] repositoriesData) {
         this.repositoriesData = repositoriesData;
         notifyDataSetChanged();
+    }
+
+    @NonNull
+    @Override
+    public String getSectionName(int position) {
+        return repositoriesData[position];
     }
 }
