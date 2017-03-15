@@ -4,14 +4,19 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
+
+import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -22,6 +27,8 @@ public class Repositories extends AppCompatActivity {
 
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
+    private RecyclerView recyclerView;
+    private RepositoriesAdapter repositoriesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +39,15 @@ public class Repositories extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
+        recyclerView = (RecyclerView) findViewById(R.id.rv_repositories);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
+        repositoriesAdapter = new RepositoriesAdapter();
+        recyclerView.setAdapter(repositoriesAdapter);
+        recyclerView.setVisibility(View.VISIBLE); // TODO move it somewhere else ???
         new NavBarUtils(this, toolbar, 2);
         accountUtils = new AccountUtils(this);
-
         new RetrieveData().execute();
     }
 
@@ -67,6 +80,8 @@ public class Repositories extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            String[] test = {"hello", "world", "foo"};
+            repositoriesAdapter.setRepositoriesData(test);
         }
     }
 }
