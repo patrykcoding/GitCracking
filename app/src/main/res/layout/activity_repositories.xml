@@ -49,8 +49,7 @@
             android:layout_marginLeft="8dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:fastScrollPopupBgColor="@color/colorPrimary"
-            app:fastScrollThumbColor="@color/colorPrimary">
-
+            app:fastScrollThumbColor="@color/colorPrimary" >
         </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
     </android.support.constraint.ConstraintLayout>
 </RelativeLayout>

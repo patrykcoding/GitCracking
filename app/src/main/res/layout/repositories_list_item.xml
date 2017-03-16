@@ -9,6 +9,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp" />
+    <TextView
+        android:id="@+id/tv_repositories_data2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"/>
 
     <View
         android:layout_width="match_parent"
