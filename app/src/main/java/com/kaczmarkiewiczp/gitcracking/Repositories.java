@@ -65,7 +65,6 @@ public class Repositories extends AppCompatActivity {
                 // TODO refresh
             }
         });
-
         new NavBarUtils(this, toolbar, 2);
         accountUtils = new AccountUtils(this);
         new RetrieveData().execute();
