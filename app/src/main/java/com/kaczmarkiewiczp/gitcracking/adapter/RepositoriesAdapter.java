@@ -29,8 +29,8 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
 
         public ViewHolder(View view) {
             super(view);
-            textView =  (TextView) view.findViewById(R.id.tv_repositories_data);
-            textView2 = (TextView) view.findViewById(R.id.tv_repositories_data2);
+            textView =  (TextView) view.findViewById(R.id.tv_repositories_name);
+            textView2 = (TextView) view.findViewById(R.id.tv_repositories_description);
         }
     }
 
