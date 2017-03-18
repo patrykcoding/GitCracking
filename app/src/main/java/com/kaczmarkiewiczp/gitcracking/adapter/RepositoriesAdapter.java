@@ -10,10 +10,13 @@ import android.widget.TextView;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
+import java.util.ArrayList;
 
-public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter {
 
-    private String[] repositoriesData;
+public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter  {
+
+    private ArrayList<String> repositoriesData;
+    private ArrayList<String> repositoriesData2;
 
     public RepositoriesAdapter() {
 
@@ -22,10 +25,12 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public final TextView textView;
+        public final TextView textView2;
 
         public ViewHolder(View view) {
             super(view);
             textView =  (TextView) view.findViewById(R.id.tv_repositories_data);
+            textView2 = (TextView) view.findViewById(R.id.tv_repositories_data2);
         }
     }
 
@@ -42,8 +47,10 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
 
     @Override
     public void onBindViewHolder(RepositoriesAdapter.ViewHolder holder, int position) {
-        String repo = repositoriesData[position];
+        String repo = repositoriesData.get(position);
+        String otherData = repositoriesData2.get(position);
         holder.textView.setText(repo);
+        holder.textView2.setText(otherData);
     }
 
     @Override
@@ -51,17 +58,28 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
         if (repositoriesData == null) {
             return 0;
         }
-        return repositoriesData.length;
+        return repositoriesData.size();
     }
 
-    public void setRepositoriesData(String[] repositoriesData) {
+    public void setRepositoriesData(ArrayList<String> repositoriesData) {
         this.repositoriesData = repositoriesData;
+        notifyDataSetChanged();
+    }
+
+    public void setRepositoriesData2(ArrayList<String> repositoriesData2) {
+        this.repositoriesData2 = repositoriesData2;
+        notifyDataSetChanged();
+    }
+
+    public void addMore(String item, String item2) {
+        this.repositoriesData.add(0, item);
+        this.repositoriesData2.add(0, item2);
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public String getSectionName(int position) {
-        return repositoriesData[position];
+        return repositoriesData.get(position);
     }
 }

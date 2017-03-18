@@ -2,8 +2,11 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.SystemClock;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -23,6 +26,9 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Repositories extends AppCompatActivity {
 
@@ -30,6 +36,8 @@ public class Repositories extends AppCompatActivity {
     private AccountUtils accountUtils;
     private FastScrollRecyclerView recyclerView;
     private RepositoriesAdapter repositoriesAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private int num = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +55,13 @@ public class Repositories extends AppCompatActivity {
         repositoriesAdapter = new RepositoriesAdapter();
         recyclerView.setAdapter(repositoriesAdapter);
         recyclerView.setVisibility(View.VISIBLE); // TODO move it somewhere else ???
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.sr_repositories);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new Sleep().execute();
+            }
+        });
         new NavBarUtils(this, toolbar, 2);
         accountUtils = new AccountUtils(this);
         new RetrieveData().execute();
@@ -65,6 +80,7 @@ public class Repositories extends AppCompatActivity {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
+                repositoriesAdapter.addMore("zzz", "foo");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -81,9 +97,38 @@ public class Repositories extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            String alpha = "abcdefghijklmnopqrstuvwxyz";
-            String[] a = alpha.split("");
-            repositoriesAdapter.setRepositoriesData(a);
+
+            ArrayList other = new ArrayList<String>();
+            for (int i = 0; i <= 26; i++) {
+                other.add("Hello World " + num++);
+            }
+
+            String a = "abcdefghijklmnopqrstuvwxyz";
+            ArrayList alpha = new ArrayList<String>(Arrays.asList(a.split("")));
+            repositoriesAdapter.setRepositoriesData(alpha);
+            repositoriesAdapter.setRepositoriesData2(other);
+        }
+    }
+
+    public class Sleep extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            swipeRefreshLayout.setRefreshing(true);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            SystemClock.sleep(2500);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            repositoriesAdapter.addMore("zzz", "foo");
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 }
