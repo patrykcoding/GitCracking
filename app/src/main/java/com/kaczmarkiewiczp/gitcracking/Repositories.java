@@ -40,6 +40,7 @@ public class Repositories extends AppCompatActivity {
     private RepositoriesAdapter repositoriesAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private GitHubClient gitHubClient;
+    private AsyncTask backgroundTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +67,13 @@ public class Repositories extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new GetRepositories().execute(gitHubClient);
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING)
+                    backgroundTask.cancel(true);
+                backgroundTask = new GetRepositories().execute(gitHubClient);
             }
         });
         new NavBarUtils(this, toolbar, 2);
-        new GetRepositories().execute(gitHubClient);
+        backgroundTask = new GetRepositories().execute(gitHubClient);
     }
 
     @Override
@@ -86,7 +89,9 @@ public class Repositories extends AppCompatActivity {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
-                new GetRepositories().execute(gitHubClient);
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING)
+                    backgroundTask.cancel(true);
+                backgroundTask = new GetRepositories().execute(gitHubClient);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -128,6 +133,9 @@ public class Repositories extends AppCompatActivity {
 
             try {
                 for (Repository repository : repositoryService.getRepositories()) {
+                    if (isCancelled())
+                        return null;
+
                     String owner = repository.getOwner().getLogin();
                     String repositoryName = repository.getName();
                     String description = repository.getDescription();
@@ -170,6 +178,15 @@ public class Repositories extends AppCompatActivity {
             if (swipeRefreshLayout.isRefreshing())
                 swipeRefreshLayout.setRefreshing(false);
             repositoriesAdapter.updateView();
+        }
+        
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            if (loadingIndicator.getVisibility() == View.VISIBLE)
+                loadingIndicator.setVisibility(View.GONE);
+            if (swipeRefreshLayout.isRefreshing())
+                swipeRefreshLayout.setRefreshing(false);
         }
     }
 }
