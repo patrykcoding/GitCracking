@@ -39,6 +39,7 @@ public class Repositories extends AppCompatActivity {
     private FastScrollRecyclerView recyclerView;
     private RepositoriesAdapter repositoriesAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private GitHubClient gitHubClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,9 @@ public class Repositories extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
+
+        accountUtils = new AccountUtils(this);
+        gitHubClient = accountUtils.getGitHubClient();
         /* set recycler view */
         recyclerView = (FastScrollRecyclerView) findViewById(R.id.rv_repositories);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -62,12 +66,10 @@ public class Repositories extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO refresh
+                new GetRepositories().execute(gitHubClient);
             }
         });
         new NavBarUtils(this, toolbar, 2);
-        accountUtils = new AccountUtils(this);
-        GitHubClient gitHubClient = accountUtils.getGitHubClient();
         new GetRepositories().execute(gitHubClient);
     }
 
@@ -84,6 +86,7 @@ public class Repositories extends AppCompatActivity {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
+                new GetRepositories().execute(gitHubClient);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -114,7 +117,8 @@ public class Repositories extends AppCompatActivity {
             repositoriesWatchers = new ArrayList<>();
             repositoriesPrivate = new ArrayList<>();
 
-            loadingIndicator.setVisibility(View.VISIBLE);
+            if (!swipeRefreshLayout.isRefreshing())
+                loadingIndicator.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -161,7 +165,10 @@ public class Repositories extends AppCompatActivity {
             repositoriesAdapter.addWatchers(repositoriesWatchers);
             repositoriesAdapter.addPrivates(repositoriesPrivate);
 
-            loadingIndicator.setVisibility(View.GONE);
+            if (loadingIndicator.getVisibility() == View.VISIBLE)
+                loadingIndicator.setVisibility(View.GONE);
+            if (swipeRefreshLayout.isRefreshing())
+                swipeRefreshLayout.setRefreshing(false);
             repositoriesAdapter.updateView();
         }
     }
