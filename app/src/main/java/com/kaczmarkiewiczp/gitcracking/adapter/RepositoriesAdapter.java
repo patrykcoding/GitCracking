@@ -19,6 +19,7 @@ import java.util.ArrayList;
 public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter  {
 
     private ArrayList<String> repositoriesName;
+    private ArrayList<String> repositoriesOwner;
     private ArrayList<String> repositoriesDescription;
     private ArrayList<Boolean> repositoriesPrivate;
     private ArrayList<String> repositoriesLanguage;
@@ -28,6 +29,7 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
 
     public RepositoriesAdapter() {
         repositoriesName = new ArrayList<>();
+        repositoriesOwner = new ArrayList<>();
         repositoriesDescription = new ArrayList<>();
         repositoriesPrivate = new ArrayList<>();
         repositoriesLanguage = new ArrayList<>();
@@ -74,6 +76,7 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
     @Override
     public void onBindViewHolder(RepositoriesAdapter.ViewHolder holder, int position) {
         String name = repositoriesName.get(position);
+        String owner = repositoriesOwner.get(position);
         String description = repositoriesDescription.get(position);
         Boolean isPrivate = repositoriesPrivate.get(position);
         String language = repositoriesLanguage.get(position);
@@ -81,7 +84,7 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
         String watchers = repositoriesWatchers.get(position);
         String size = repositoriesSize.get(position);
 
-        holder.textViewName.setText(name);
+        holder.textViewName.setText(owner + "/" + name);
         holder.textViewDescription.setText(description);
         holder.textViewLanguage.setText(language);
         holder.textViewForks.setText(forks);
@@ -101,8 +104,12 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
         return repositoriesName.size();
     }
 
-    public void addRepositories(ArrayList<String> repositories) {
-        repositoriesName.addAll(repositories);
+    public void addRepositoriesName(ArrayList<String> names) {
+        repositoriesName.addAll(names);
+    }
+
+    public void addRepositoriesOwner(ArrayList<String> owners) {
+        repositoriesOwner.addAll(owners);
     }
 
     public void addDescriptions(ArrayList<String> descritpions) {
@@ -136,6 +143,6 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
     @NonNull
     @Override
     public String getSectionName(int position) {
-        return repositoriesName.get(position);
+        return repositoriesName.get(position).substring(0,1).toUpperCase();
     }
 }

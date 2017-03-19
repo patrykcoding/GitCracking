@@ -93,6 +93,7 @@ public class Repositories extends AppCompatActivity {
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Void> {
 
         ArrayList<String> repositoriesName;
+        ArrayList<String> repositoriesOwner;
         ArrayList<String> repositoriesDescription;
         ArrayList<String> repositoriesForks;
         ArrayList<String> repositoriesLanguage;
@@ -105,6 +106,7 @@ public class Repositories extends AppCompatActivity {
             super.onPreExecute();
 
             repositoriesName = new ArrayList<>();
+            repositoriesOwner = new ArrayList<>();
             repositoriesDescription = new ArrayList<>();
             repositoriesForks = new ArrayList<>();
             repositoriesLanguage = new ArrayList<>();
@@ -131,7 +133,8 @@ public class Repositories extends AppCompatActivity {
                     String watchers = String.valueOf(repository.getWatchers());
                     Boolean isPrivate = repository.isPrivate();
 
-                    repositoriesName.add(owner + "/" + repositoryName);
+                    repositoriesOwner.add(owner);
+                    repositoriesName.add(repositoryName);
                     repositoriesDescription.add(description);
                     repositoriesForks.add(forks);
                     repositoriesLanguage.add(language);
@@ -149,7 +152,8 @@ public class Repositories extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            repositoriesAdapter.addRepositories(repositoriesName);
+            repositoriesAdapter.addRepositoriesOwner(repositoriesOwner);
+            repositoriesAdapter.addRepositoriesName(repositoriesName);
             repositoriesAdapter.addDescriptions(repositoriesDescription);
             repositoriesAdapter.addForks(repositoriesForks);
             repositoriesAdapter.addLanguages(repositoriesLanguage);
