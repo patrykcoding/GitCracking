@@ -142,11 +142,11 @@ public class Issues extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return "CREATED";
                 case 1:
-                    return "SECTION 2";
+                    return "ASSIGNED";
                 case 2:
-                    return "SECTION 3";
+                    return "MENTIONED";
             }
             return null;
         }
