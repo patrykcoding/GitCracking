@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 for (Authorization authorization : authService.getAuthorizations()) {
                     String note = authorization.getNote();
 
-                    if (note != null && note.startsWith(appName)) {
+                    if (note != null && note.equals(description)) {
                         authService.deleteAuthorization(authorization.getId());
                     }
                 }
