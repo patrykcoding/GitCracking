@@ -6,37 +6,63 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
 
 public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter  {
 
-    private ArrayList<String> repositoriesData;
-    private ArrayList<String> repositoriesData2;
+    private ArrayList<String> repositoriesName;
+    private ArrayList<String> repositoriesDescription;
+    private ArrayList<Boolean> repositoriesPrivate;
+    private ArrayList<String> repositoriesLanguage;
+    private ArrayList<String> repositoriesForks;
+    private ArrayList<String> repositoriesWatchers;
+    private ArrayList<String> repositoriesSize;
 
     public RepositoriesAdapter() {
-
+        repositoriesName = new ArrayList<>();
+        repositoriesDescription = new ArrayList<>();
+        repositoriesPrivate = new ArrayList<>();
+        repositoriesLanguage = new ArrayList<>();
+        repositoriesForks = new ArrayList<>();
+        repositoriesWatchers = new ArrayList<>();
+        repositoriesSize = new ArrayList<>();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public final TextView textView;
-        public final TextView textView2;
+        public final TextView textViewName;
+        public final TextView textViewDescription;
+        public final LinearLayout linearLayoutPrivate;
+        public final TextView textViewLanguage;
+        public final TextView textViewForks;
+        public final TextView textViewWatchers;
+        public final TextView textViewSize;
+
 
         public ViewHolder(View view) {
             super(view);
-            textView =  (TextView) view.findViewById(R.id.tv_repositories_name);
-            textView2 = (TextView) view.findViewById(R.id.tv_repositories_description);
+            textViewName = (TextView) view.findViewById(R.id.tv_repositories_name);
+            textViewDescription = (TextView) view.findViewById(R.id.tv_repositories_description);
+            linearLayoutPrivate = (LinearLayout) view.findViewById(R.id.repositories_private);
+            textViewLanguage = (TextView) view.findViewById(R.id.tv_repositories_code);
+            textViewForks = (TextView) view.findViewById(R.id.tv_repositories_forks);
+            textViewWatchers = (TextView) view.findViewById(R.id.tv_repositories_stars);
+            textViewSize = (TextView) view.findViewById(R.id.tv_repositories_storage);
         }
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
+
         int layoutIdForListItem = R.layout.repositories_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
@@ -47,39 +73,69 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
 
     @Override
     public void onBindViewHolder(RepositoriesAdapter.ViewHolder holder, int position) {
-        String repo = repositoriesData.get(position);
-        String otherData = repositoriesData2.get(position);
-        holder.textView.setText(repo);
-        holder.textView2.setText(otherData);
+        String name = repositoriesName.get(position);
+        String description = repositoriesDescription.get(position);
+        Boolean isPrivate = repositoriesPrivate.get(position);
+        String language = repositoriesLanguage.get(position);
+        String forks = repositoriesForks.get(position);
+        String watchers = repositoriesWatchers.get(position);
+        String size = repositoriesSize.get(position);
+
+        holder.textViewName.setText(name);
+        holder.textViewDescription.setText(description);
+        holder.textViewLanguage.setText(language);
+        holder.textViewForks.setText(forks);
+        holder.textViewWatchers.setText(watchers);
+        holder.textViewSize.setText(size);
+        if (isPrivate)
+            holder.linearLayoutPrivate.setVisibility(View.VISIBLE);
+        else
+            holder.linearLayoutPrivate.setVisibility(View.GONE);
     }
 
     @Override
     public int getItemCount() {
-        if (repositoriesData == null) {
+        if (repositoriesName == null) {
             return 0;
         }
-        return repositoriesData.size();
+        return repositoriesName.size();
     }
 
-    public void setRepositoriesData(ArrayList<String> repositoriesData) {
-        this.repositoriesData = repositoriesData;
-        notifyDataSetChanged();
+    public void addRepositories(ArrayList<String> repositories) {
+        repositoriesName.addAll(repositories);
     }
 
-    public void setRepositoriesData2(ArrayList<String> repositoriesData2) {
-        this.repositoriesData2 = repositoriesData2;
-        notifyDataSetChanged();
+    public void addDescriptions(ArrayList<String> descritpions) {
+        repositoriesDescription.addAll(descritpions);
     }
 
-    public void addMore(String item, String item2) {
-        this.repositoriesData.add(0, item);
-        this.repositoriesData2.add(0, item2);
+    public void addLanguages(ArrayList<String> languages) {
+        repositoriesLanguage.addAll(languages);
+    }
+
+    public void addForks(ArrayList<String> forks) {
+        repositoriesForks.addAll(forks);
+    }
+
+    public void addWatchers(ArrayList<String> watchers) {
+        repositoriesWatchers.addAll(watchers);
+    }
+
+    public void addSizes(ArrayList<String> sizes) {
+        repositoriesSize.addAll(sizes);
+    }
+
+    public void addPrivates(ArrayList<Boolean> isPrivate) {
+        repositoriesPrivate.addAll(isPrivate);
+    }
+
+    public void updateView() {
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public String getSectionName(int position) {
-        return repositoriesData.get(position);
+        return repositoriesName.get(position);
     }
 }
