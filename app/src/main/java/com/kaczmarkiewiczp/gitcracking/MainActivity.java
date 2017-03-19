@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 failedLogin();
                 return;
             }
-            new AccountUtils(context, authorization);
+            new AccountUtils(context, username, authorization);
             toast("Login successful"); // DEBUG
             Log.d(LOG_TAG, "Authentication successful");
             startActivity(dashboardIntent);

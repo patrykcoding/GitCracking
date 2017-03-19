@@ -23,6 +23,7 @@ import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
@@ -38,7 +39,6 @@ public class Repositories extends AppCompatActivity {
     private FastScrollRecyclerView recyclerView;
     private RepositoriesAdapter repositoriesAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private int num = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +65,10 @@ public class Repositories extends AppCompatActivity {
                 // TODO refresh
             }
         });
-
         new NavBarUtils(this, toolbar, 2);
         accountUtils = new AccountUtils(this);
-        new RetrieveData().execute();
+        GitHubClient gitHubClient = accountUtils.getGitHubClient();
+        new GetRepositories().execute(gitHubClient);
     }
 
     @Override
@@ -92,16 +92,56 @@ public class Repositories extends AppCompatActivity {
 
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Void> {
 
+        ArrayList<String> repositoriesName;
+        ArrayList<String> repositoriesDescription;
+        ArrayList<String> repositoriesForks;
+        ArrayList<String> repositoriesLanguage;
+        ArrayList<String> repositoriesSize;
+        ArrayList<String> repositoriesWatchers;
+        ArrayList<Boolean> repositoriesPrivate;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            repositoriesName = new ArrayList<>();
+            repositoriesDescription = new ArrayList<>();
+            repositoriesForks = new ArrayList<>();
+            repositoriesLanguage = new ArrayList<>();
+            repositoriesSize = new ArrayList<>();
+            repositoriesWatchers = new ArrayList<>();
+            repositoriesPrivate = new ArrayList<>();
+
+            loadingIndicator.setVisibility(View.VISIBLE);
+        }
+
         @Override
         protected Void doInBackground(GitHubClient... params) {
-            return null;
-        }
-    }
+            GitHubClient gitHubClient = params[0];
+            RepositoryService repositoryService = new RepositoryService(gitHubClient);
 
-    public class RetrieveData extends AsyncTask<Void, Void, Void> {
+            try {
+                for (Repository repository : repositoryService.getRepositories()) {
+                    String owner = repository.getOwner().getLogin();
+                    String repositoryName = repository.getName();
+                    String description = repository.getDescription();
+                    String forks = String.valueOf(repository.getForks());
+                    String language = repository.getLanguage();
+                    String size = String.valueOf(repository.getSize());
+                    String watchers = String.valueOf(repository.getWatchers());
+                    Boolean isPrivate = repository.isPrivate();
 
-        @Override
-        protected Void doInBackground(Void... params) {
+                    repositoriesName.add(owner + "/" + repositoryName);
+                    repositoriesDescription.add(description);
+                    repositoriesForks.add(forks);
+                    repositoriesLanguage.add(language);
+                    repositoriesSize.add(size);
+                    repositoriesWatchers.add(watchers);
+                    repositoriesPrivate.add(isPrivate);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return null;
         }
 
@@ -109,15 +149,16 @@ public class Repositories extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            ArrayList other = new ArrayList<String>();
-            for (int i = 0; i <= 26; i++) {
-                other.add("Hello World " + num++);
-            }
+            repositoriesAdapter.addRepositories(repositoriesName);
+            repositoriesAdapter.addDescriptions(repositoriesDescription);
+            repositoriesAdapter.addForks(repositoriesForks);
+            repositoriesAdapter.addLanguages(repositoriesLanguage);
+            repositoriesAdapter.addSizes(repositoriesSize);
+            repositoriesAdapter.addWatchers(repositoriesWatchers);
+            repositoriesAdapter.addPrivates(repositoriesPrivate);
 
-            String a = "abcdefghijklmnopqrstuvwxyz";
-            ArrayList alpha = new ArrayList<String>(Arrays.asList(a.split("")));
-            repositoriesAdapter.setRepositoriesData(alpha);
-            repositoriesAdapter.setRepositoriesData2(other);
+            loadingIndicator.setVisibility(View.GONE);
+            repositoriesAdapter.updateView();
         }
     }
 }

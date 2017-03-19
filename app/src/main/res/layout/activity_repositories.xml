@@ -19,7 +19,15 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-
+    <ProgressBar
+        android:id="@+id/pb_loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:visibility="gone"
+        android:layout_below="@+id/activity_repositories_toolbar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="64dp"/>
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/sr_repositories"
         android:layout_width="match_parent"

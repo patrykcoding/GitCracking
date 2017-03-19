@@ -36,10 +36,12 @@ class AccountUtils {
     private String token;
     private String login;
 
-    public AccountUtils(Context context, Authorization auth) {
+    public AccountUtils(Context context, String username, Authorization auth) {
         this.context = context;
+        this.login = username;
         this.token = auth.getToken();
         setToken(token);
+        setLogin(username);
 
         GitHubClient client = new GitHubClient();
         client.setOAuth2Token(this.token);
@@ -50,7 +52,7 @@ class AccountUtils {
         SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
         this.token = sharedPreferences.getString("token", "");
         this.login = sharedPreferences.getString("login", "");
-
+        Log.i("#ACCOUNTUTILS", token);
         gitHubClient = new GitHubClient();
         gitHubClient.setOAuth2Token(token);
     }
