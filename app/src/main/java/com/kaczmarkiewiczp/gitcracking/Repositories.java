@@ -54,7 +54,6 @@ public class Repositories extends AppCompatActivity {
         emptyView = (LinearLayout) findViewById(R.id.ll_no_repositories);
         /* set toolbar */
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
-        toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
 

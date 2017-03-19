@@ -17,7 +17,7 @@
         android:background="?attr/colorPrimaryDark"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        app:popupTheme="@style/AppThemeNoActionBar.PopupOverlay" />
 
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
