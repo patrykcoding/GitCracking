@@ -140,6 +140,17 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
         repositoriesPrivate.addAll(isPrivate);
     }
 
+    public void clearView() {
+        repositoriesName.clear();
+        repositoriesOwner.clear();
+        repositoriesDescription.clear();
+        repositoriesPrivate.clear();
+        repositoriesLanguage.clear();
+        repositoriesForks.clear();
+        repositoriesWatchers.clear();
+        repositoriesSize.clear();
+    }
+
     public void updateView() {
         notifyDataSetChanged();
     }

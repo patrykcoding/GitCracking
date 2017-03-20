@@ -112,7 +112,7 @@ public class Repositories extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
+            repositoriesAdapter.clearView();
             repositoriesName = new ArrayList<>();
             repositoriesOwner = new ArrayList<>();
             repositoriesDescription = new ArrayList<>();
