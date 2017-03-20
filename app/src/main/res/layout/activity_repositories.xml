@@ -50,8 +50,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true">
+        android:layout_centerInParent="true"
+        android:visibility="gone">
 
         <ImageView
             android:layout_width="96dp"
@@ -76,6 +76,29 @@
             android:layout_gravity="center"
             android:textColor="@color/accent"
             android:text="@string/try_again" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_no_repositories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:scaleType="fitXY"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_sentiment_dissatisfied_black_24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="16dp"
+            android:textAlignment="center"
+            android:text="@string/no_repositories"/>
     </LinearLayout>
 
 </RelativeLayout>

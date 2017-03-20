@@ -7,4 +7,5 @@
     <string name="network_connection_error">It seems that you have no internet connection.\nDid you forget to pay your bill?</string>
     <string name="loading_failed">Failed to retrieve data from GitHub</string>
     <string name="try_again">TRY AGAIN</string>
+    <string name="no_repositories">You don\'t have any repositories</string>
 </resources>
