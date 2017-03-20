@@ -10,6 +10,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -141,10 +142,11 @@ public class Repositories extends AppCompatActivity {
                     String description = repository.getDescription();
                     String forks = String.valueOf(repository.getForks());
                     String language = repository.getLanguage();
-                    String size = String.valueOf(repository.getSize());
+                    Integer s = repository.getSize();
                     String watchers = String.valueOf(repository.getWatchers());
                     Boolean isPrivate = repository.isPrivate();
 
+                    String size = Formatter.formatShortFileSize(getApplicationContext(), s.longValue() * 1024);
                     repositoriesOwner.add(owner);
                     repositoriesName.add(repositoryName);
                     repositoriesDescription.add(description);
