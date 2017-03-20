@@ -2,16 +2,11 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.format.Formatter;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,21 +21,19 @@ import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 public class Repositories extends AppCompatActivity {
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
+    private final int USER_CANCELLED_ERROR = 3;
 
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
@@ -49,14 +42,16 @@ public class Repositories extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private GitHubClient gitHubClient;
     private AsyncTask backgroundTask;
-    private LinearLayout error_view;
+    private LinearLayout errorView;
+    private LinearLayout emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_repositories);
         loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-        error_view = (LinearLayout) findViewById(R.id.ll_connection_err);
+        errorView = (LinearLayout) findViewById(R.id.ll_connection_err);
+        emptyView = (LinearLayout) findViewById(R.id.ll_no_repositories);
         /* set toolbar */
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
         toolbar.setTitleTextColor(Color.WHITE);
@@ -129,7 +124,7 @@ public class Repositories extends AppCompatActivity {
 
 
         swipeRefreshLayout.setVisibility(View.GONE);
-        error_view.setVisibility(View.VISIBLE);
+        errorView.setVisibility(View.VISIBLE);
     }
 
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Boolean> {
@@ -141,7 +136,8 @@ public class Repositories extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             swipeRefreshLayout.setVisibility(View.VISIBLE);
-            error_view.setVisibility(View.GONE);
+            emptyView.setVisibility(View.GONE);
+            errorView.setVisibility(View.GONE);
             repositoriesAdapter.clearView();
             repositories = new ArrayList<>();
 
@@ -156,9 +152,10 @@ public class Repositories extends AppCompatActivity {
 
             try {
                 for (Repository repository : repositoryService.getRepositories()) {
-                    if (isCancelled())
-                        return null;
-
+                    if (isCancelled()) {
+                        error_type = USER_CANCELLED_ERROR;
+                        return false;
+                    }
                     repositories.add(repository);
                 }
                 Collections.sort(repositories, new RepositoryComparator());
@@ -180,10 +177,12 @@ public class Repositories extends AppCompatActivity {
         protected void onPostExecute(Boolean noError) {
             super.onPostExecute(noError);
 
-            if (noError) {
+            if (noError && !repositories.isEmpty()) {
                 repositoriesAdapter.setRepositories(repositories);
                 repositoriesAdapter.updateView();
-            } else {
+            } else if (noError && repositories.isEmpty()) {
+                emptyView.setVisibility(View.VISIBLE);
+            } else if (error_type != USER_CANCELLED_ERROR){
                 showErrorMessage(error_type);
             }
 
