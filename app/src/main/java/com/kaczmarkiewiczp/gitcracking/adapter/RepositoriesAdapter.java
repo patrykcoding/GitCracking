@@ -82,6 +82,7 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
         if (description == null || description.isEmpty()) {
             holder.textViewDescription.setVisibility(View.GONE);
         } else {
+            holder.textViewDescription.setVisibility(View.VISIBLE);
             holder.textViewDescription.setText(description);
         }
         if (language == null || language.isEmpty()) {
