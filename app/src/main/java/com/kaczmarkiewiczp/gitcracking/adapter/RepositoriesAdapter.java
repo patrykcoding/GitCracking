@@ -86,7 +86,11 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
 
         holder.textViewName.setText(owner + "/" + name);
         holder.textViewDescription.setText(description);
-        holder.textViewLanguage.setText(language);
+        if (language == null || language.isEmpty()) {
+            holder.textViewLanguage.setText("unknown");
+        } else {
+            holder.textViewLanguage.setText(language);
+        }
         holder.textViewForks.setText(forks);
         holder.textViewWatchers.setText(watchers);
         holder.textViewSize.setText(size);
