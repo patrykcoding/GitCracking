@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.os.AsyncTask;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,7 +18,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
+
+import org.eclipse.egit.github.core.Issue;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.RepositoryService;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 
 public class Issues extends AppCompatActivity {
 
@@ -35,6 +48,9 @@ public class Issues extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+
+    private AccountUtils accountUtils;
+    private GitHubClient gitHubClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +72,9 @@ public class Issues extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+        accountUtils = new AccountUtils(this);
+        gitHubClient = accountUtils.getGitHubClient();
     }
 
 
@@ -67,17 +86,13 @@ public class Issues extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
+                findViewById(R.id.action_refresh).startAnimation(rotate);
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -134,8 +149,7 @@ public class Issues extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 3;
+            return 2;
         }
 
         @Override
@@ -145,8 +159,42 @@ public class Issues extends AppCompatActivity {
                     return "CREATED";
                 case 1:
                     return "ASSIGNED";
-                case 2:
-                    return "MENTIONED";
+            }
+            return null;
+        }
+    }
+
+    public class GetIssues extends AsyncTask<GitHubClient, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // TODO show progressbar
+        }
+
+        @Override
+        protected Void doInBackground(GitHubClient... params) {
+            GitHubClient gitHubClient = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+            RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+            try {
+                for (Repository repository : repositoryService.getRepositories()) {
+                    if (repository.getOpenIssues() < 1) {
+                        continue;
+                    }
+                    String owner = repository.getOwner().getLogin();
+                    String repo = repository.getName();
+
+                    List<Issue> repositoryIssues = issueService.getIssues(repository, null);
+                    for (Issue issue : repositoryIssues) {
+                        String issueTitle = issue.getTitle();
+                        Date created = issue.getCreatedAt();
+
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             return null;
         }
