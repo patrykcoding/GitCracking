@@ -31,6 +31,8 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Repositories extends AppCompatActivity {
@@ -61,7 +63,7 @@ public class Repositories extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
-        repositoriesAdapter = new RepositoriesAdapter();
+        repositoriesAdapter = new RepositoriesAdapter(this);
         recyclerView.setAdapter(repositoriesAdapter);
         recyclerView.setVisibility(View.VISIBLE); // TODO move it somewhere else ???
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.sr_repositories);
@@ -101,27 +103,13 @@ public class Repositories extends AppCompatActivity {
 
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Void> {
 
-        ArrayList<String> repositoriesName;
-        ArrayList<String> repositoriesOwner;
-        ArrayList<String> repositoriesDescription;
-        ArrayList<String> repositoriesForks;
-        ArrayList<String> repositoriesLanguage;
-        ArrayList<String> repositoriesSize;
-        ArrayList<String> repositoriesWatchers;
-        ArrayList<Boolean> repositoriesPrivate;
+        ArrayList<Repository> repositories;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             repositoriesAdapter.clearView();
-            repositoriesName = new ArrayList<>();
-            repositoriesOwner = new ArrayList<>();
-            repositoriesDescription = new ArrayList<>();
-            repositoriesForks = new ArrayList<>();
-            repositoriesLanguage = new ArrayList<>();
-            repositoriesSize = new ArrayList<>();
-            repositoriesWatchers = new ArrayList<>();
-            repositoriesPrivate = new ArrayList<>();
+            repositories = new ArrayList<>();
 
             if (!swipeRefreshLayout.isRefreshing())
                 loadingIndicator.setVisibility(View.VISIBLE);
@@ -137,25 +125,9 @@ public class Repositories extends AppCompatActivity {
                     if (isCancelled())
                         return null;
 
-                    String owner = repository.getOwner().getLogin();
-                    String repositoryName = repository.getName();
-                    String description = repository.getDescription();
-                    String forks = String.valueOf(repository.getForks());
-                    String language = repository.getLanguage();
-                    Integer s = repository.getSize();
-                    String watchers = String.valueOf(repository.getWatchers());
-                    Boolean isPrivate = repository.isPrivate();
-
-                    String size = Formatter.formatShortFileSize(getApplicationContext(), s.longValue() * 1024);
-                    repositoriesOwner.add(owner);
-                    repositoriesName.add(repositoryName);
-                    repositoriesDescription.add(description);
-                    repositoriesForks.add(forks);
-                    repositoriesLanguage.add(language);
-                    repositoriesSize.add(size);
-                    repositoriesWatchers.add(watchers);
-                    repositoriesPrivate.add(isPrivate);
+                    repositories.add(repository);
                 }
+                Collections.sort(repositories, new RepositoryComparator());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -166,14 +138,7 @@ public class Repositories extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            repositoriesAdapter.addRepositoriesOwner(repositoriesOwner);
-            repositoriesAdapter.addRepositoriesName(repositoriesName);
-            repositoriesAdapter.addDescriptions(repositoriesDescription);
-            repositoriesAdapter.addForks(repositoriesForks);
-            repositoriesAdapter.addLanguages(repositoriesLanguage);
-            repositoriesAdapter.addSizes(repositoriesSize);
-            repositoriesAdapter.addWatchers(repositoriesWatchers);
-            repositoriesAdapter.addPrivates(repositoriesPrivate);
+            repositoriesAdapter.setRepositories(repositories);
 
             if (loadingIndicator.getVisibility() == View.VISIBLE)
                 loadingIndicator.setVisibility(View.GONE);
@@ -189,6 +154,14 @@ public class Repositories extends AppCompatActivity {
                 loadingIndicator.setVisibility(View.GONE);
             if (swipeRefreshLayout.isRefreshing())
                 swipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    public class RepositoryComparator implements Comparator<Repository> {
+
+        @Override
+        public int compare(Repository o1, Repository o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
         }
     }
 }
