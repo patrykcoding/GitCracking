@@ -18,7 +18,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
@@ -26,6 +28,7 @@ import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
@@ -36,6 +39,8 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Repositories extends AppCompatActivity {
+    private final int NETWORK_ERROR = 0;
+    private final int API_ERROR = 1;
 
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
@@ -44,12 +49,14 @@ public class Repositories extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private GitHubClient gitHubClient;
     private AsyncTask backgroundTask;
+    private LinearLayout error_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_repositories);
         loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+        error_view = (LinearLayout) findViewById(R.id.ll_connection_err);
         /* set toolbar */
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
         toolbar.setTitleTextColor(Color.WHITE);
@@ -65,7 +72,7 @@ public class Repositories extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         repositoriesAdapter = new RepositoriesAdapter(this);
         recyclerView.setAdapter(repositoriesAdapter);
-        recyclerView.setVisibility(View.VISIBLE); // TODO move it somewhere else ???
+        recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.sr_repositories);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -101,13 +108,40 @@ public class Repositories extends AppCompatActivity {
         }
     }
 
-    public class GetRepositories extends AsyncTask<GitHubClient, Void, Void> {
+    private void showErrorMessage(int error_type) {
+        TextView message = (TextView) findViewById(R.id.tv_error_message);
+        TextView retry = (TextView) findViewById(R.id.tv_try_again);
+
+        retry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING)
+                    backgroundTask.cancel(true);
+                backgroundTask = new GetRepositories().execute(gitHubClient);
+            }
+        });
+
+        if (error_type == NETWORK_ERROR) {
+            message.setText(getString(R.string.network_connection_error));
+        } else if (error_type == API_ERROR) {
+            message.setText(getString(R.string.loading_failed));
+        }
+
+
+        swipeRefreshLayout.setVisibility(View.GONE);
+        error_view.setVisibility(View.VISIBLE);
+    }
+
+    public class GetRepositories extends AsyncTask<GitHubClient, Void, Boolean> {
 
         ArrayList<Repository> repositories;
+        int error_type;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            swipeRefreshLayout.setVisibility(View.VISIBLE);
+            error_view.setVisibility(View.GONE);
             repositoriesAdapter.clearView();
             repositories = new ArrayList<>();
 
@@ -116,7 +150,7 @@ public class Repositories extends AppCompatActivity {
         }
 
         @Override
-        protected Void doInBackground(GitHubClient... params) {
+        protected Boolean doInBackground(GitHubClient... params) {
             GitHubClient gitHubClient = params[0];
             RepositoryService repositoryService = new RepositoryService(gitHubClient);
 
@@ -128,25 +162,37 @@ public class Repositories extends AppCompatActivity {
                     repositories.add(repository);
                 }
                 Collections.sort(repositories, new RepositoryComparator());
+            } catch (RequestException e) {
+                if (e.getMessage().equals("Bad credentials")) {
+                    // TODO token is invalid - tell user to login again
+                } else {
+                    error_type = API_ERROR;
+                }
+                return false;
             } catch (IOException e) {
-                e.printStackTrace();
+                error_type = NETWORK_ERROR;
+                return false;
             }
-            return null;
+            return true;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(Boolean noError) {
+            super.onPostExecute(noError);
 
-            repositoriesAdapter.setRepositories(repositories);
+            if (noError) {
+                repositoriesAdapter.setRepositories(repositories);
+                repositoriesAdapter.updateView();
+            } else {
+                showErrorMessage(error_type);
+            }
 
             if (loadingIndicator.getVisibility() == View.VISIBLE)
                 loadingIndicator.setVisibility(View.GONE);
             if (swipeRefreshLayout.isRefreshing())
                 swipeRefreshLayout.setRefreshing(false);
-            repositoriesAdapter.updateView();
         }
-        
+
         @Override
         protected void onCancelled() {
             super.onCancelled();
