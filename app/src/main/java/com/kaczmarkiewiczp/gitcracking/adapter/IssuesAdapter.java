@@ -70,10 +70,11 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         holder.textViewUser.setText(username);
         if (commentsCount > 0) {
             holder.linearLayoutComments.setVisibility(View.VISIBLE);
-            holder.textViewCommentsCount.setText(commentsCount);
+            holder.textViewCommentsCount.setText(String.valueOf(commentsCount));
         } else {
             holder.linearLayoutComments.setVisibility(View.GONE);
         }
+        /*
         List<Label> labels = issues.get(position).getLabels();
         if (labels != null && labels.size() > 0) {
             holder.linearLayoutTags.setVisibility(View.VISIBLE);
@@ -88,7 +89,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
                 holder.linearLayoutTags.removeAllViews();
             }
             holder.linearLayoutTags.setVisibility(View.GONE);
-        }
+        }*/
     }
 
     @Override

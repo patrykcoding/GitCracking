@@ -2,9 +2,10 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.os.AsyncTask;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -20,7 +21,8 @@ import android.view.ViewGroup;
 
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.TextView;
+
+import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
@@ -29,24 +31,13 @@ import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Issues extends AppCompatActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
+    private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
     private AccountUtils accountUtils;
@@ -98,22 +89,22 @@ public class Issues extends AppCompatActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
+    public static class IssuesFragment extends Fragment {
         private static final String ARG_SECTION_NUMBER = "section_number";
+        private RecyclerView recyclerView;
+        private IssuesAdapter issuesAdapter;
+        private SwipeRefreshLayout swipeRefreshLayout;
+        private AccountUtils accountUtils;
 
-        public PlaceholderFragment() {
+        public IssuesFragment() {
         }
 
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public static IssuesFragment newInstance(int sectionNumber) {
+            IssuesFragment fragment = new IssuesFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
@@ -124,9 +115,73 @@ public class Issues extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_issues, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+
+            recyclerView = (RecyclerView) rootView.findViewById(R.id.rv_issues);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setHasFixedSize(true);
+            issuesAdapter = new IssuesAdapter(getContext());
+            recyclerView.setAdapter(issuesAdapter);
+            recyclerView.setVisibility(View.VISIBLE);
+            swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.srl_issues);
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    // TODO (1) stop running background tasks, (2) refresh
+                }
+            });
+            accountUtils = new AccountUtils(getContext());
+            GitHubClient gitHubClient = accountUtils.getGitHubClient();
+
+            GetIssues backgroundTask = new GetIssues(issuesAdapter);
+            backgroundTask.execute(gitHubClient);
             return rootView;
+        }
+
+        public class GetIssues extends AsyncTask<GitHubClient, Void, Void> {
+
+            ArrayList<Issue> issues;
+            IssuesAdapter issuesAdapter;
+
+            public GetIssues(IssuesAdapter adapter) {
+                issuesAdapter = adapter;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                issues = new ArrayList<>();
+                // TODO show progressbar
+            }
+
+            @Override
+            protected Void doInBackground(GitHubClient... params) {
+                GitHubClient gitHubClient = params[0];
+                IssueService issueService = new IssueService(gitHubClient);
+                RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+                try {
+                    for (Repository repository : repositoryService.getRepositories()) {
+                        if (repository.getOpenIssues() < 1) {
+                            continue;
+                        }
+                        List<Issue> repositoryIssues = issueService.getIssues(repository, null);
+                        for (Issue issue : repositoryIssues) {
+                            issues.add(issue);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                issuesAdapter.setIssues(issues);
+                issuesAdapter.updateView();
+            }
         }
     }
 
@@ -143,8 +198,8 @@ public class Issues extends AppCompatActivity {
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            // Return a IssuesFragment (defined as a static inner class below).
+            return IssuesFragment.newInstance(position + 1);
         }
 
         @Override
@@ -159,42 +214,6 @@ public class Issues extends AppCompatActivity {
                     return "CREATED";
                 case 1:
                     return "ASSIGNED";
-            }
-            return null;
-        }
-    }
-
-    public class GetIssues extends AsyncTask<GitHubClient, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            // TODO show progressbar
-        }
-
-        @Override
-        protected Void doInBackground(GitHubClient... params) {
-            GitHubClient gitHubClient = params[0];
-            IssueService issueService = new IssueService(gitHubClient);
-            RepositoryService repositoryService = new RepositoryService(gitHubClient);
-
-            try {
-                for (Repository repository : repositoryService.getRepositories()) {
-                    if (repository.getOpenIssues() < 1) {
-                        continue;
-                    }
-                    String owner = repository.getOwner().getLogin();
-                    String repo = repository.getName();
-
-                    List<Issue> repositoryIssues = issueService.getIssues(repository, null);
-                    for (Issue issue : repositoryIssues) {
-                        String issueTitle = issue.getTitle();
-                        Date created = issue.getCreatedAt();
-
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
             return null;
         }
