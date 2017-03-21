@@ -1,6 +1,5 @@
 package com.kaczmarkiewiczp.gitcracking;
 
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -67,7 +66,7 @@ public class Repositories extends AppCompatActivity {
         repositoriesAdapter = new RepositoriesAdapter(this);
         recyclerView.setAdapter(repositoriesAdapter);
         recyclerView.setVisibility(View.VISIBLE);
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.sr_repositories);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_repositories);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
