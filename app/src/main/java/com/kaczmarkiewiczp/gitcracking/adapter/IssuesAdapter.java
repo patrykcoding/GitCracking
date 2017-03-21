@@ -2,10 +2,8 @@ package com.kaczmarkiewiczp.gitcracking.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.squareup.picasso.Picasso;
 
@@ -81,10 +80,10 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
         List<Label> labels = issues.get(position).getLabels();
         if (labels != null && labels.size() > 0) {
-            if (holder.linearLayoutTags.getChildCount() > 0) {
-                holder.linearLayoutTags.removeAllViews();
+            if (holder.flexBoxLayoutTags.getChildCount() > 0) {
+                holder.flexBoxLayoutTags.removeAllViews();
             }
-            holder.linearLayoutTags.setVisibility(View.VISIBLE);
+            holder.flexBoxLayoutTags.setVisibility(View.VISIBLE);
             for (Label label : labels) {
                 String colorString = label.getColor();
                 int rgb = Color.parseColor("#" + colorString);
@@ -102,16 +101,16 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
                     textViewLabel.setTextColor(Color.WHITE);
                 }
                 textViewLabel.setPadding(8, 4, 8, 4);
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.setMargins(0, 0, 12, 0);
+                FlexboxLayout.LayoutParams layoutParams = new FlexboxLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                layoutParams.setMargins(0, 0, 12, 12);
                 textViewLabel.setLayoutParams(layoutParams);
-                holder.linearLayoutTags.addView(textViewLabel);
+                holder.flexBoxLayoutTags.addView(textViewLabel);
             }
         } else {
-            if (holder.linearLayoutTags.getChildCount() > 0) {
-                holder.linearLayoutTags.removeAllViews();
+            if (holder.flexBoxLayoutTags.getChildCount() > 0) {
+                holder.flexBoxLayoutTags.removeAllViews();
             }
-            holder.linearLayoutTags.setVisibility(View.GONE);
+            holder.flexBoxLayoutTags.setVisibility(View.GONE);
         }
     }
 
@@ -145,7 +144,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         public final TextView textViewDate;
         public final LinearLayout linearLayoutComments;
         public final TextView textViewCommentsCount;
-        public final LinearLayout linearLayoutTags;
+        public final FlexboxLayout flexBoxLayoutTags;
 
         public ViewHolder(View view) {
             super(view);
@@ -157,7 +156,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
             textViewDate = (TextView) view.findViewById(R.id.tv_date);
             linearLayoutComments = (LinearLayout) view.findViewById(R.id.ll_comments);
             textViewCommentsCount = (TextView) view.findViewById(R.id.tv_comments_count);
-            linearLayoutTags = (LinearLayout) view.findViewById(R.id.ll_tags);
+            flexBoxLayoutTags = (FlexboxLayout) view.findViewById(R.id.fl_tags);
         }
     }
 }
