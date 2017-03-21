@@ -20,7 +20,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".Dashboard" />
-        <activity android:name=".Repositories"></activity>
+        <activity android:name=".Repositories" />
+        <activity
+            android:name=".Issues"
+            android:label="@string/title_activity_issues"
+            android:theme="@style/AppThemeNoActionBar"></activity>
     </application>
 
 </manifest>

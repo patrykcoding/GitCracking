@@ -39,7 +39,8 @@ class NavBarUtils {
                     return false;
                 }
             });
-    public PrimaryDrawerItem repositories = new PrimaryDrawerItem().withName("Repositories")
+    public PrimaryDrawerItem repositories = new PrimaryDrawerItem()
+            .withName("Repositories")
             .withIcon(R.drawable.ic_git)
             .withIdentifier(2)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -124,6 +125,8 @@ class NavBarUtils {
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
                 .withToolbar(toolbar)
+                .withTranslucentStatusBar(false)
+                .withActionBarDrawerToggleAnimated(true)
                 .withAccountHeader(accountHeader)
                 .addDrawerItems(
                         dashboard,
@@ -153,6 +156,9 @@ class NavBarUtils {
                 break;
             case 2:
                 activity.startActivity(new Intent(activity, Repositories.class));
+                break;
+            case 3:
+                activity.startActivity(new Intent(activity, Issues.class));
                 break;
             case 8:
                 AccountUtils.logout(activity);
