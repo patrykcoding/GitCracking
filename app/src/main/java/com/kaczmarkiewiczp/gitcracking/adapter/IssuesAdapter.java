@@ -80,6 +80,9 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
         List<Label> labels = issues.get(position).getLabels();
         if (labels != null && labels.size() > 0) {
+            if (holder.linearLayoutTags.getChildCount() > 0) {
+                holder.linearLayoutTags.removeAllViews();
+            }
             holder.linearLayoutTags.setVisibility(View.VISIBLE);
             for (Label label : labels) {
                 Log.i("IssuesAdapter", "#" + label.getColor() + " " + label.getName());
