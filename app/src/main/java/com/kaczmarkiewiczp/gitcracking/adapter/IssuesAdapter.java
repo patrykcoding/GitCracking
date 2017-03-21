@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.R;
+import com.squareup.picasso.Picasso;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
@@ -67,7 +68,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         holder.textViewRepository.setText(repository);
         holder.textViewIssueNumber.setText(issueNumber);
         holder.textViewTitle.setText(title);
-        // TODO set icon
+        Picasso.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
         if (commentsCount > 0) {
             holder.linearLayoutComments.setVisibility(View.VISIBLE);
