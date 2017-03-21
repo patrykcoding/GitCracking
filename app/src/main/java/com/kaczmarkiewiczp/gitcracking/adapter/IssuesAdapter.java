@@ -2,6 +2,7 @@ package com.kaczmarkiewiczp.gitcracking.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -85,11 +86,21 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
             }
             holder.linearLayoutTags.setVisibility(View.VISIBLE);
             for (Label label : labels) {
-                Log.i("IssuesAdapter", "#" + label.getColor() + " " + label.getName());
+                String colorString = label.getColor();
+                int rgb = Color.parseColor("#" + colorString);
+                int r = Color.red(rgb);
+                int g = Color.green(rgb);
+                int b = Color.blue(rgb);
+                double a = 1 - (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
                 TextView textViewLabel = new TextView(context);
                 textViewLabel.setText(label.getName());
-                textViewLabel.setBackgroundColor(Color.parseColor("#" + label.getColor()));
-                textViewLabel.setTextColor(Color.WHITE);
+                textViewLabel.setBackgroundColor(Color.parseColor("#" + colorString));
+                if (a < 0.5) {
+                    textViewLabel.setTextColor(Color.BLACK);
+                } else {
+                    textViewLabel.setTextColor(Color.WHITE);
+                }
                 textViewLabel.setPadding(8, 4, 8, 4);
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 layoutParams.setMargins(0, 0, 12, 0);
