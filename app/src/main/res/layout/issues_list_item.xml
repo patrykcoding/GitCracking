@@ -8,12 +8,13 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
+
         <TextView
             android:id="@+id/tv_issues_repo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:text="kaczmarkiewiczp/testRepo"/>
+            tools:text="kaczmarkiewiczp/testRepo" />
 
         <!-- this is necessary in order to move TextView to the right -->
         <View
@@ -26,14 +27,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            tools:text="#34"/>
+            tools:text="#34" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/tv_issues_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Issue Title"/>
+        tools:text="Issue Title" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -45,38 +46,48 @@
             android:layout_width="22dp"
             android:layout_height="22dp"
             android:scaleType="fitXY"
-            android:src="@android:drawable/sym_def_app_icon"/>
+            android:src="@android:drawable/sym_def_app_icon" />
 
         <TextView
             android:id="@+id/tv_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="kaczmarkiewiczp"/>
+            tools:text="kaczmarkiewiczp" />
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="3 hours ago"/>
+            tools:text="3 hours ago" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_chat_bubble_outline_black_24dp"
-            android:layout_gravity="end"/>
-
-        <TextView
+        <LinearLayout
+            android:id="@+id/ll_comments"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            tools:text="1"/>
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_chat_bubble_outline_black_24dp"
+                android:layout_gravity="end" />
+
+            <TextView
+                android:id="@+id/tv_comments_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                tools:text="1" />
+        </LinearLayout>
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/ll_tags"
         android:layout_width="wrap_content"
