@@ -70,6 +70,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         holder.textViewTitle.setText(title);
         Picasso.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
+        holder.textViewDate.setText(createdAt);
         if (commentsCount > 0) {
             holder.linearLayoutComments.setVisibility(View.VISIBLE);
             holder.textViewCommentsCount.setText(String.valueOf(commentsCount));
@@ -88,7 +89,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
                 textViewLabel.setTextColor(Color.WHITE);
                 textViewLabel.setPadding(8, 4, 8, 4);
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.setMargins(0, 8, 8, 8);
+                layoutParams.setMargins(0, 0, 12, 0);
                 textViewLabel.setLayoutParams(layoutParams);
                 holder.linearLayoutTags.addView(textViewLabel);
             }
