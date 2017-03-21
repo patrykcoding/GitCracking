@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,22 +75,28 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         } else {
             holder.linearLayoutComments.setVisibility(View.GONE);
         }
-        /*
+
         List<Label> labels = issues.get(position).getLabels();
         if (labels != null && labels.size() > 0) {
             holder.linearLayoutTags.setVisibility(View.VISIBLE);
             for (Label label : labels) {
+                Log.i("IssuesAdapter", "#" + label.getColor() + " " + label.getName());
                 TextView textViewLabel = new TextView(context);
                 textViewLabel.setText(label.getName());
-                textViewLabel.setBackgroundColor(Color.parseColor(label.getColor()));
-                textViewLabel.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                textViewLabel.setBackgroundColor(Color.parseColor("#" + label.getColor()));
+                textViewLabel.setTextColor(Color.WHITE);
+                textViewLabel.setPadding(8, 4, 8, 4);
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                layoutParams.setMargins(0, 8, 8, 8);
+                textViewLabel.setLayoutParams(layoutParams);
+                holder.linearLayoutTags.addView(textViewLabel);
             }
         } else {
             if (holder.linearLayoutTags.getChildCount() > 0) {
                 holder.linearLayoutTags.removeAllViews();
             }
             holder.linearLayoutTags.setVisibility(View.GONE);
-        }*/
+        }
     }
 
     @Override
