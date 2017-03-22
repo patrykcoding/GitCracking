@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
+import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,10 +60,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         String username = issues.get(position).getUser().getLogin();
 
         Date date = issues.get(position).getCreatedAt();
-        Date now = new Date();
-        CharSequence relativeDate = DateUtils.getRelativeTimeSpanString(date.getTime(), now.getTime(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE);
-        String createdAt = relativeDate.toString();
-
+        PrettyTime prettyTime = new PrettyTime();
         int commentsCount = issues.get(position).getComments();
 
         holder.textViewRepository.setText(repository);
@@ -70,7 +68,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         holder.textViewTitle.setText(title);
         Picasso.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
-        holder.textViewDate.setText(createdAt);
+        holder.textViewDate.setText(prettyTime.format(date));
         if (commentsCount > 0) {
             holder.linearLayoutComments.setVisibility(View.VISIBLE);
             holder.textViewCommentsCount.setText(String.valueOf(commentsCount));
