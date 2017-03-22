@@ -32,6 +32,8 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Issues extends AppCompatActivity {
@@ -170,6 +172,7 @@ public class Issues extends AppCompatActivity {
                             issues.add(issue);
                         }
                     }
+                    Collections.sort(issues, new IssuesComparator());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -181,6 +184,14 @@ public class Issues extends AppCompatActivity {
                 super.onPostExecute(aVoid);
                 issuesAdapter.setIssues(issues);
                 issuesAdapter.updateView();
+            }
+        }
+
+        public class IssuesComparator implements Comparator<Issue> {
+
+            @Override
+            public int compare(Issue o1, Issue o2) {
+                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
             }
         }
     }
