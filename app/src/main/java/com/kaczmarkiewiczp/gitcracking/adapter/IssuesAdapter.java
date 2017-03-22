@@ -100,6 +100,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
                 } else {
                     textViewLabel.setTextColor(Color.WHITE);
                 }
+                textViewLabel.setElevation(4);
                 textViewLabel.setPadding(8, 4, 8, 4);
                 FlexboxLayout.LayoutParams layoutParams = new FlexboxLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 layoutParams.setMargins(0, 0, 12, 12);
