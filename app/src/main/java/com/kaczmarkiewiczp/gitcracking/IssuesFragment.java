@@ -3,29 +3,27 @@ package com.kaczmarkiewiczp.gitcracking;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,8 +33,10 @@ import java.util.List;
 
 public class IssuesFragment extends Fragment {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
+    private final int SECTION_CREATED = 0;
+    private final int SECTION_ASSIGNED = 1;
     private Context context;
-    private int tabNumber;
+    private int tabSection;
     private ProgressBar loadingIndicator;
     private IssuesAdapter issuesAdapter;
     private GitHubClient gitHubClient;
@@ -78,7 +78,7 @@ public class IssuesFragment extends Fragment {
             }
         });
 
-        tabNumber = getArguments().getInt(ARG_SECTION_NUMBER);
+        tabSection = getArguments().getInt(ARG_SECTION_NUMBER);
 
         accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
@@ -130,10 +130,12 @@ public class IssuesFragment extends Fragment {
         @Override
         protected Boolean doInBackground(GitHubClient... params) {
             GitHubClient gitHubClient = params[0];
+            UserService userService = new UserService(gitHubClient);
             IssueService issueService = new IssueService(gitHubClient);
             RepositoryService repositoryService = new RepositoryService(gitHubClient);
 
             try {
+                String user = userService.getUser().getLogin();
                 for (Repository repository : repositoryService.getRepositories()) {
                     if (isCancelled()) {
                         error_type = USER_CANCELLED_ERROR;
@@ -144,7 +146,14 @@ public class IssuesFragment extends Fragment {
                     }
                     List<Issue> repositoryIssues = issueService.getIssues(repository, null);
                     for (Issue issue : repositoryIssues) {
-                        issues.add(issue);
+                        if (tabSection == SECTION_ASSIGNED) {
+                            if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(user)) {
+                                issues.add(issue);
+                            }
+                        } else if (tabSection == SECTION_CREATED) {
+                            issues.add(issue);
+                        }
+
                     }
                 }
                 Collections.sort(issues, new IssuesComparator());
@@ -161,7 +170,6 @@ public class IssuesFragment extends Fragment {
 
             if (noError && !issues.isEmpty()) {
                 issuesAdapter.setIssues(issues);
-                issuesAdapter.updateView();
             } else if (noError && issues.isEmpty()) {
                 // TODO show emptyview
             } else if (error_type != USER_CANCELLED_ERROR) {
