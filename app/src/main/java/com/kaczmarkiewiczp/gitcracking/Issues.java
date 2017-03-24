@@ -67,6 +67,16 @@ public class Issues extends AppCompatActivity {
         gitHubClient = accountUtils.getGitHubClient();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
+                findViewById(R.id.action_refresh).startAnimation(rotate);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     class PagerAdapter extends FragmentPagerAdapter {
         private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
 
