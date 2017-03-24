@@ -3,16 +3,20 @@ package com.kaczmarkiewiczp.gitcracking;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
@@ -38,6 +42,7 @@ public class IssuesFragment extends Fragment {
     private GitHubClient gitHubClient;
     private AccountUtils accountUtils;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private AsyncTask backgroundTask;
 
     public IssuesFragment() {
         // requires empty constructor
@@ -56,18 +61,20 @@ public class IssuesFragment extends Fragment {
         loadingIndicator = (ProgressBar) rootView.findViewById(R.id.pb_loading_indicator);
 
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.rv_issues);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         issuesAdapter = new IssuesAdapter();
         recyclerView.setAdapter(issuesAdapter);
-
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(linearLayoutManager);
-
+        recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.srl_issues);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO refresh
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetIssues().execute(gitHubClient);
             }
         });
 
@@ -78,7 +85,7 @@ public class IssuesFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        new GetIssues().execute(gitHubClient);
+        backgroundTask = new GetIssues().execute(gitHubClient);
         return rootView;
     }
 
@@ -89,24 +96,35 @@ public class IssuesFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.action_refresh) {
-            // TODO refresh
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetIssues().execute(gitHubClient);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        ArrayList<Issue> issues;
+        private final int NETWORK_ERROR = 0;
+        private final int API_ERROR = 1;
+        private final int USER_CANCELLED_ERROR = 3;
+
+        private ArrayList<Issue> issues;
+        private int error_type;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             issues = new ArrayList<>();
-            loadingIndicator.setVisibility(View.VISIBLE);
-
+            issuesAdapter.clearView();
+            if (!swipeRefreshLayout.isRefreshing()) {
+                loadingIndicator.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -117,6 +135,10 @@ public class IssuesFragment extends Fragment {
 
             try {
                 for (Repository repository : repositoryService.getRepositories()) {
+                    if (isCancelled()) {
+                        error_type = USER_CANCELLED_ERROR;
+                        return false;
+                    }
                     if (repository.getOpenIssues() < 1) {
                         continue;
                     }
@@ -134,20 +156,43 @@ public class IssuesFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
-            issuesAdapter.setIssues(issues);
-            issuesAdapter.updateView();
+        protected void onPostExecute(Boolean noError) {
+            super.onPostExecute(noError);
 
-            loadingIndicator.setVisibility(View.GONE);
+            if (noError && !issues.isEmpty()) {
+                issuesAdapter.setIssues(issues);
+                issuesAdapter.updateView();
+            } else if (noError && issues.isEmpty()) {
+                // TODO show emptyview
+            } else if (error_type != USER_CANCELLED_ERROR) {
+                // TODO show error message
+            }
+
+            if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                loadingIndicator.setVisibility(View.GONE);
+            }
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
         }
 
-        public class IssuesComparator implements Comparator<Issue> {
-
-            @Override
-            public int compare(Issue o1, Issue o2) {
-                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                loadingIndicator.setVisibility(View.GONE);
             }
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        }
+    }
+
+    public class IssuesComparator implements Comparator<Issue> {
+
+        @Override
+        public int compare(Issue o1, Issue o2) {
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
         }
     }
 }
