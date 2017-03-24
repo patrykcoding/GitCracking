@@ -15,5 +15,13 @@
             android:layout_height="wrap_content" >
         </android.support.v7.widget.RecyclerView>
     </android.support.v4.widget.SwipeRefreshLayout>
+    <ProgressBar
+        android:id="@+id/pb_loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="64dp" />
 
 </RelativeLayout>

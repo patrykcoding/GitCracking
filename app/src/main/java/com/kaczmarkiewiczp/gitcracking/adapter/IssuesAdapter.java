@@ -29,14 +29,13 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
     private ArrayList<Issue> issues;
     private Context context;
 
-    public IssuesAdapter(Context context) {
+    public IssuesAdapter() {
         issues = new ArrayList<>();
-        this.context = context;
     }
 
     @Override
     public IssuesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        context = parent.getContext();
 
         int layoutIdForListItem = R.layout.issues_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
