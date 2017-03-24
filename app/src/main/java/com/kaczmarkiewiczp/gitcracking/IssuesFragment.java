@@ -13,14 +13,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -33,9 +35,14 @@ import java.util.List;
 
 public class IssuesFragment extends Fragment {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
+    private final int NETWORK_ERROR = 0;
+    private final int API_ERROR = 1;
+    private final int USER_CANCELLED_ERROR = 3;
+
     private final int SECTION_CREATED = 0;
     private final int SECTION_ASSIGNED = 1;
     private Context context;
+    private View rootView;
     private int tabSection;
     private ProgressBar loadingIndicator;
     private IssuesAdapter issuesAdapter;
@@ -43,6 +50,8 @@ public class IssuesFragment extends Fragment {
     private AccountUtils accountUtils;
     private SwipeRefreshLayout swipeRefreshLayout;
     private AsyncTask backgroundTask;
+    private LinearLayout errorView;
+    private LinearLayout emptyView;
 
     public IssuesFragment() {
         // requires empty constructor
@@ -55,19 +64,21 @@ public class IssuesFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_issues, container, false);
+        final View view = inflater.inflate(R.layout.fragment_issues, container, false);
+        rootView = view;
+        context = view.getContext();
+        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
+        emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);
+        errorView = (LinearLayout) view.findViewById(R.id.ll_connection_err);
 
-        context = rootView.getContext();
-        loadingIndicator = (ProgressBar) rootView.findViewById(R.id.pb_loading_indicator);
-
-        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.rv_issues);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_issues);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         issuesAdapter = new IssuesAdapter();
         recyclerView.setAdapter(issuesAdapter);
         recyclerView.setVisibility(View.VISIBLE);
-        swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.srl_issues);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_issues);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -86,7 +97,7 @@ public class IssuesFragment extends Fragment {
         setHasOptionsMenu(true);
 
         backgroundTask = new GetIssues().execute(gitHubClient);
-        return rootView;
+        return view;
     }
 
     @Override
@@ -108,19 +119,50 @@ public class IssuesFragment extends Fragment {
         }
     }
 
+    private void showErrorMessage(int errorType) {
+        TextView message = (TextView) rootView.findViewById(R.id.tv_error_message);
+        TextView retry = (TextView) rootView.findViewById(R.id.tv_try_again);
+
+        retry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetIssues().execute(gitHubClient);
+            }
+        });
+
+        if (errorType == NETWORK_ERROR) {
+            message.setText(getString(R.string.network_connection_error));
+        } else if (errorType == API_ERROR) {
+            message.setText(getString(R.string.loading_failed));
+        }
+
+        swipeRefreshLayout.setVisibility(View.GONE);
+        errorView.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmptyView() {
+        TextView message = (TextView) rootView.findViewById(R.id.tv_empty_view);
+        message.setText(getString(R.string.no_issues));
+        emptyView.setVisibility(View.VISIBLE);
+    }
+
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        private final int NETWORK_ERROR = 0;
-        private final int API_ERROR = 1;
-        private final int USER_CANCELLED_ERROR = 3;
-
         private ArrayList<Issue> issues;
-        private int error_type;
+        private int errorType;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             issues = new ArrayList<>();
+            issuesAdapter.clearView();
+
+            swipeRefreshLayout.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+            errorView.setVisibility(View.GONE);
             issuesAdapter.clearView();
             if (!swipeRefreshLayout.isRefreshing()) {
                 loadingIndicator.setVisibility(View.VISIBLE);
@@ -138,7 +180,7 @@ public class IssuesFragment extends Fragment {
                 String user = userService.getUser().getLogin();
                 for (Repository repository : repositoryService.getRepositories()) {
                     if (isCancelled()) {
-                        error_type = USER_CANCELLED_ERROR;
+                        errorType = USER_CANCELLED_ERROR;
                         return false;
                     }
                     if (repository.getOpenIssues() < 1) {
@@ -157,9 +199,16 @@ public class IssuesFragment extends Fragment {
                     }
                 }
                 Collections.sort(issues, new IssuesComparator());
+            } catch (RequestException e) {
+                if (e.getMessage().equals("Bad credentials")) {
+                    // TODO token is invalid - tell user to login again
+                } else {
+                    errorType = API_ERROR;
+                }
+                return false;
             } catch (IOException e) {
-                // TODO catch errors -- show correct view
-                e.printStackTrace();
+                errorType = NETWORK_ERROR;
+                return false;
             }
             return true;
         }
@@ -171,9 +220,9 @@ public class IssuesFragment extends Fragment {
             if (noError && !issues.isEmpty()) {
                 issuesAdapter.setIssues(issues);
             } else if (noError && issues.isEmpty()) {
-                // TODO show emptyview
-            } else if (error_type != USER_CANCELLED_ERROR) {
-                // TODO show error message
+                showEmptyView();
+            } else if (errorType != USER_CANCELLED_ERROR) {
+                showErrorMessage(errorType);
             }
 
             if (loadingIndicator.getVisibility() == View.VISIBLE) {

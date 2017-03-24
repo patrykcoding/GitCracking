@@ -48,28 +48,6 @@
 
     <include layout="@layout/connection_error_view" />
 
-    <LinearLayout
-        android:id="@+id/ll_no_repositories"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_centerInParent="true"
-        android:visibility="gone">
-
-        <ImageView
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:scaleType="fitXY"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_sentiment_dissatisfied_black_24dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:padding="16dp"
-            android:textAlignment="center"
-            android:text="@string/no_repositories" />
-    </LinearLayout>
+    <include layout="@layout/empty_data_view" />
 
 </RelativeLayout>

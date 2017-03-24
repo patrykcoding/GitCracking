@@ -32,7 +32,7 @@ import java.util.Comparator;
 public class Repositories extends AppCompatActivity {
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
-    private final int USER_CANCELLED_ERROR = 3;
+    private final int USER_CANCELLED_ERROR = 2;
 
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
@@ -50,7 +50,7 @@ public class Repositories extends AppCompatActivity {
         setContentView(R.layout.activity_repositories);
         loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
         errorView = (LinearLayout) findViewById(R.id.ll_connection_err);
-        emptyView = (LinearLayout) findViewById(R.id.ll_no_repositories);
+        emptyView = (LinearLayout) findViewById(R.id.ll_empty_view);
         /* set toolbar */
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
         toolbar.setTitle("Repositories");
@@ -101,7 +101,7 @@ public class Repositories extends AppCompatActivity {
         }
     }
 
-    private void showErrorMessage(int error_type) {
+    private void showErrorMessage(int errorType) {
         TextView message = (TextView) findViewById(R.id.tv_error_message);
         TextView retry = (TextView) findViewById(R.id.tv_try_again);
 
@@ -114,21 +114,27 @@ public class Repositories extends AppCompatActivity {
             }
         });
 
-        if (error_type == NETWORK_ERROR) {
+        if (errorType == NETWORK_ERROR) {
             message.setText(getString(R.string.network_connection_error));
-        } else if (error_type == API_ERROR) {
+        } else if (errorType == API_ERROR) {
             message.setText(getString(R.string.loading_failed));
         }
-
 
         swipeRefreshLayout.setVisibility(View.GONE);
         errorView.setVisibility(View.VISIBLE);
     }
 
+    private void showEmptyView() {
+        TextView message = (TextView) findViewById(R.id.tv_empty_view);
+        message.setText(getString(R.string.no_repositories));
+        swipeRefreshLayout.setVisibility(View.GONE);
+        emptyView.setVisibility(View.VISIBLE);
+    }
+
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Boolean> {
 
         ArrayList<Repository> repositories;
-        int error_type;
+        int errorType;
 
         @Override
         protected void onPreExecute() {
@@ -151,7 +157,7 @@ public class Repositories extends AppCompatActivity {
             try {
                 for (Repository repository : repositoryService.getRepositories()) {
                     if (isCancelled()) {
-                        error_type = USER_CANCELLED_ERROR;
+                        errorType = USER_CANCELLED_ERROR;
                         return false;
                     }
                     repositories.add(repository);
@@ -161,11 +167,11 @@ public class Repositories extends AppCompatActivity {
                 if (e.getMessage().equals("Bad credentials")) {
                     // TODO token is invalid - tell user to login again
                 } else {
-                    error_type = API_ERROR;
+                    errorType = API_ERROR;
                 }
                 return false;
             } catch (IOException e) {
-                error_type = NETWORK_ERROR;
+                errorType = NETWORK_ERROR;
                 return false;
             }
             return true;
@@ -178,9 +184,9 @@ public class Repositories extends AppCompatActivity {
             if (noError && !repositories.isEmpty()) {
                 repositoriesAdapter.setRepositories(repositories);
             } else if (noError && repositories.isEmpty()) {
-                emptyView.setVisibility(View.VISIBLE);
-            } else if (error_type != USER_CANCELLED_ERROR){
-                showErrorMessage(error_type);
+                showEmptyView();
+            } else if (errorType != USER_CANCELLED_ERROR){
+                showErrorMessage(errorType);
             }
 
             if (loadingIndicator.getVisibility() == View.VISIBLE)
