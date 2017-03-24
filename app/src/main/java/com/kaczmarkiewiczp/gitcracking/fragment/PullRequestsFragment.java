@@ -109,6 +109,8 @@ public class PullRequestsFragment extends Fragment {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
+                backgroundTask = new GetPullRequests().execute(gitHubClient);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
