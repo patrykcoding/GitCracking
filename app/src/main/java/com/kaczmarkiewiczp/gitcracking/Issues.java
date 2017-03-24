@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.design.widget.TabLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -38,9 +39,9 @@ import java.util.List;
 
 public class Issues extends AppCompatActivity {
 
-
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
+    private ViewPager viewPager;
+    private PagerAdapter pagerAdapter;
+    private TabLayout tabLayout;
 
     private AccountUtils accountUtils;
     private GitHubClient gitHubClient;
@@ -54,179 +55,47 @@ public class Issues extends AppCompatActivity {
         toolbar.setTitle("Issues");
         setSupportActionBar(toolbar);
 
+        viewPager = (ViewPager) findViewById(R.id.container);
+        pagerAdapter = new PagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
         new NavBarUtils(this, toolbar, 3);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
         accountUtils = new AccountUtils(this);
         gitHubClient = accountUtils.getGitHubClient();
     }
 
+    class PagerAdapter extends FragmentPagerAdapter {
+        private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.actions, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_refresh:
-                Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
-                findViewById(R.id.action_refresh).startAnimation(rotate);
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class IssuesFragment extends Fragment {
-        private static final String ARG_SECTION_NUMBER = "section_number";
-        private RecyclerView recyclerView;
-        private IssuesAdapter issuesAdapter;
-        private SwipeRefreshLayout swipeRefreshLayout;
-        private AccountUtils accountUtils;
-
-        public IssuesFragment() {
-        }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static IssuesFragment newInstance(int sectionNumber) {
-            IssuesFragment fragment = new IssuesFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_issues, container, false);
-
-            recyclerView = (RecyclerView) rootView.findViewById(R.id.rv_issues);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-            recyclerView.setLayoutManager(layoutManager);
-            recyclerView.setHasFixedSize(true);
-            issuesAdapter = new IssuesAdapter(getContext());
-            recyclerView.setAdapter(issuesAdapter);
-            recyclerView.setVisibility(View.VISIBLE);
-            swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.srl_issues);
-            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    // TODO (1) stop running background tasks, (2) refresh
-                }
-            });
-            accountUtils = new AccountUtils(getContext());
-            GitHubClient gitHubClient = accountUtils.getGitHubClient();
-
-            GetIssues backgroundTask = new GetIssues(issuesAdapter);
-            backgroundTask.execute(gitHubClient);
-            return rootView;
-        }
-
-        public class GetIssues extends AsyncTask<GitHubClient, Void, Void> {
-
-            ArrayList<Issue> issues;
-            IssuesAdapter issuesAdapter;
-
-            public GetIssues(IssuesAdapter adapter) {
-                issuesAdapter = adapter;
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                issues = new ArrayList<>();
-                // TODO show progressbar
-            }
-
-            @Override
-            protected Void doInBackground(GitHubClient... params) {
-                GitHubClient gitHubClient = params[0];
-                IssueService issueService = new IssueService(gitHubClient);
-                RepositoryService repositoryService = new RepositoryService(gitHubClient);
-
-                try {
-                    for (Repository repository : repositoryService.getRepositories()) {
-                        if (repository.getOpenIssues() < 1) {
-                            continue;
-                        }
-                        List<Issue> repositoryIssues = issueService.getIssues(repository, null);
-                        for (Issue issue : repositoryIssues) {
-                            issues.add(issue);
-                        }
-                    }
-                    Collections.sort(issues, new IssuesComparator());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                issuesAdapter.setIssues(issues);
-                issuesAdapter.updateView();
-            }
-        }
-
-        public class IssuesComparator implements Comparator<Issue> {
-
-            @Override
-            public int compare(Issue o1, Issue o2) {
-                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-            }
-        }
-    }
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
+        public PagerAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
         }
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a IssuesFragment (defined as a static inner class below).
-            return IssuesFragment.newInstance(position + 1);
+            switch (position) {
+                case 0:
+                case 1: // fall through
+                    IssuesFragment issuesFragment = new IssuesFragment();
+                    Bundle args = new Bundle();
+                    args.putInt(issuesFragment.ARG_SECTION_NUMBER, position);
+                    issuesFragment.setArguments(args);
+                    return issuesFragment;
+            }
+            return null;
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return tabTitles.length;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "CREATED";
-                case 1:
-                    return "ASSIGNED";
-            }
-            return null;
+            return tabTitles[position];
         }
     }
 }
