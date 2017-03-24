@@ -126,6 +126,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     public void clearView() {
         this.issues.clear();
+        notifyDataSetChanged();
     }
 
     public void updateView() {
