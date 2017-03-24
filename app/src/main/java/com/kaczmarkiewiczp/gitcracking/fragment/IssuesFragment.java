@@ -1,4 +1,4 @@
-package com.kaczmarkiewiczp.gitcracking;
+package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -17,6 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
 
 import org.eclipse.egit.github.core.Issue;

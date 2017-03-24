@@ -28,7 +28,7 @@ import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
 
-class AccountUtils {
+public class AccountUtils {
 
 
     private Context context;

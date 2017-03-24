@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-class NavBarUtils {
+public class NavBarUtils {
 
     public PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
             .withName("Dashboard")
