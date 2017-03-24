@@ -177,7 +177,6 @@ public class Repositories extends AppCompatActivity {
 
             if (noError && !repositories.isEmpty()) {
                 repositoriesAdapter.setRepositories(repositories);
-                repositoriesAdapter.updateView();
             } else if (noError && repositories.isEmpty()) {
                 emptyView.setVisibility(View.VISIBLE);
             } else if (error_type != USER_CANCELLED_ERROR){

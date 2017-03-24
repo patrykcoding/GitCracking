@@ -110,14 +110,11 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
 
     public void setRepositories(ArrayList<Repository> repositories) {
         this.repositories.addAll(repositories);
+        notifyDataSetChanged();
     }
 
     public void clearView() {
         repositories.clear();
-        notifyDataSetChanged();
-    }
-
-    public void updateView() {
         notifyDataSetChanged();
     }
 

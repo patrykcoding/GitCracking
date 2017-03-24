@@ -122,14 +122,11 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     public void setIssues(ArrayList<Issue> issues) {
         this.issues.addAll(issues);
+        notifyDataSetChanged();
     }
 
     public void clearView() {
         this.issues.clear();
-        notifyDataSetChanged();
-    }
-
-    public void updateView() {
         notifyDataSetChanged();
     }
 
