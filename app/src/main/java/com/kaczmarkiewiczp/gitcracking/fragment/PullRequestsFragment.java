@@ -3,6 +3,7 @@ package com.kaczmarkiewiczp.gitcracking.fragment;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,23 +20,24 @@ import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.R;
-import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
+import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
 
-import org.eclipse.egit.github.core.Issue;
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
-import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class IssuesFragment extends Fragment {
+public class PullRequestsFragment extends Fragment {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
@@ -43,11 +45,10 @@ public class IssuesFragment extends Fragment {
 
     private final int SECTION_CREATED = 0;
     private final int SECTION_ASSIGNED = 1;
-    private Context context;
     private View rootView;
     private int tabSection;
     private ProgressBar loadingIndicator;
-    private IssuesAdapter issuesAdapter;
+    private PullRequestsAdapter prAdapter;
     private GitHubClient gitHubClient;
     private AccountUtils accountUtils;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -55,50 +56,44 @@ public class IssuesFragment extends Fragment {
     private LinearLayout errorView;
     private LinearLayout emptyView;
 
-    public IssuesFragment() {
+    public PullRequestsFragment() {
         // requires empty constructor
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_issues, container, false);
+        final View view = inflater.inflate(R.layout.fragment_pull_requests, container, false);
         rootView = view;
-        context = view.getContext();
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);
         errorView = (LinearLayout) view.findViewById(R.id.ll_connection_err);
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_issues);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_pull_requests);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        issuesAdapter = new IssuesAdapter();
-        recyclerView.setAdapter(issuesAdapter);
+        prAdapter = new PullRequestsAdapter();
+        recyclerView.setAdapter(prAdapter);
         recyclerView.setVisibility(View.VISIBLE);
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_issues);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_pull_requests);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetIssues().execute(gitHubClient);
+                backgroundTask = new GetPullRequests().execute(gitHubClient);
             }
         });
 
         tabSection = getArguments().getInt(ARG_SECTION_NUMBER);
-
-        accountUtils = new AccountUtils(context);
+        accountUtils = new AccountUtils(rootView.getContext());
         gitHubClient = accountUtils.getGitHubClient();
 
         setHasOptionsMenu(true);
 
-        backgroundTask = new GetIssues().execute(gitHubClient);
+        backgroundTask = new GetPullRequests().execute(gitHubClient);
+
         return view;
     }
 
@@ -114,8 +109,6 @@ public class IssuesFragment extends Fragment {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetIssues().execute(gitHubClient);
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -131,7 +124,7 @@ public class IssuesFragment extends Fragment {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetIssues().execute(gitHubClient);
+                backgroundTask = new GetPullRequests().execute(gitHubClient);
             }
         });
 
@@ -151,16 +144,16 @@ public class IssuesFragment extends Fragment {
         emptyView.setVisibility(View.VISIBLE);
     }
 
-    public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
+    public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        private ArrayList<Issue> issues;
+        private ArrayList<PullRequest> pullRequests;
         private int errorType;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            issues = new ArrayList<>();
-            issuesAdapter.clearView();
+            pullRequests = new ArrayList<>();
+            prAdapter.clearView();
 
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
@@ -174,8 +167,8 @@ public class IssuesFragment extends Fragment {
         protected Boolean doInBackground(GitHubClient... params) {
             GitHubClient gitHubClient = params[0];
             UserService userService = new UserService(gitHubClient);
-            IssueService issueService = new IssueService(gitHubClient);
             RepositoryService repositoryService = new RepositoryService(gitHubClient);
+            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
 
             try {
                 String user = userService.getUser().getLogin();
@@ -184,25 +177,21 @@ public class IssuesFragment extends Fragment {
                         errorType = USER_CANCELLED_ERROR;
                         return false;
                     }
-                    if (repository.getOpenIssues() < 1) {
-                        continue;
-                    }
-                    List<Issue> repositoryIssues = issueService.getIssues(repository, null);
-                    for (Issue issue : repositoryIssues) {
+                    List<PullRequest> repositoryPullRequests = pullRequestService.getPullRequests(repository, "open");
+                    for (PullRequest pullRequest : repositoryPullRequests) {
                         if (tabSection == SECTION_ASSIGNED) {
-                            if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(user)) {
-                                issues.add(issue);
+                            if (pullRequest.getAssignee() != null && pullRequest.getAssignee().getLogin().equals(user)) {
+                                pullRequests.add(pullRequest);
                             }
                         } else if (tabSection == SECTION_CREATED) {
-                            issues.add(issue);
+                            pullRequests.add(pullRequest);
                         }
-
                     }
                 }
-                Collections.sort(issues, new IssuesComparator());
+                Collections.sort(pullRequests, new PullRequestsComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
-                    // TODO token is invalid - tell user to login again
+                    // TODO token is invalid -- tell user to again
                 } else {
                     errorType = API_ERROR;
                 }
@@ -218,9 +207,9 @@ public class IssuesFragment extends Fragment {
         protected void onPostExecute(Boolean noError) {
             super.onPostExecute(noError);
 
-            if (noError && !issues.isEmpty()) {
-                issuesAdapter.setIssues(issues);
-            } else if (noError && issues.isEmpty()) {
+            if (noError && !pullRequests.isEmpty()) {
+                prAdapter.setPullRequests(pullRequests);
+            } else if (noError && pullRequests.isEmpty()) {
                 showEmptyView();
             } else if (errorType != USER_CANCELLED_ERROR) {
                 showErrorMessage(errorType);
@@ -244,13 +233,13 @@ public class IssuesFragment extends Fragment {
                 swipeRefreshLayout.setRefreshing(false);
             }
         }
-    }
 
-    public class IssuesComparator implements Comparator<Issue> {
+        public class PullRequestsComparator implements Comparator<PullRequest> {
 
-        @Override
-        public int compare(Issue o1, Issue o2) {
-            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+            @Override
+            public int compare(PullRequest o1, PullRequest o2) {
+                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+            }
         }
     }
 }

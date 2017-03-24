@@ -160,6 +160,9 @@ public class NavBarUtils {
             case 3:
                 activity.startActivity(new Intent(activity, Issues.class));
                 break;
+            case 4:
+                activity.startActivity(new Intent(activity, PullRequests.class));
+                break;
             case 8:
                 AccountUtils.logout(activity);
                 activity.startActivity(new Intent(activity, MainActivity.class));

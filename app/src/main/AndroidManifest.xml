@@ -24,7 +24,8 @@
         <activity
             android:name=".Issues"
             android:label="@string/title_activity_issues"
-            android:theme="@style/AppThemeNoActionBar"></activity>
+            android:theme="@style/AppThemeNoActionBar" />
+        <activity android:name=".PullRequests"></activity>
     </application>
 
 </manifest>
