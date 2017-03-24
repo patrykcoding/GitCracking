@@ -143,9 +143,9 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
         public ViewHolder(View view) {
             super(view);
-            textViewRepository = (TextView) view.findViewById(R.id.tv_pull_request_repo);
-            textViewIssueNumber = (TextView) view.findViewById(R.id.tv_pull_request_number);
-            textViewTitle = (TextView) view.findViewById(R.id.tv_pull_request_title);
+            textViewRepository = (TextView) view.findViewById(R.id.tv_issues_repo);
+            textViewIssueNumber = (TextView) view.findViewById(R.id.tv_issue_number);
+            textViewTitle = (TextView) view.findViewById(R.id.tv_issues_title);
             imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_user_icon);
             textViewUser = (TextView) view.findViewById(R.id.tv_user);
             textViewDate = (TextView) view.findViewById(R.id.tv_date);
