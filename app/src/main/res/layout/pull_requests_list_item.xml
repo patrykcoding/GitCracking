@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/card_view"
         android:layout_gravity="center"
         android:layout_width="match_parent"
@@ -58,7 +59,7 @@
                 android:textAppearance="@android:style/TextAppearance.Material.Medium"
                 android:textStyle="bold"
                 android:padding="16dp"
-                tools:text="Issue Title" />
+                tools:text="Pull Request Title" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -119,18 +120,6 @@
                         tools:text="1" />
                 </LinearLayout>
             </LinearLayout>
-
-            <com.google.android.flexbox.FlexboxLayout
-                android:id="@+id/fl_tags"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="16dp"
-                app:flexWrap="wrap" >
-                <!-- tags (as TextView) will be inserted programmatically here -->
-            </com.google.android.flexbox.FlexboxLayout>
         </LinearLayout>
     </android.support.v7.widget.CardView>
 </LinearLayout>

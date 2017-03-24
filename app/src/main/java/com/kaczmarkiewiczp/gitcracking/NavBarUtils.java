@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-class NavBarUtils {
+public class NavBarUtils {
 
     public PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
             .withName("Dashboard")
@@ -159,6 +159,9 @@ class NavBarUtils {
                 break;
             case 3:
                 activity.startActivity(new Intent(activity, Issues.class));
+                break;
+            case 4:
+                activity.startActivity(new Intent(activity, PullRequests.class));
                 break;
             case 8:
                 AccountUtils.logout(activity);

@@ -1,24 +1,20 @@
 package com.kaczmarkiewiczp.gitcracking;
 
 import android.support.design.widget.TabLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
+import com.kaczmarkiewiczp.gitcracking.fragment.PullRequestsFragment;
 
-import org.eclipse.egit.github.core.client.GitHubClient;
-
-public class Issues extends AppCompatActivity {
+public class PullRequests extends AppCompatActivity {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -27,10 +23,10 @@ public class Issues extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_issues);
+        setContentView(R.layout.activity_pull_requests);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Issues");
+        toolbar.setTitle("Pull Requests");
         setSupportActionBar(toolbar);
 
         viewPager = (ViewPager) findViewById(R.id.container);
@@ -40,7 +36,7 @@ public class Issues extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        new NavBarUtils(this, toolbar, 3);
+        new NavBarUtils(this, toolbar, 4);
     }
 
     @Override
@@ -65,11 +61,11 @@ public class Issues extends AppCompatActivity {
             switch (position) {
                 case 0:
                 case 1: // fall through
-                    IssuesFragment issuesFragment = new IssuesFragment();
+                    PullRequestsFragment pullRequestsFragment = new PullRequestsFragment();
                     Bundle args = new Bundle();
-                    args.putInt(issuesFragment.ARG_SECTION_NUMBER, position);
-                    issuesFragment.setArguments(args);
-                    return issuesFragment;
+                    args.putInt(pullRequestsFragment.ARG_SECTION_NUMBER, position);
+                    pullRequestsFragment.setArguments(args);
+                    return pullRequestsFragment;
                 default:
                     return null;
             }

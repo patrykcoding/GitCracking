@@ -3,7 +3,6 @@ package com.kaczmarkiewiczp.gitcracking.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -144,9 +143,9 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
         public ViewHolder(View view) {
             super(view);
-            textViewRepository = (TextView) view.findViewById(R.id.tv_issues_repo);
-            textViewIssueNumber = (TextView) view.findViewById(R.id.tv_issue_number);
-            textViewTitle = (TextView) view.findViewById(R.id.tv_issues_title);
+            textViewRepository = (TextView) view.findViewById(R.id.tv_pull_request_repo);
+            textViewIssueNumber = (TextView) view.findViewById(R.id.tv_pull_request_number);
+            textViewTitle = (TextView) view.findViewById(R.id.tv_pull_request_title);
             imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_user_icon);
             textViewUser = (TextView) view.findViewById(R.id.tv_user);
             textViewDate = (TextView) view.findViewById(R.id.tv_date);
