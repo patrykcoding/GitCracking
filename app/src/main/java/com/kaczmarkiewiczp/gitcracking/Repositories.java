@@ -75,7 +75,7 @@ public class Repositories extends AppCompatActivity {
                 backgroundTask = new GetRepositories().execute(gitHubClient);
             }
         });
-        new NavBarUtils(this, toolbar, 2);
+        new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
         backgroundTask = new GetRepositories().execute(gitHubClient);
     }
 

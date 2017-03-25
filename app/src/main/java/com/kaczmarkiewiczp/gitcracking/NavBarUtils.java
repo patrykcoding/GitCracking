@@ -29,10 +29,16 @@ import java.util.Set;
 
 public class NavBarUtils {
 
+    public static final int DASHBOARD = 1;
+    public static final int REPOSITORIES = 2;
+    public static final int ISSUES = 3;
+    public static final int PULL_REQUESTS = 4;
+    public static final int PEOPLE = 5;
+
     public PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
             .withName("Dashboard")
             .withIcon(R.drawable.ic_home)
-            .withIdentifier(1)
+            .withIdentifier(DASHBOARD)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -43,7 +49,7 @@ public class NavBarUtils {
     public PrimaryDrawerItem repositories = new PrimaryDrawerItem()
             .withName("Repositories")
             .withIcon(R.drawable.ic_git)
-            .withIdentifier(2)
+            .withIdentifier(REPOSITORIES)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -54,7 +60,7 @@ public class NavBarUtils {
     public PrimaryDrawerItem issues = new PrimaryDrawerItem()
             .withName("Issues")
             .withIcon(R.drawable.ic_alert_circle_outline)
-            .withIdentifier(3)
+            .withIdentifier(ISSUES)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -65,7 +71,7 @@ public class NavBarUtils {
     public PrimaryDrawerItem pullRequests = new PrimaryDrawerItem()
             .withName("Pull Requests")
             .withIcon(R.drawable.ic_source_pull)
-            .withIdentifier(4)
+            .withIdentifier(PULL_REQUESTS)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -76,7 +82,7 @@ public class NavBarUtils {
     public PrimaryDrawerItem people = new PrimaryDrawerItem()
             .withName("People")
             .withIcon(R.drawable.ic_account_multiple)
-            .withIdentifier(5)
+            .withIdentifier(PEOPLE)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -84,17 +90,7 @@ public class NavBarUtils {
                     return false;
                 }
             });
-    public PrimaryDrawerItem bookmarks = new PrimaryDrawerItem()
-            .withName("Bookmarks")
-            .withIcon(R.drawable.ic_star)
-            .withIdentifier(6)
-            .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                @Override
-                public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                    drawerItemClicked(view, position, drawerItem);
-                    return false;
-                }
-            });
+
     public SecondaryDrawerItem settings = new SecondaryDrawerItem()
             .withName("Settings")
             .withIcon(R.drawable.ic_settings)
@@ -135,7 +131,6 @@ public class NavBarUtils {
                         issues,
                         pullRequests,
                         people,
-                        bookmarks,
                         new DividerDrawerItem(),
                         settings,
                         logout
@@ -152,19 +147,19 @@ public class NavBarUtils {
         int drawerIdentifier = (int) drawerItem.getIdentifier();
 
         switch (drawerIdentifier) {
-            case 1:
+            case DASHBOARD:
                 activity.startActivity(new Intent(activity, Dashboard.class));
                 break;
-            case 2:
+            case REPOSITORIES:
                 activity.startActivity(new Intent(activity, Repositories.class));
                 break;
-            case 3:
+            case ISSUES:
                 activity.startActivity(new Intent(activity, Issues.class));
                 break;
-            case 4:
+            case PULL_REQUESTS:
                 activity.startActivity(new Intent(activity, PullRequests.class));
                 break;
-            case 5:
+            case PEOPLE:
                 activity.startActivity(new Intent(activity, People.class));
                 break;
             case 8:

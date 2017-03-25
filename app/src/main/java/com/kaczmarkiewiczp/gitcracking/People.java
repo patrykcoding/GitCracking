@@ -36,7 +36,7 @@ public class People extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        new NavBarUtils(this, toolbar, 5);
+        new NavBarUtils(this, toolbar, NavBarUtils.PEOPLE);
     }
 
     @Override
