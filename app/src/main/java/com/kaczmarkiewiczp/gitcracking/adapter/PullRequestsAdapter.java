@@ -9,8 +9,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.kaczmarkiewiczp.gitcracking.R;
-import com.squareup.picasso.Picasso;
 
 import org.eclipse.egit.github.core.PullRequest;
 import org.ocpsoft.prettytime.PrettyTime;
@@ -60,7 +60,7 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
         holder.textViewRepository.setText(repository);
         holder.textViewPrNumber.setText(prNumber);
         holder.textViewTitle.setText(title);
-        Picasso.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
+        Glide.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
         holder.textViewDate.setText(prettyTime.format(date));
         if (commentsCount > 0) {
