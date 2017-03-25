@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.PeopleAdapter;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -64,7 +65,7 @@ public class PeopleFragment extends Fragment {
         emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);
         errorView = (LinearLayout) view.findViewById(R.id.ll_connection_err);
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_people);
+        FastScrollRecyclerView recyclerView = (FastScrollRecyclerView) view.findViewById(R.id.rv_people);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);

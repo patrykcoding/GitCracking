@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.kaczmarkiewiczp.gitcracking.People$PeopleFragment">
 
     <android.support.v4.widget.SwipeRefreshLayout
@@ -9,11 +10,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.v7.widget.RecyclerView
+        <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
             android:id="@+id/rv_people"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-        </android.support.v7.widget.RecyclerView>
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            app:fastScrollPopupBgColor="@color/colorPrimary"
+            app:fastScrollThumbColor="@color/colorPrimary" />
     </android.support.v4.widget.SwipeRefreshLayout>
     <ProgressBar
         android:id="@+id/pb_loading_indicator"

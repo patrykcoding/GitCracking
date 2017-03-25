@@ -1,6 +1,7 @@
 package com.kaczmarkiewiczp.gitcracking.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,13 +11,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.R;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import com.squareup.picasso.Picasso;
 
 import org.eclipse.egit.github.core.User;
 
 import java.util.ArrayList;
 
-public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder> {
+public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter {
 
     private ArrayList<User> people;
     private Context context;
@@ -82,6 +84,14 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
     public void clearPeople() {
         this.people.clear();
         notifyDataSetChanged();
+    }
+
+    @NonNull
+    @Override
+    public String getSectionName(int position) {
+        String username = people.get(position).getLogin();
+        String firstLetter = username.substring(0, 1).toUpperCase();
+        return firstLetter;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
