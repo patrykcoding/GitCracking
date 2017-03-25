@@ -60,7 +60,13 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
         holder.textViewRepository.setText(repository);
         holder.textViewPrNumber.setText(prNumber);
         holder.textViewTitle.setText(title);
-        Glide.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
+        Glide
+                .with(context)
+                .load(userIconUrl)
+                .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
+                .placeholder(R.drawable.progress_animation)
+                .crossFade()
+                .into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
         holder.textViewDate.setText(prettyTime.format(date));
         if (commentsCount > 0) {

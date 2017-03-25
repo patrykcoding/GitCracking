@@ -64,7 +64,13 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         holder.textViewRepository.setText(repository);
         holder.textViewIssueNumber.setText(issueNumber);
         holder.textViewTitle.setText(title);
-        Glide.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
+        Glide
+                .with(context)
+                .load(userIconUrl)
+                .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
+                .placeholder(R.drawable.progress_animation)
+                .crossFade()
+                .into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
         holder.textViewDate.setText(prettyTime.format(date));
         if (commentsCount > 0) {

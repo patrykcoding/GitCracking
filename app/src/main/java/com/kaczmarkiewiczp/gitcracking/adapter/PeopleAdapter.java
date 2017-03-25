@@ -65,7 +65,13 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
         } else {
             holder.linearLayoutLocation.setVisibility(View.GONE);
         }
-        Glide.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
+        Glide
+                .with(context)
+                .load(userIconUrl)
+                .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
+                .placeholder(R.drawable.progress_animation)
+                .crossFade()
+                .into(holder.imageViewUserIcon);
     }
 
     @Override
