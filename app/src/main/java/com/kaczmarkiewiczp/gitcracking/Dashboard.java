@@ -25,7 +25,7 @@ public class Dashboard extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setTitle("Dashboard");
         setSupportActionBar(toolbar);
-        new NavBarUtils(this, toolbar, 1);
+        new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
         new GitHubDashBoardTask().execute(); // DEBUG
         accountUtils = new AccountUtils(this);
     }

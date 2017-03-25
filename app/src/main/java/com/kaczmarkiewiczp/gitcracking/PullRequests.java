@@ -36,7 +36,7 @@ public class PullRequests extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        new NavBarUtils(this, toolbar, 4);
+        new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class Issues extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        new NavBarUtils(this, toolbar, 3);
+        new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
     }
 
     @Override
