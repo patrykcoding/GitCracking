@@ -84,7 +84,7 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
         notifyDataSetChanged();
     }
 
-    public void clearView() {
+    public void clearPullRequests() {
         this.pullRequests.clear();
         notifyDataSetChanged();
     }

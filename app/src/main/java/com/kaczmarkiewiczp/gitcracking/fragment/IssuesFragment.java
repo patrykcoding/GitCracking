@@ -60,11 +60,6 @@ public class IssuesFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_issues, container, false);
         rootView = view;
@@ -160,7 +155,7 @@ public class IssuesFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             issues = new ArrayList<>();
-            issuesAdapter.clearView();
+            issuesAdapter.clearIssues();
 
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);

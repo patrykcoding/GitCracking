@@ -1,24 +1,20 @@
 package com.kaczmarkiewiczp.gitcracking;
 
 import android.support.design.widget.TabLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
+import com.kaczmarkiewiczp.gitcracking.fragment.PeopleFragment;
 
-import org.eclipse.egit.github.core.client.GitHubClient;
-
-public class Issues extends AppCompatActivity {
+public class People extends AppCompatActivity {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -27,10 +23,10 @@ public class Issues extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_issues);
+        setContentView(R.layout.activity_people);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Issues");
+        toolbar.setTitle("People");
         setSupportActionBar(toolbar);
 
         viewPager = (ViewPager) findViewById(R.id.container);
@@ -40,7 +36,7 @@ public class Issues extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        new NavBarUtils(this, toolbar, 3);
+        new NavBarUtils(this, toolbar, 5);
     }
 
     @Override
@@ -56,7 +52,8 @@ public class Issues extends AppCompatActivity {
     }
 
     class PagerAdapter extends FragmentPagerAdapter {
-        private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
+
+        private String tabTitle[] = new String[] {"FOLLOWERS", "FOLLOWING"};
 
         public PagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
@@ -67,11 +64,11 @@ public class Issues extends AppCompatActivity {
             switch (position) {
                 case 0:
                 case 1: // fall through
-                    IssuesFragment issuesFragment = new IssuesFragment();
+                    PeopleFragment peopleFragment = new PeopleFragment();
                     Bundle args = new Bundle();
-                    args.putInt(issuesFragment.ARG_SECTION_NUMBER, position);
-                    issuesFragment.setArguments(args);
-                    return issuesFragment;
+                    args.putInt(peopleFragment.ARG_SECTION_NUMBER, position);
+                    peopleFragment.setArguments(args);
+                    return peopleFragment;
                 default:
                     return null;
             }
@@ -79,12 +76,12 @@ public class Issues extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return tabTitles.length;
+            return tabTitle.length;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return tabTitles[position];
+            return tabTitle[position];
         }
     }
 }

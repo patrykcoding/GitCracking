@@ -2,15 +2,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.kaczmarkiewiczp.gitcracking.PullRequests$PullRequestsFragment">
+    tools:context="com.kaczmarkiewiczp.gitcracking.Issues$IssuesFragment">
 
     <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/srl_pull_requests"
+        android:id="@+id/srl_people"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_pull_requests"
+            android:id="@+id/rv_people"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
         </android.support.v7.widget.RecyclerView>
