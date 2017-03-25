@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.IpPrefix;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -162,6 +163,9 @@ public class NavBarUtils {
                 break;
             case 4:
                 activity.startActivity(new Intent(activity, PullRequests.class));
+                break;
+            case 5:
+                activity.startActivity(new Intent(activity, People.class));
                 break;
             case 8:
                 AccountUtils.logout(activity);

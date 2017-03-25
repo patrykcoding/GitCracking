@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,34 +19,30 @@ import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.R;
-import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
+import com.kaczmarkiewiczp.gitcracking.adapter.PeopleAdapter;
 
-import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
-import org.eclipse.egit.github.core.service.PullRequestService;
-import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class PullRequestsFragment extends Fragment {
+public class PeopleFragment extends Fragment {
+
     public final String ARG_SECTION_NUMBER = "sectionNumber";
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
     private final int USER_CANCELLED_ERROR = 3;
 
-    private final int SECTION_CREATED = 0;
-    private final int SECTION_ASSIGNED = 1;
+    private final int SECTION_FOLLOWERS = 0;
+    private final int SECTION_FOLLOWING = 1;
     private View rootView;
     private int tabSection;
     private ProgressBar loadingIndicator;
-    private PullRequestsAdapter prAdapter;
+    private PeopleAdapter peopleAdapter;
     private GitHubClient gitHubClient;
     private AccountUtils accountUtils;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -53,44 +50,44 @@ public class PullRequestsFragment extends Fragment {
     private LinearLayout errorView;
     private LinearLayout emptyView;
 
-    public PullRequestsFragment() {
+    public PeopleFragment() {
         // requires empty constructor
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_pull_requests, container, false);
+        final View view = inflater.inflate(R.layout.fragment_people, container, false);
         rootView = view;
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);
         errorView = (LinearLayout) view.findViewById(R.id.ll_connection_err);
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_pull_requests);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_people);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        prAdapter = new PullRequestsAdapter();
-        recyclerView.setAdapter(prAdapter);
+        peopleAdapter = new PeopleAdapter();
+        recyclerView.setAdapter(peopleAdapter);
         recyclerView.setVisibility(View.VISIBLE);
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_pull_requests);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_people);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetPullRequests().execute(gitHubClient);
+                backgroundTask = new GetPeople().execute(gitHubClient);
             }
         });
 
         tabSection = getArguments().getInt(ARG_SECTION_NUMBER);
-        accountUtils = new AccountUtils(rootView.getContext());
+
+        accountUtils = new AccountUtils(view.getContext());
         gitHubClient = accountUtils.getGitHubClient();
 
         setHasOptionsMenu(true);
 
-        backgroundTask = new GetPullRequests().execute(gitHubClient);
-
+        backgroundTask = new GetPeople().execute(gitHubClient);
         return view;
     }
 
@@ -106,7 +103,7 @@ public class PullRequestsFragment extends Fragment {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetPullRequests().execute(gitHubClient);
+                backgroundTask = new GetPeople().execute(gitHubClient);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -123,14 +120,14 @@ public class PullRequestsFragment extends Fragment {
                 if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetPullRequests().execute(gitHubClient);
+                backgroundTask = new GetPeople().execute(gitHubClient);
             }
         });
 
         if (errorType == NETWORK_ERROR) {
-            message.setText(getString(R.string.network_connection_error));
+            message.setText(R.string.network_connection_error);
         } else if (errorType == API_ERROR) {
-            message.setText(getString(R.string.loading_failed));
+            message.setText(R.string.loading_failed);
         }
 
         swipeRefreshLayout.setVisibility(View.GONE);
@@ -139,20 +136,24 @@ public class PullRequestsFragment extends Fragment {
 
     private void showEmptyView() {
         TextView message = (TextView) rootView.findViewById(R.id.tv_empty_view);
-        message.setText(getString(R.string.no_issues));
+        if (tabSection == SECTION_FOLLOWERS) {
+            message.setText(R.string.no_followers);
+        } else if (tabSection == SECTION_FOLLOWING) {
+            message.setText(R.string.no_following);
+        }
         emptyView.setVisibility(View.VISIBLE);
     }
 
-    public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
+    public class GetPeople extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        private ArrayList<PullRequest> pullRequests;
+        private ArrayList<User> people;
         private int errorType;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pullRequests = new ArrayList<>();
-            prAdapter.clearPullRequests();
+            people = new ArrayList<>();
+            peopleAdapter.clearPeople();
 
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
@@ -166,31 +167,26 @@ public class PullRequestsFragment extends Fragment {
         protected Boolean doInBackground(GitHubClient... params) {
             GitHubClient gitHubClient = params[0];
             UserService userService = new UserService(gitHubClient);
-            RepositoryService repositoryService = new RepositoryService(gitHubClient);
-            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
 
             try {
-                String user = userService.getUser().getLogin();
-                for (Repository repository : repositoryService.getRepositories()) {
+                List<User> userList;
+                if (tabSection == SECTION_FOLLOWERS) {
+                    userList = userService.getFollowers();
+                } else {
+                     userList = userService.getFollowing();
+                }
+
+                for (User user : userList) {
                     if (isCancelled()) {
                         errorType = USER_CANCELLED_ERROR;
                         return false;
                     }
-                    List<PullRequest> repositoryPullRequests = pullRequestService.getPullRequests(repository, "open");
-                    for (PullRequest pullRequest : repositoryPullRequests) {
-                        if (tabSection == SECTION_ASSIGNED) {
-                            if (pullRequest.getAssignee() != null && pullRequest.getAssignee().getLogin().equals(user)) {
-                                pullRequests.add(pullRequest);
-                            }
-                        } else if (tabSection == SECTION_CREATED) {
-                            pullRequests.add(pullRequest);
-                        }
-                    }
+                    User person = userService.getUser(user.getLogin());
+                    people.add(person);
                 }
-                Collections.sort(pullRequests, new PullRequestsComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
-                    // TODO token is invalid -- tell user to again
+                    // TODO token is invalid -- tell user to login again
                 } else {
                     errorType = API_ERROR;
                 }
@@ -206,10 +202,10 @@ public class PullRequestsFragment extends Fragment {
         protected void onPostExecute(Boolean noError) {
             super.onPostExecute(noError);
 
-            if (noError && !pullRequests.isEmpty()) {
-                prAdapter.setPullRequests(pullRequests);
-            } else if (noError && pullRequests.isEmpty()) {
+            if (noError && people.isEmpty()) {
                 showEmptyView();
+            } else if (noError) {
+                peopleAdapter.setPeople(people);
             } else if (errorType != USER_CANCELLED_ERROR) {
                 showErrorMessage(errorType);
             }
@@ -230,14 +226,6 @@ public class PullRequestsFragment extends Fragment {
             }
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
-            }
-        }
-
-        public class PullRequestsComparator implements Comparator<PullRequest> {
-
-            @Override
-            public int compare(PullRequest o1, PullRequest o2) {
-                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
             }
         }
     }
