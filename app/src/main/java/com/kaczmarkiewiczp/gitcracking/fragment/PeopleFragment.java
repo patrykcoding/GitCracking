@@ -28,6 +28,8 @@ import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PeopleFragment extends Fragment {
@@ -184,6 +186,7 @@ public class PeopleFragment extends Fragment {
                     User person = userService.getUser(user.getLogin());
                     people.add(person);
                 }
+                Collections.sort(people, new PeopleComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
                     // TODO token is invalid -- tell user to login again
@@ -226,6 +229,14 @@ public class PeopleFragment extends Fragment {
             }
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
+            }
+        }
+
+        public class PeopleComparator implements Comparator<User> {
+
+            @Override
+            public int compare(User o1, User o2) {
+                return o1.getLogin().compareToIgnoreCase(o2.getLogin());
             }
         }
     }
