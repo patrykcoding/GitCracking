@@ -23,7 +23,11 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
                 <ImageView
                     android:id="@+id/iv_user_icon"
                     android:layout_width="64dp"
@@ -36,7 +40,9 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -46,19 +52,24 @@
                         android:id="@+id/tv_user_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textStyle="bold"
                         tools:text="Patryk Kaczmarkiewicz"/>
 
                     <TextView
                         android:id="@+id/tv_user_login"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        tools:text="kaczmarkiewiczp"/>
+                        android:paddingStart="12dp"
+                        android:paddingEnd="16dp"
+                        tools:text="kaczmarkiewiczp" />
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/ll_user_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingTop="12dp">
                     <TextView
                         android:id="@+id/tv_user_description"
                         android:layout_width="wrap_content"
@@ -69,7 +80,8 @@
                     android:id="@+id/ll_user_location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingTop="12dp">
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
@@ -80,6 +92,8 @@
                         android:id="@+id/tv_user_location"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="0dp"
                         tools:text="Edmonton, AB"/>
                 </LinearLayout>
             </LinearLayout>
