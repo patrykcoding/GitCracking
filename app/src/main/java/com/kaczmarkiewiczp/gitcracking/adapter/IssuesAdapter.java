@@ -10,9 +10,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.R;
-import com.squareup.picasso.Picasso;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
@@ -64,7 +64,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         holder.textViewRepository.setText(repository);
         holder.textViewIssueNumber.setText(issueNumber);
         holder.textViewTitle.setText(title);
-        Picasso.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
+        Glide.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
         holder.textViewUser.setText(username);
         holder.textViewDate.setText(prettyTime.format(date));
         if (commentsCount > 0) {

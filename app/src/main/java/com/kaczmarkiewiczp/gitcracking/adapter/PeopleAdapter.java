@@ -10,9 +10,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
-import com.squareup.picasso.Picasso;
 
 import org.eclipse.egit.github.core.User;
 
@@ -65,7 +65,7 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
         } else {
             holder.linearLayoutLocation.setVisibility(View.GONE);
         }
-        Picasso.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
+        Glide.with(context).load(userIconUrl).into(holder.imageViewUserIcon);
     }
 
     @Override
