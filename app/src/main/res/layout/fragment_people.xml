@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.kaczmarkiewiczp.gitcracking.Issues$IssuesFragment">
+    tools:context="com.kaczmarkiewiczp.gitcracking.People$PeopleFragment">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/srl_people"
