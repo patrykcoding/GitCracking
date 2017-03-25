@@ -83,10 +83,10 @@
                     android:orientation="horizontal"
                     android:paddingTop="12dp">
                     <ImageView
-                        android:layout_width="16dp"
+                        android:layout_width="12dp"
                         android:layout_height="16dp"
                         android:scaleType="fitXY"
-                        android:src="@drawable/ic_location_on_black_24dp"
+                        android:src="@drawable/ic_location"
                         android:contentDescription="@string/location_pin" />
                     <TextView
                         android:id="@+id/tv_user_location"
