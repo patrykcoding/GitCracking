@@ -49,10 +49,9 @@ public class Issues extends AppCompatActivity {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     class PagerAdapter extends FragmentPagerAdapter {

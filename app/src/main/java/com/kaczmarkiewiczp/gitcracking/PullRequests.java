@@ -45,6 +45,7 @@ public class PullRequests extends AppCompatActivity {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
