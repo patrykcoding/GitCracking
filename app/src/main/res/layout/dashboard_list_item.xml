@@ -7,7 +7,11 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
         <ImageView
             android:id="@+id/iv_user_icon"
             android:layout_width="22dp"
@@ -18,6 +22,8 @@
             android:id="@+id/tv_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="0dp"
             tools:text="kaczmarkiewiczp" />
         <!-- this is necessary in order to move TextView to the right -->
         <View
@@ -34,18 +40,29 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp" >
         <TextView
             android:id="@+id/tv_ref_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
             tools:visibility="visible"
+            android:paddingStart="0dp"
+            android:paddingEnd="6dp"
             tools:text="Created branch"/>
         <TextView
             android:id="@+id/tv_ref"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
+            android:textStyle="bold"
+            android:paddingStart="0dp"
+            android:paddingEnd="6dp"
             android:visibility="gone"
             tools:visibility="visible"
             tools:text="branch"/>
@@ -54,12 +71,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
+            android:paddingStart="0dp"
+            android:paddingEnd="6dp"
             tools:visibility="visible"
             tools:text="on"/>
         <TextView
             android:id="@+id/tv_repository"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
+            android:textStyle="bold"
             android:visibility="gone"
             tools:visibility="visible"
             tools:text="kaczmarkiewiczp/TestRepository" />
@@ -68,13 +90,21 @@
         android:id="@+id/ll_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:orientation="horizontal"
         android:visibility="gone"
-        tools:visibility="visible">
+        tools:visibility="visible"
+        android:paddingBottom="16dp">
         <TextView
             android:id="@+id/tv_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Description"/>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
 </LinearLayout>
