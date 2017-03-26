@@ -64,6 +64,8 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         holder.textViewDate.setText(prettyTime.format(date));
         holder.textViewUser.setText(user);
 
+        resetViewsVisibilityToGone(holder);
+
         String type = currentEvent.getType();
         switch (type) {
             case Event.TYPE_ISSUES:
@@ -117,6 +119,13 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         notifyDataSetChanged();
     }
 
+    private void resetViewsVisibilityToGone(ViewHolder holder) {
+        holder.textViewRef.setVisibility(View.GONE);
+        holder.textViewRefType.setVisibility(View.GONE);
+        holder.textViewRepository.setVisibility(View.GONE);
+        holder.textViewPreposition.setVisibility(View.GONE);
+        holder.linearLayoutDescription.setVisibility(View.GONE);
+    }
 
     private void createEvent(ViewHolder holder, Event event) {
         CreatePayload createPayload = (CreatePayload) event.getPayload();
@@ -172,7 +181,6 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         holder.textViewRepository.setVisibility(View.VISIBLE);
         holder.textViewRepository.setText(repository);
 
-
         holder.linearLayoutDescription.setVisibility(View.VISIBLE);
         holder.textViewDescription.setText(description);
     }
@@ -180,19 +188,29 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
     private void issueCommentEvent(ViewHolder holder, Event event) {
         IssueCommentPayload issueCommentPayload = (IssueCommentPayload) event.getPayload();
         String repository = event.getRepo().getName();
-        String refType = issueCommentPayload.getAction().toUpperCase();
         String ref = String.valueOf(issueCommentPayload.getIssue().getNumber());
-        String preposition = "on";
         String description = issueCommentPayload.getIssue().getTitle();
+        String refType;
+
+        switch (issueCommentPayload.getAction()) {
+            case "created":
+                refType = "Commented on issue";
+                break;
+            case "edited":
+                refType = "Edited comment in issue";
+                break;
+            case "deleted":
+                refType = "Deleted comment in issue";
+                break;
+            default:
+                refType = "";
+        }
 
         holder.textViewRefType.setVisibility(View.VISIBLE);
         holder.textViewRefType.setText(refType);
 
         holder.textViewRef.setVisibility(View.VISIBLE);
         holder.textViewRef.setText(ref);
-
-        holder.textViewPreposition.setVisibility(View.VISIBLE);
-        holder.textViewPreposition.setText(preposition);
 
         holder.textViewRepository.setVisibility(View.VISIBLE);
         holder.textViewRepository.setText(repository);
@@ -234,8 +252,8 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         holder.textViewRefType.setVisibility(View.VISIBLE);
         holder.textViewRefType.setText(refType);
 
-        holder.linearLayoutDescription.setVisibility(View.VISIBLE);
-        holder.textViewDescription.setText(repository);
+        holder.textViewRepository.setVisibility(View.VISIBLE);
+        holder.textViewRepository.setText(repository);
     }
 
     private void pullRequestEvent(ViewHolder holder, Event event) {
