@@ -109,13 +109,16 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
     }
 
     public void setRepositories(ArrayList<Repository> repositories) {
+        int size = this.repositories.size();
+        int count = repositories.size();
         this.repositories.addAll(repositories);
-        notifyDataSetChanged();
+        notifyItemRangeInserted(size, count);
     }
 
-    public void clearView() {
+    public void clearRepositories() {
+        int size = repositories.size();
         repositories.clear();
-        notifyDataSetChanged();
+        notifyItemRangeRemoved(0, size);
     }
 
     @NonNull

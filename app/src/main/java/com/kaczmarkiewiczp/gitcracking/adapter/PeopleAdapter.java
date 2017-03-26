@@ -83,13 +83,16 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
     }
 
     public void setPeople(ArrayList<User> people) {
+        int size = this.people.size();
+        int count = people.size();
         this.people.addAll(people);
-        notifyDataSetChanged();
+        notifyItemRangeInserted(size, count);
     }
 
     public void clearPeople() {
-        this.people.clear();
-        notifyDataSetChanged();
+        int size = people.size();
+        people.clear();
+        notifyItemRangeRemoved(0, size);
     }
 
     @NonNull

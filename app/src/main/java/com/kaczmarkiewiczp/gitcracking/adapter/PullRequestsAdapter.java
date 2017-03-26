@@ -86,13 +86,16 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
     }
 
     public void setPullRequests(ArrayList<PullRequest> pullRequests) {
+        int size = this.pullRequests.size();
+        int count = pullRequests.size();
         this.pullRequests.addAll(pullRequests);
-        notifyDataSetChanged();
+        notifyItemRangeInserted(size, count);
     }
 
     public void clearPullRequests() {
-        this.pullRequests.clear();
-        notifyDataSetChanged();
+        int size = pullRequests.size();
+        pullRequests.clear();
+        notifyItemRangeRemoved(0, size);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

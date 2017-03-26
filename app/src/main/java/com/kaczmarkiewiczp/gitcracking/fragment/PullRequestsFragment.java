@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
+
 public class PullRequestsFragment extends Fragment {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
     private final int NETWORK_ERROR = 0;
@@ -71,6 +73,9 @@ public class PullRequestsFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         prAdapter = new PullRequestsAdapter();
         recyclerView.setAdapter(prAdapter);
+        recyclerView.setItemAnimator(new SlideInUpAnimator());
+        recyclerView.getItemAnimator().setAddDuration(1000);
+        recyclerView.getItemAnimator().setRemoveDuration(1000);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_pull_requests);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
