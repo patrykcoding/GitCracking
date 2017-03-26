@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -118,6 +119,22 @@ public class Dashboard extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    public void goToPullRequests(View view) {
+        Intent intent = new Intent(this, PullRequests.class);
+        startActivity(intent);
+    }
+
+    public void goToIssues(View view) {
+        Intent intent = new Intent(this, Issues.class);
+        startActivity(intent);
+    }
+
+    public void goToRepositories(View view) {
+        Intent intent = new Intent(this, Repositories.class);
+        startActivity(intent);
+    }
+
 
     private void showEmptyView() {
         TextView message = (TextView) findViewById(R.id.tv_empty_view);
