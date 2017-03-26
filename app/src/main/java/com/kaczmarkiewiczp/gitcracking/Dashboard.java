@@ -32,6 +32,8 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import java.io.IOException;
 import java.util.Collection;
 
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
+
 public class Dashboard extends AppCompatActivity {
 
     private ProgressBar loadingIndicator;
@@ -72,6 +74,9 @@ public class Dashboard extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         dashboardAdapter = new DashboardAdapter();
         recyclerView.setAdapter(dashboardAdapter);
+        recyclerView.setItemAnimator(new SlideInUpAnimator());
+        recyclerView.getItemAnimator().setAddDuration(1000);
+        recyclerView.getItemAnimator().setRemoveDuration(1000);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_dashboard);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {

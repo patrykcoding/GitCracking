@@ -126,13 +126,16 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
     }
 
     public void setIssues(ArrayList<Issue> issues) {
+        int size = this.issues.size();
+        int count = issues.size();
         this.issues.addAll(issues);
-        notifyDataSetChanged();
+        notifyItemRangeInserted(size, count);
     }
 
     public void clearIssues() {
-        this.issues.clear();
-        notifyDataSetChanged();
+        int size = issues.size();
+        issues.clear();
+        notifyItemRangeRemoved(0, size);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,7 +17,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
-import com.mikepenz.materialdrawer.Drawer;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.eclipse.egit.github.core.Repository;
@@ -30,6 +28,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
 public class Repositories extends AppCompatActivity {
     private final int NETWORK_ERROR = 0;
@@ -73,6 +73,8 @@ public class Repositories extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         repositoriesAdapter = new RepositoriesAdapter(this);
         recyclerView.setAdapter(repositoriesAdapter);
+        recyclerView.setItemAnimator(new SlideInUpAnimator());
+        recyclerView.getItemAnimator().setAddDuration(1000);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_repositories);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -149,7 +151,7 @@ public class Repositories extends AppCompatActivity {
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
             errorView.setVisibility(View.GONE);
-            repositoriesAdapter.clearView();
+            repositoriesAdapter.clearRepositories();
             repositories = new ArrayList<>();
 
             if (!swipeRefreshLayout.isRefreshing())
