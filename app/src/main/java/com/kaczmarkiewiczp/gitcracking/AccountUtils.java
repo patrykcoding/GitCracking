@@ -57,8 +57,8 @@ public class AccountUtils {
         gitHubClient.setOAuth2Token(token);
     }
 
-    public String getToken() {
-        return token;
+    public String getLogin() {
+        return login;
     }
 
     public GitHubClient getGitHubClient() {
