@@ -80,8 +80,8 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
-        new GetDashboardData().execute(gitHubClient);
-        new GetNewsFeedData().execute(gitHubClient);
+        widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
+        newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
     }
 
     public class GetNewsFeedData extends AsyncTask<GitHubClient, Void, Boolean> {
