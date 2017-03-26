@@ -39,6 +39,7 @@ public class NavBarUtils {
             .withName("Dashboard")
             .withIcon(R.drawable.ic_home)
             .withIdentifier(DASHBOARD)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -50,6 +51,7 @@ public class NavBarUtils {
             .withName("Repositories")
             .withIcon(R.drawable.ic_repo)
             .withIdentifier(REPOSITORIES)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -61,6 +63,7 @@ public class NavBarUtils {
             .withName("Issues")
             .withIcon(R.drawable.ic_issue_opened)
             .withIdentifier(ISSUES)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -72,6 +75,7 @@ public class NavBarUtils {
             .withName("Pull Requests")
             .withIcon(R.drawable.ic_source_pull)
             .withIdentifier(PULL_REQUESTS)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -83,6 +87,7 @@ public class NavBarUtils {
             .withName("People")
             .withIcon(R.drawable.ic_account_multiple)
             .withIdentifier(PEOPLE)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -95,6 +100,7 @@ public class NavBarUtils {
             .withName("Settings")
             .withIcon(R.drawable.ic_settings)
             .withIdentifier(7)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -105,6 +111,7 @@ public class NavBarUtils {
     public SecondaryDrawerItem logout = new SecondaryDrawerItem()
             .withName("Log out")
             .withIdentifier(8)
+            .withSelectable(false)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
                 public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -145,6 +152,9 @@ public class NavBarUtils {
 
     private void drawerItemClicked(View view, int position, IDrawerItem drawerItem) {
         int drawerIdentifier = (int) drawerItem.getIdentifier();
+        if (drawer.getCurrentSelectedPosition() == position) {
+            return;
+        }
 
         switch (drawerIdentifier) {
             case DASHBOARD:
