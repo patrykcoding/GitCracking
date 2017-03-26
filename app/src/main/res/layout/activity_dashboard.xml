@@ -126,8 +126,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/cv_widget"
-        android:layout_marginTop="64dp">
-        <include layout="@layout/empty_data_view" />
+        android:layout_marginTop="96dp">
+        <include
+            android:id="@+id/ll_empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="false"
+            android:layout_centerHorizontal="true"
+            layout="@layout/empty_data_view" />
     </RelativeLayout>
 
     <ProgressBar

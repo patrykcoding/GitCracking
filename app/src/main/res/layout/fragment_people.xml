@@ -29,8 +29,22 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="64dp" />
 
-    <include layout="@layout/connection_error_view" />
+    <include
+        android:id="@+id/ll_connection_err"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="128dp"
+        layout="@layout/connection_error_view" />
 
-    <include layout="@layout/empty_data_view" />
+    <include
+        android:id="@+id/ll_empty_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="128dp"
+        layout="@layout/empty_data_view" />
 
 </RelativeLayout>
