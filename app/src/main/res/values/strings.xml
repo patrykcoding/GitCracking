@@ -16,4 +16,6 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="user_icon">User Icon</string>
     <string name="location_pin">Location pin</string>
+    <string name="pull_request_count">Pull Request count</string>
+    <string name="issues_count">Issues count</string>
 </resources>

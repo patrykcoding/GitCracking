@@ -48,7 +48,7 @@ public class NavBarUtils {
             });
     public PrimaryDrawerItem repositories = new PrimaryDrawerItem()
             .withName("Repositories")
-            .withIcon(R.drawable.ic_git)
+            .withIcon(R.drawable.ic_repo)
             .withIdentifier(REPOSITORIES)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
@@ -59,7 +59,7 @@ public class NavBarUtils {
             });
     public PrimaryDrawerItem issues = new PrimaryDrawerItem()
             .withName("Issues")
-            .withIcon(R.drawable.ic_alert_circle_outline)
+            .withIcon(R.drawable.ic_issue_opened)
             .withIdentifier(ISSUES)
             .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                 @Override
