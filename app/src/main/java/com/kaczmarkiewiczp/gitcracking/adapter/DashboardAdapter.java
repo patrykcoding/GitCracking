@@ -205,8 +205,9 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         IssuesPayload issuesPayload = (IssuesPayload) event.getPayload();
         String repository = event.getRepo().getName();
         String action = issuesPayload.getAction();
+        action = action.substring(0, 1).toUpperCase() + action.substring(1);
         String issueNumber = String.valueOf(issuesPayload.getIssue().getNumber());
-        String refType = action.toUpperCase() + " issue";
+        String refType = action + " issue";
         String issueTitle = issuesPayload.getIssue().getTitle();
         String preposition = "on";
 
@@ -240,7 +241,9 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
     private void pullRequestEvent(ViewHolder holder, Event event) {
         PullRequestPayload pullRequestPayload = (PullRequestPayload) event.getPayload();
         String repository = event.getRepo().getName();
-        String refType = pullRequestPayload.getAction().toUpperCase() + " pull request";
+        String refType = pullRequestPayload.getAction();
+        refType = refType.substring(0, 1).toUpperCase() + refType.substring(1);
+        refType = refType + " pull request";
         String ref = String.valueOf(pullRequestPayload.getPullRequest().getNumber());
         String preposition = "on";
         String description = pullRequestPayload.getPullRequest().getTitle();
