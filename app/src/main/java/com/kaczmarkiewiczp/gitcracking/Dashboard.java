@@ -7,7 +7,12 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -84,6 +89,34 @@ public class Dashboard extends AppCompatActivity {
 
         widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
         newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.actions, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
+                findViewById(R.id.action_refresh).startAnimation(rotate);
+
+                if (widgetBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    widgetBackgroundTask.cancel(true);
+                }
+                if (newsFeedBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    newsFeedBackgroundTask.cancel(true);
+                }
+                widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
+                newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showEmptyView() {
