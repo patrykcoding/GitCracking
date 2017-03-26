@@ -150,6 +150,17 @@ public class NavBarUtils {
         return this.drawer;
     }
 
+    public void setNavigationDrawerButtonAsUp() {
+        drawer.getActionBarDrawerToggle().setDrawerIndicatorEnabled(false);
+        drawer.setOnDrawerNavigationListener(new Drawer.OnDrawerNavigationListener() {
+            @Override
+            public boolean onNavigationClickListener(View clickedView) {
+                activity.onBackPressed();
+                return true;
+            }
+        });
+    }
+
     private void drawerItemClicked(View view, int position, IDrawerItem drawerItem) {
         int drawerIdentifier = (int) drawerItem.getIdentifier();
         if (drawer.getCurrentSelectedPosition() == position) {

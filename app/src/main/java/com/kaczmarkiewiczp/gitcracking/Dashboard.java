@@ -122,16 +122,19 @@ public class Dashboard extends AppCompatActivity {
 
     public void goToPullRequests(View view) {
         Intent intent = new Intent(this, PullRequests.class);
+        intent.putExtra("hasParent", true);
         startActivity(intent);
     }
 
     public void goToIssues(View view) {
         Intent intent = new Intent(this, Issues.class);
+        intent.putExtra("hasParent", true);
         startActivity(intent);
     }
 
     public void goToRepositories(View view) {
         Intent intent = new Intent(this, Repositories.class);
+        intent.putExtra("hasParent", true);
         startActivity(intent);
     }
 
