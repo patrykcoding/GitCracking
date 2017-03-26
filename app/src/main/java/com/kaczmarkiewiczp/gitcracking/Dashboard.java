@@ -158,13 +158,13 @@ public class Dashboard extends AppCompatActivity {
             repositoriesCount = 0;
             issuesCount = 0;
 
-            if (pullRequestsWidget.getText() == null) {
+            if (pullRequestsWidget.getText().toString().isEmpty()) {
                 pullRequestsWidget.setText("-");
             }
-            if (issuesWidget.getText() == null) {
+            if (issuesWidget.getText().toString().isEmpty()) {
                 issuesWidget.setText("-");
             }
-            if (repositoriesWidget.getText() == null) {
+            if (repositoriesWidget.getText().toString().isEmpty()) {
                 repositoriesWidget.setText("-");
             }
         }
