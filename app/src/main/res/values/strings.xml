@@ -11,6 +11,7 @@
     <string name="no_issues">You don\'t have any pullRequests</string>
     <string name="no_followers">You don\'t have any followers</string>
     <string name="no_following">You\'re not following anyone</string>
+    <string name="no_news_feed">Your news feed is empty</string>
     <string name="title_activity_issues">Issues</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>

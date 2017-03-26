@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -22,14 +23,13 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 public class Dashboard extends AppCompatActivity {
 
     private ProgressBar loadingIndicator;
     private RecyclerView recyclerView;
+    private LinearLayout emptyView;
     private TextView pullRequestsWidget;
     private TextView issuesWidget;
     private TextView repositoriesWidget;
@@ -57,6 +57,7 @@ public class Dashboard extends AppCompatActivity {
         pullRequestsWidget = (TextView) findViewById(R.id.tv_pull_request_count);
         issuesWidget = (TextView) findViewById(R.id.tv_issues_count);
         repositoriesWidget = (TextView) findViewById(R.id.tv_repositories_count);
+        emptyView = (LinearLayout) findViewById(R.id.ll_empty_view);
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_dashboard);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -84,15 +85,21 @@ public class Dashboard extends AppCompatActivity {
         newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
     }
 
+    private void showEmptyView() {
+        TextView message = (TextView) findViewById(R.id.tv_empty_view);
+        message.setText(getString(R.string.no_news_feed));
+        swipeRefreshLayout.setVisibility(View.GONE);
+        emptyView.setVisibility(View.VISIBLE);
+    }
+
     public class GetNewsFeedData extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        private ArrayList<Event> events;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            events = new ArrayList<>();
 
             swipeRefreshLayout.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
             dashboardAdapter.clearEvents();
             if (!swipeRefreshLayout.isRefreshing()) {
                 loadingIndicator.setVisibility(View.VISIBLE);
@@ -104,13 +111,17 @@ public class Dashboard extends AppCompatActivity {
             GitHubClient gitHubClient = params[0];
             EventService eventService = new EventService(gitHubClient);
             String user = accountUtils.getLogin();
-
+            
             PageIterator<Event> eventPageIterator = eventService.pageUserReceivedEvents(user);
             Collection<Event> eventCollection = eventPageIterator.next();
             if (eventCollection.isEmpty()) {
                 return false;
             }
             for (Event anEventCollection : eventCollection) {
+                if (isCancelled()) {
+                    return false;
+                }
+
                 dashboardAdapter.addEvent(anEventCollection);
             }
             return true;
@@ -126,8 +137,8 @@ public class Dashboard extends AppCompatActivity {
                 swipeRefreshLayout.setRefreshing(false);
             }
             if (!success) {
-                // TODO clear adapter
-                // TODO show empty view
+                dashboardAdapter.clearEvents();
+                showEmptyView();
             }
         }
 
@@ -140,7 +151,8 @@ public class Dashboard extends AppCompatActivity {
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
             }
-            // TODO clear adapter && show empty view
+            dashboardAdapter.clearEvents();
+            showEmptyView();
         }
     }
 
