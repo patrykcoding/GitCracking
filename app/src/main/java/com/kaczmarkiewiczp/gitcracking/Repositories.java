@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.RepositoriesAdapter;
+import com.mikepenz.materialdrawer.Drawer;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.eclipse.egit.github.core.Repository;
@@ -55,6 +57,12 @@ public class Repositories extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
+        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
+        if (getIntent().getBooleanExtra("hasParent", false)) {
+            navBarUtils.setNavigationDrawerButtonAsUp();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
 
         accountUtils = new AccountUtils(this);
         gitHubClient = accountUtils.getGitHubClient();
@@ -75,7 +83,6 @@ public class Repositories extends AppCompatActivity {
                 backgroundTask = new GetRepositories().execute(gitHubClient);
             }
         });
-        new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
         backgroundTask = new GetRepositories().execute(gitHubClient);
     }
 

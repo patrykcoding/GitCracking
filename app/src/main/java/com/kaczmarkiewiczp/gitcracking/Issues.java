@@ -32,6 +32,13 @@ public class Issues extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issues");
         setSupportActionBar(toolbar);
+        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+        if (getIntent().getBooleanExtra("hasParent", false)) {
+            navBarUtils.setNavigationDrawerButtonAsUp();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
 
         viewPager = (ViewPager) findViewById(R.id.container);
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
@@ -39,8 +46,6 @@ public class Issues extends AppCompatActivity {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
-
-        new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
     }
 
     @Override
