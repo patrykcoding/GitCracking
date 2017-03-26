@@ -126,7 +126,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/cv_widget"
-        android:layout_marginTop="64dp">
+        android:layout_marginTop="96dp">
         <include layout="@layout/empty_data_view" />
     </RelativeLayout>
 

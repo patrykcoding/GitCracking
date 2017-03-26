@@ -16,6 +16,7 @@ import com.kaczmarkiewiczp.gitcracking.adapter.DashboardAdapter;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.NoSuchPageException;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
@@ -111,18 +112,22 @@ public class Dashboard extends AppCompatActivity {
             GitHubClient gitHubClient = params[0];
             EventService eventService = new EventService(gitHubClient);
             String user = accountUtils.getLogin();
-            
-            PageIterator<Event> eventPageIterator = eventService.pageUserReceivedEvents(user);
-            Collection<Event> eventCollection = eventPageIterator.next();
-            if (eventCollection.isEmpty()) {
-                return false;
-            }
-            for (Event anEventCollection : eventCollection) {
-                if (isCancelled()) {
+
+            try {
+                PageIterator<Event> eventPageIterator = eventService.pageUserReceivedEvents(user);
+                Collection<Event> eventCollection = eventPageIterator.next();
+                if (eventCollection.isEmpty()) {
                     return false;
                 }
+                for (Event anEventCollection : eventCollection) {
+                    if (isCancelled()) {
+                        return false;
+                    }
 
-                dashboardAdapter.addEvent(anEventCollection);
+                    dashboardAdapter.addEvent(anEventCollection);
+                }
+            } catch (NoSuchPageException e) {
+                return false;
             }
             return true;
         }
