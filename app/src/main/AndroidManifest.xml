@@ -27,7 +27,8 @@
             android:theme="@style/AppThemeNoActionBar" />
         <activity android:name=".PullRequests" />
         <activity android:name=".People" />
-        <activity android:name=".ManageAccounts"></activity>
+        <activity android:name=".ManageAccounts" />
+        <activity android:name=".AddAccount"></activity>
     </application>
 
 </manifest>

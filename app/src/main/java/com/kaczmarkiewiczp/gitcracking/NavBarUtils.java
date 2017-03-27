@@ -210,7 +210,7 @@ public class NavBarUtils {
                 activity.startActivity(new Intent(activity, People.class));
                 break;
             case 8:
-                AccountUtils.logout(activity);
+                //AccountUtils.logout(activity);
                 activity.startActivity(new Intent(activity, MainActivity.class));
             case PROFILE_SETTINGS:
                 activity.startActivity(new Intent(activity, ManageAccounts.class));

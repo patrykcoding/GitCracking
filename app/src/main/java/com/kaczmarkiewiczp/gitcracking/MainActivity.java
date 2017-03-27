@@ -19,12 +19,15 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import org.eclipse.egit.github.core.Authorization;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.OAuthService;
+import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -70,6 +73,14 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        Button loginButton = (Button) findViewById(R.id.btn_login);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loginButtonClicked(v);
+            }
+        });
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
@@ -130,8 +141,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public class LoginTask extends AsyncTask<String, Void, Authorization> {
 
-        private String username;
-        private String password;
+        private String userLogin;
+        private String userName;
+        private String userIconUrl;
         private ProgressDialog progressDialog;
 
         @Override
@@ -148,8 +160,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Authorization doInBackground(String... credentials) {
-            this.username = credentials[0];
-            this.password = credentials[1];
+            String username = credentials[0];
+            String password = credentials[1];
             GitHubClient client = new GitHubClient();
             
             String appName = getResources().getString(R.string.app_name);
@@ -170,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             } catch (IOException e) {
+                // TODO no internet
                 e.printStackTrace();
             }
 
@@ -178,15 +191,26 @@ public class MainActivity extends AppCompatActivity {
             auth.setUrl(getResources().getString(R.string.gitcracking_repo));
             auth.setScopes(Arrays.asList("user", "repo", "gist"));
 
+            Authorization authorization;
             try {
-                return authService.createAuthorization(auth);
+                authorization = authService.createAuthorization(auth);
             } catch (IOException e) {
                 e.printStackTrace();
                 // TODO check for two factor authentication
                 return null;
             }
+            client.setOAuth2Token(authorization.getToken());
+            UserService userService = new UserService(client);
+            try {
+                User user = userService.getUser();
+                userLogin = user.getLogin();
+                userName = user.getName();
+                userIconUrl = user.getAvatarUrl();
+            } catch (IOException e) {
+                return null;
+            }
+            return authorization;
         }
-
 
         @Override
         protected void onPostExecute(Authorization authorization) {
@@ -196,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                 failedLogin();
                 return;
             }
-            new AccountUtils(context, username, authorization);
+            new AccountUtils(context, userLogin, userName, userIconUrl, authorization);
             toast("Login successful"); // DEBUG
             Log.d(LOG_TAG, "Authentication successful");
             startActivity(dashboardIntent);
