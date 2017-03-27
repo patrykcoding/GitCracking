@@ -34,6 +34,8 @@ public class NavBarUtils {
     public static final int ISSUES = 3;
     public static final int PULL_REQUESTS = 4;
     public static final int PEOPLE = 5;
+    public static final int ACCOUNT_ADD = 6;
+    public static final int PROFILE_SETTINGS = 7;
 
     public PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
             .withName("Dashboard")
@@ -119,6 +121,30 @@ public class NavBarUtils {
                     return false;
                 }
             });
+    public ProfileSettingDrawerItem addAccount = new ProfileSettingDrawerItem()
+            .withName("Add account")
+            .withIdentifier(ACCOUNT_ADD)
+            .withIcon(R.drawable.ic_add_black_24dp)
+            .withSelectable(false)
+            .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                @Override
+                public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                    drawerItemClicked(view, position, drawerItem);
+                    return false;
+                }
+            });
+    public ProfileSettingDrawerItem profileSettings = new ProfileSettingDrawerItem()
+            .withName("Manage Accounts")
+            .withIcon(R.drawable.ic_settings)
+            .withIdentifier(PROFILE_SETTINGS)
+            .withSelectable(false)
+            .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                @Override
+                public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                    drawerItemClicked(view, position, drawerItem);
+                    return false;
+                }
+            });
 
     private Drawer drawer;
     private Activity activity;
@@ -186,6 +212,11 @@ public class NavBarUtils {
             case 8:
                 AccountUtils.logout(activity);
                 activity.startActivity(new Intent(activity, MainActivity.class));
+            case PROFILE_SETTINGS:
+                activity.startActivity(new Intent(activity, ManageAccounts.class));
+            case ACCOUNT_ADD:
+                // TODO start activity
+                return; // TODO
             default:
                 return;
         }
@@ -199,7 +230,8 @@ public class NavBarUtils {
         while (iterator.hasNext()) {
             profiles.add(new ProfileDrawerItem().withName(iterator.next()));
         }
-        profiles.add(new ProfileSettingDrawerItem().withName("Manage Accounts"));
+        profiles.add(addAccount);
+        profiles.add(profileSettings);
 
         return new AccountHeaderBuilder()
                 .withActivity(activity)

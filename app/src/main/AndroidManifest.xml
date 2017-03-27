@@ -26,7 +26,8 @@
             android:label="@string/title_activity_issues"
             android:theme="@style/AppThemeNoActionBar" />
         <activity android:name=".PullRequests" />
-        <activity android:name=".People"></activity>
+        <activity android:name=".People" />
+        <activity android:name=".ManageAccounts"></activity>
     </application>
 
 </manifest>

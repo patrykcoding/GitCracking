@@ -36,6 +36,9 @@ public class AccountUtils {
     private String token;
     private String login;
 
+    /*
+     * Public constructor used during sign-up, when a new user is added
+     */
     public AccountUtils(Context context, String username, Authorization auth) {
         this.context = context;
         this.login = username;
@@ -47,6 +50,9 @@ public class AccountUtils {
         client.setOAuth2Token(this.token);
     }
 
+    /*
+     * Public constructor used after a user is already authenticated
+     */
     public AccountUtils(Context context) {
         this.context = context;
         SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
