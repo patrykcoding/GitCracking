@@ -172,10 +172,6 @@ public class NavBarUtils {
         drawer = drawerBuilder.build();
     }
 
-    public Drawer getDrawer() {
-        return this.drawer;
-    }
-
     public void setNavigationDrawerButtonAsUp() {
         drawer.getActionBarDrawerToggle().setDrawerIndicatorEnabled(false);
         drawer.setOnDrawerNavigationListener(new Drawer.OnDrawerNavigationListener() {
@@ -215,8 +211,8 @@ public class NavBarUtils {
             case PROFILE_SETTINGS:
                 activity.startActivity(new Intent(activity, ManageAccounts.class));
             case ACCOUNT_ADD:
-                // TODO start activity
-                return; // TODO
+                activity.startActivity(new Intent(activity, AddAccount.class));
+                return;
             default:
                 return;
         }
@@ -226,18 +222,45 @@ public class NavBarUtils {
     private AccountHeader createAccountHeader(Activity activity) {
         List<IProfile> profiles = new ArrayList<>();
         Set<String> accounts = AccountUtils.getAccounts(activity);
+        String currentUser = AccountUtils.getCurrentUser(activity);
+        ProfileDrawerItem activeUser = null;
         Iterator<String> iterator = accounts.iterator();
         while (iterator.hasNext()) {
-            profiles.add(new ProfileDrawerItem().withName(iterator.next()));
+            String login = iterator.next();
+            ProfileDrawerItem profileDrawerItem = new ProfileDrawerItem()
+                    .withName(login);
+            profiles.add(profileDrawerItem);
+            if (currentUser.equals(login)) {
+                activeUser = profileDrawerItem;
+            }
         }
         profiles.add(addAccount);
         profiles.add(profileSettings);
 
-        return new AccountHeaderBuilder()
+        AccountHeader accountHeader = new AccountHeaderBuilder()
                 .withActivity(activity)
                 .withHeaderBackground(R.drawable.header2)
                 .withProfiles(profiles)
                 .withTextColor(Color.BLACK)
+                .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
+                    @Override
+                    public boolean onProfileChanged(View view, IProfile profile, boolean current) {
+                        profileSelected(profile);
+                        return false;
+                    }
+                })
                 .build();
+        if (activeUser != null) {
+            accountHeader.setActiveProfile(activeUser);
+        }
+        return accountHeader;
+    }
+
+    private void profileSelected(IProfile profile) {
+        String selectedAccount = profile.getName().toString();
+        AccountUtils.setDefaultUser(activity, selectedAccount);
+        Intent intent = new Intent(activity, Dashboard.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        activity.startActivity(intent);
     }
 }

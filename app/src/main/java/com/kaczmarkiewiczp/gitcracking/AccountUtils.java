@@ -71,14 +71,22 @@ public class AccountUtils {
         return sp.getString(login + ":icon", "");
     }
 
-    public Set<String> getAccounts() {
-        SharedPreferences sp = getSharedPreferences();
-        return sp.getStringSet("accounts", new HashSet<String>());
+    public static String getCurrentUser(Context context) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        return sp.getString("defaultUser", "");
     }
 
     public static Set<String> getAccounts(Context context) {
         SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         return sp.getStringSet("accounts", new HashSet<String>());
+    }
+
+    public static void setDefaultUser(Context context, String userLogin) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.putString("defaultUser", userLogin);
+        editor.apply();
     }
 
     public static boolean isAuth(Context context) {
@@ -141,4 +149,5 @@ public class AccountUtils {
         return context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
     }
 
+    // TODO validate users in AsyncTask<>
 }

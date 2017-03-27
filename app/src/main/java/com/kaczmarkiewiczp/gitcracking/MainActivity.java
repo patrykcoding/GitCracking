@@ -32,8 +32,6 @@ import org.eclipse.egit.github.core.service.UserService;
 import java.io.IOException;
 import java.util.Arrays;
 
-import xdroid.toaster.Toaster;
-
 import static xdroid.toaster.Toaster.toast;
 
 /*
@@ -59,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
 
         /* listen for the login button press on keyboard */
         EditText editText = (EditText) findViewById(R.id.et_password);
@@ -87,10 +85,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "User not authenticated");
     }
 
-    /*
-     * This will be called using the xml onClick attribute.
-     * User has clicked the login button
-     */
     public void loginButtonClicked(View view) {
         final AutoCompleteTextView etUsername = (AutoCompleteTextView) findViewById(R.id.et_username);
         final EditText etPassword = (EditText) findViewById(R.id.et_password);
