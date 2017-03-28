@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -214,7 +215,8 @@ public class NavBarUtils {
                 //AccountUtils.logout(activity);
                 activity.startActivity(new Intent(activity, MainActivity.class));
             case PROFILE_SETTINGS:
-                activity.startActivity(new Intent(activity, ManageAccounts.class));
+                activity.startActivityForResult(new Intent(activity, ManageAccounts.class), 1);
+                return;
             case ACCOUNT_ADD:
                 activity.startActivity(new Intent(activity, AddAccount.class));
                 return;

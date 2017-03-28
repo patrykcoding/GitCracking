@@ -82,6 +82,26 @@ public class AccountUtils {
         editor.apply();
     }
 
+    public void removeUser(String userLogin) {
+        if (this.userLogin.equals(userLogin)) {
+            return;
+        }
+        SharedPreferences sp = getSharedPreferences();
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.remove(userLogin + ":name");
+        editor.remove(userLogin + ":token");
+        editor.remove(userLogin + ":icon");
+
+        // shared preferences won't detect change if we add to the same Set
+        // so we have to create a new one
+        Set<String> currentAccounts = sp.getStringSet("accounts", new HashSet<String>());
+        Set<String> newAccounts = new HashSet<>(currentAccounts);
+        newAccounts.remove(userLogin);
+        editor.putStringSet("accounts", newAccounts);
+        editor.apply();
+    }
+
     public Boolean isAlreadyAUser(String userLogin) {
         Set<String> accounts = getAccounts(context);
         return accounts.contains(userLogin);
@@ -103,7 +123,6 @@ public class AccountUtils {
         this.token = sp.getString(this.userLogin + ":token", "");
         this.userName = sp.getString(this.userLogin + ":name", "");
         this.userIconUrl = sp.getString(this.userLogin + ":icon", "");
-        Log.i("###", userIconUrl);
     }
 
     private void addAccount() {

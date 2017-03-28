@@ -3,18 +3,15 @@ package com.kaczmarkiewiczp.gitcracking.adapter;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.kaczmarkiewiczp.gitcracking.R;
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 
 import java.util.ArrayList;
 
@@ -114,12 +111,15 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
         notifyItemInserted(userLoginList.size() - 1);
     }
 
-    public void deleteUsers() {
-        int size = userLoginList.size();
-        userLoginList.clear();
-        userNameList.clear();
-        userIconList.clear();
-        notifyItemRangeRemoved(0, size);
+    public void removeUser(String login) {
+        int position = userLoginList.indexOf(login);
+        if (position == -1) {
+            return;
+        }
+        userLoginList.remove(position);
+        userNameList.remove(position);
+        userIconList.remove(position);
+        notifyItemRemoved(position);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

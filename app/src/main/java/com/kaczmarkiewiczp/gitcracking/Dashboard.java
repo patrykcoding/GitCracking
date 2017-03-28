@@ -49,16 +49,18 @@ public class Dashboard extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private AsyncTask widgetBackgroundTask;
     private AsyncTask newsFeedBackgroundTask;
+    private NavBarUtils navBarUtils;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         Log.i("#Dashboard", "onCreate");
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar);
+        toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar);
         toolbar.setTitle("Dashboard");
         setSupportActionBar(toolbar);
-        new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
 
         accountUtils = new AccountUtils(this);
         gitHubClient = accountUtils.getGitHubClient();
@@ -96,6 +98,17 @@ public class Dashboard extends AppCompatActivity {
 
         widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
         newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
+            }
+        }
     }
 
     @Override
