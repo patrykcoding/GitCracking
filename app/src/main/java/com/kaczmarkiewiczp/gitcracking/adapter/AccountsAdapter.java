@@ -84,7 +84,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
             holder.imageViewRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(context, "Can't remove current user", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Can't remove currently logged-in user", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -120,6 +120,16 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
         userNameList.remove(position);
         userIconList.remove(position);
         notifyItemRemoved(position);
+    }
+
+    public void removeUsers() {
+        int size = userLoginList.size();
+
+        userLoginList.clear();
+        userNameList.clear();
+        userIconList.clear();
+
+        notifyItemRangeRemoved(0, size);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

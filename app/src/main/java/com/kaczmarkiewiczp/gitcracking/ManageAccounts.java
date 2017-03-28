@@ -108,8 +108,12 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
         accountsAdapter.removeUser(userName);
         accountHasBeenModified = true;
 
-        // send user to login screen if there are no other accounts
-        if (accountUtils.accountsCount() < 1) {
+        // if there's only one user left we have to refresh the list to allow for signing out for that user
+        // and if there are no other users, send to main activity/sign in screen
+        if (accountUtils.accountsCount() == 1) {
+            accountsAdapter.removeUsers();
+            showAccounts();
+        } else if (accountUtils.accountsCount() < 1) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
