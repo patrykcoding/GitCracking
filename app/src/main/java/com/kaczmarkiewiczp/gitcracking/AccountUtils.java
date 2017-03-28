@@ -1,110 +1,171 @@
 package com.kaczmarkiewiczp.gitcracking;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import org.eclipse.egit.github.core.Authorization;
-import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.ContentsService;
-import org.eclipse.egit.github.core.service.EventService;
-import org.eclipse.egit.github.core.service.GitHubService;
-import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.LabelService;
-import org.eclipse.egit.github.core.service.MarkdownService;
-import org.eclipse.egit.github.core.service.PullRequestService;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class AccountUtils {
-
+    private static final String SHARED_PREFERENCES = "GitCrackingPrefs";
 
     private Context context;
     private GitHubClient gitHubClient;
     private String token;
-    private String login;
+    private String userLogin;
+    private String userName;
+    private String userIconUrl;
 
-    public AccountUtils(Context context, String username, Authorization auth) {
+    /*
+     * Public constructor used when new user is being added
+     */
+    public AccountUtils(Context context, String userLogin, String userName, String userIconUrl, Authorization authorization) {
         this.context = context;
-        this.login = username;
-        this.token = auth.getToken();
-        setToken(token);
-        setLogin(username);
-
-        GitHubClient client = new GitHubClient();
-        client.setOAuth2Token(this.token);
+        this.token = authorization.getToken();
+        this.userLogin = userLogin;
+        this.userName = userName;
+        this.userIconUrl = userIconUrl;
+        gitHubClient = new GitHubClient();
+        gitHubClient.setOAuth2Token(token);
+        addAccount();
     }
 
+    /*
+     * Public constructor used when user is already authenticated
+     */
     public AccountUtils(Context context) {
         this.context = context;
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-        this.token = sharedPreferences.getString("token", "");
-        this.login = sharedPreferences.getString("login", "");
-        Log.i("#ACCOUNTUTILS", token);
-        gitHubClient = new GitHubClient();
+        retrieveDefaultAccount();
+        this.gitHubClient = new GitHubClient();
         gitHubClient.setOAuth2Token(token);
     }
 
-    public String getLogin() {
-        return login;
-    }
-
     public GitHubClient getGitHubClient() {
-        return gitHubClient;
+        return this.gitHubClient;
     }
 
-    private void setToken(String token) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("token", token);
-        editor.apply();
+    public String getUserLogin() {
+        return this.userLogin;
     }
 
-    private void setLogin(String login) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Set<String> currentUserList = sharedPreferences.getStringSet("accounts", new HashSet<String>());
-        if (!login.isEmpty() && !currentUserList.contains(login)) {
-            Set<String> newUserList = new HashSet<>(currentUserList);
-            newUserList.add(login);
-            editor.putStringSet("accounts", newUserList);
-        }
-        editor.putString("login", login);
-        editor.putString("defaultUser", login);
-        editor.apply();
+    public String getUserName(String login) {
+        SharedPreferences sp = getSharedPreferences();
+        return sp.getString(login + ":name", "");
+    }
+
+    public static String getUserIconUrl(Context context, String login) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        return sp.getString(login + ":icon", "");
+    }
+
+    public static String getCurrentUser(Context context) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        return sp.getString("defaultUser", "");
     }
 
     public static Set<String> getAccounts(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-        return sharedPreferences.getStringSet("accounts", new HashSet<String>());
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        return sp.getStringSet("accounts", new HashSet<String>());
     }
 
-    public static void logout(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("token", "");
-        editor.putString("login", "");
-        editor.putString("defaultUser", "");
+    public static void setDefaultUser(Context context, String userLogin) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.putString("defaultUser", userLogin);
         editor.apply();
     }
 
-    public static boolean isAuth(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GitCrackingPrefs", MODE_PRIVATE);
-        String savedToken = sharedPreferences.getString("token", "");
-        String savedLogin = sharedPreferences.getString("login", "");
-        return !savedToken.isEmpty() && !savedLogin.isEmpty();
+    public void removeUser(String userLogin) {
+        if (this.userLogin.equals(userLogin)) {
+            return;
+        }
+        SharedPreferences sp = getSharedPreferences();
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.remove(userLogin + ":name");
+        editor.remove(userLogin + ":token");
+        editor.remove(userLogin + ":icon");
+
+        // shared preferences won't detect change if we add to the same Set
+        // so we have to create a new one
+        Set<String> currentAccounts = sp.getStringSet("accounts", new HashSet<String>());
+        Set<String> newAccounts = new HashSet<>(currentAccounts);
+        newAccounts.remove(userLogin);
+        editor.putStringSet("accounts", newAccounts);
+        editor.apply();
     }
 
+    public Boolean isAlreadyAUser(String userLogin) {
+        Set<String> accounts = getAccounts(context);
+        return accounts.contains(userLogin);
+    }
+
+    public static boolean isAuth(Context context) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        String defaultUser = sp.getString("defaultUser", "");
+        if (defaultUser.isEmpty()) {
+            return false;
+        }
+        String token = sp.getString(defaultUser + ":token", "");
+        return !token.isEmpty();
+    }
+
+    private void retrieveDefaultAccount() {
+        SharedPreferences sp = getSharedPreferences();
+        this.userLogin = sp.getString("defaultUser", "");
+        this.token = sp.getString(this.userLogin + ":token", "");
+        this.userName = sp.getString(this.userLogin + ":name", "");
+        this.userIconUrl = sp.getString(this.userLogin + ":icon", "");
+    }
+
+    private void addAccount() {
+        SharedPreferences sp = getSharedPreferences();
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.putString("defaultUser", userLogin);
+        editor.putString(userLogin + ":token", token);
+        editor.putString(userLogin + ":name", userName);
+        editor.putString(userLogin + ":icon", userIconUrl);
+
+        // shared preferences won't detect change if we add to the same Set
+        // so we have to create a new one
+        Set<String> currentAccounts = sp.getStringSet("accounts", new HashSet<String>());
+        if (!currentAccounts.contains(userLogin)) {
+            Set<String> newAccounts = new HashSet<>(currentAccounts);
+            newAccounts.add(userLogin);
+            editor.putStringSet("accounts", newAccounts);
+        }
+        editor.apply();
+    }
+
+    private void updateAccount(String userLogin, String userName, String userIconUrl) {
+        SharedPreferences sp = getSharedPreferences();
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.putString(userLogin + ":name", userName);
+        editor.putString(userLogin + ":icon", userIconUrl);
+
+        // shared preferences won't detect change if we add to the same Set
+        // so we have to create a new one
+        Set<String> currentAccounts = sp.getStringSet("accounts", new HashSet<String>());
+        if (!currentAccounts.contains(userLogin)) {
+            Set<String> newAccounts = new HashSet<>(currentAccounts);
+            newAccounts.add(userLogin);
+            editor.putStringSet("accounts", newAccounts);
+        }
+        editor.apply();
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+    }
+
+    // TODO validate users in AsyncTask<>
 }

@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,16 +20,18 @@ public class PullRequests extends AppCompatActivity {
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
     private TabLayout tabLayout;
+    private Toolbar toolbar;
+    private NavBarUtils navBarUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pull_requests);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Pull Requests");
         setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
         if (getIntent().getBooleanExtra("hasParent", false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -41,6 +44,17 @@ public class PullRequests extends AppCompatActivity {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
+            }
+        }
     }
 
     @Override

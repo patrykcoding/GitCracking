@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,16 +49,18 @@ public class Dashboard extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private AsyncTask widgetBackgroundTask;
     private AsyncTask newsFeedBackgroundTask;
+    private NavBarUtils navBarUtils;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar);
+        Log.i("#Dashboard", "onCreate");
+        toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar);
         toolbar.setTitle("Dashboard");
         setSupportActionBar(toolbar);
-        new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
 
         accountUtils = new AccountUtils(this);
         gitHubClient = accountUtils.getGitHubClient();
@@ -95,6 +98,17 @@ public class Dashboard extends AppCompatActivity {
 
         widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
         newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
+            }
+        }
     }
 
     @Override
@@ -169,7 +183,7 @@ public class Dashboard extends AppCompatActivity {
         protected Boolean doInBackground(GitHubClient... params) {
             GitHubClient gitHubClient = params[0];
             EventService eventService = new EventService(gitHubClient);
-            String user = accountUtils.getLogin();
+            String user = accountUtils.getUserLogin();
 
             try {
                 PageIterator<Event> eventPageIterator = eventService.pageUserReceivedEvents(user);

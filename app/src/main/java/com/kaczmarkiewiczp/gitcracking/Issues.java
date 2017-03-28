@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,22 +24,23 @@ public class Issues extends AppCompatActivity {
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
     private TabLayout tabLayout;
+    private Toolbar toolbar;
+    private NavBarUtils navBarUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issues);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issues");
         setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
         if (getIntent().getBooleanExtra("hasParent", false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-
 
         viewPager = (ViewPager) findViewById(R.id.container);
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
@@ -46,6 +48,17 @@ public class Issues extends AppCompatActivity {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+            }
+        }
     }
 
     @Override

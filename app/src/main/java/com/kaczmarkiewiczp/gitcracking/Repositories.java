@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -45,6 +46,8 @@ public class Repositories extends AppCompatActivity {
     private AsyncTask backgroundTask;
     private LinearLayout errorView;
     private LinearLayout emptyView;
+    private NavBarUtils navBarUtils;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,10 +57,10 @@ public class Repositories extends AppCompatActivity {
         errorView = (LinearLayout) findViewById(R.id.ll_connection_err);
         emptyView = (LinearLayout) findViewById(R.id.ll_empty_view);
         /* set toolbar */
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
+        toolbar = (Toolbar) findViewById(R.id.activity_repositories_toolbar);
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
         if (getIntent().getBooleanExtra("hasParent", false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -86,6 +89,16 @@ public class Repositories extends AppCompatActivity {
             }
         });
         backgroundTask = new GetRepositories().execute(gitHubClient);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
+            }
+        }
     }
 
     @Override

@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import org.eclipse.egit.github.core.Authorization;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -34,32 +35,26 @@ import java.util.Arrays;
 
 import static xdroid.toaster.Toaster.toast;
 
-/*
- * This is the activity that starts first on app startup.
- * If user is authenticated, it will redirect to main dashboard, otherwise the login screen will
- * be displayed.
- */
-public class MainActivity extends AppCompatActivity {
+public class AddAccount extends AppCompatActivity {
 
-    private final String LOG_TAG = "MainActivity";
     private Context context;
-    private Intent dashboardIntent;
+    private AccountUtils accountUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = this;
-        dashboardIntent = new Intent(this, Dashboard.class);
-        if (AccountUtils.isAuth(this)) {
-            toast("Authenticated"); // DEBUG
-            Log.d(LOG_TAG, "User is authenticated. Redirecting");
-            startActivity(dashboardIntent);
-            finish();
-            return;
-        }
         setContentView(R.layout.activity_login);
+        context = this;
 
-        /* listen for the login button press on keyboard */
+        accountUtils = new AccountUtils(context);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
+        toolbar.setTitle("GitCracking");
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+                /* listen for the login button press on keyboard */
         EditText editText = (EditText) findViewById(R.id.et_password);
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -78,11 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 loginButtonClicked(v);
             }
         });
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
-        toolbar.setTitleTextColor(Color.WHITE);
-        setSupportActionBar(toolbar);
-        Log.d(LOG_TAG, "User not authenticated");
     }
 
     public void loginButtonClicked(View view) {
@@ -106,8 +96,21 @@ public class MainActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(context, "Please provide your password", Toast.LENGTH_SHORT);
             toast.show();
             return;
+        } else if (accountUtils.isAlreadyAUser(username)) {
+            userExists();
+            etUsername.setText("");
+            etPassword.setText("");
+            return;
         }
         new LoginTask().execute(username, password);
+    }
+
+    private void userExists() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        alertDialog.setTitle("User already exists");
+        alertDialog.setCancelable(true);
+        alertDialog.setNeutralButton("Dismiss", null);
+        alertDialog.show();
     }
 
     private void failedLogin() {
@@ -157,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
             String username = credentials[0];
             String password = credentials[1];
             GitHubClient client = new GitHubClient();
-            
+
             String appName = getResources().getString(R.string.app_name);
             client.setCredentials(username, password);
             client.setUserAgent(appName);
@@ -177,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (IOException e) {
                 // TODO no internet
-                e.printStackTrace();
+                return null;
             }
 
             Authorization auth = new Authorization();
@@ -216,8 +219,10 @@ public class MainActivity extends AppCompatActivity {
             }
             new AccountUtils(context, userLogin, userName, userIconUrl, authorization);
             toast("Login successful"); // DEBUG
-            Log.d(LOG_TAG, "Authentication successful");
-            startActivity(dashboardIntent);
+
+            Intent intent = new Intent(getApplication(), Dashboard.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
             finish();
         }
     }

@@ -21,12 +21,11 @@
         </activity>
         <activity android:name=".Dashboard" />
         <activity android:name=".Repositories" />
-        <activity
-            android:name=".Issues"
-            android:label="@string/title_activity_issues"
-            android:theme="@style/AppThemeNoActionBar" />
+        <activity android:name=".Issues" />
         <activity android:name=".PullRequests" />
-        <activity android:name=".People"></activity>
+        <activity android:name=".People" />
+        <activity android:name=".ManageAccounts" />
+        <activity android:name=".AddAccount" />
     </application>
 
 </manifest>

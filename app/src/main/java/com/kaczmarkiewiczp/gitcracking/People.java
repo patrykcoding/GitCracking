@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,16 +20,18 @@ public class People extends AppCompatActivity {
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
     private TabLayout tabLayout;
+    private NavBarUtils navBarUtils;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_people);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("People");
         setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PEOPLE);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PEOPLE);
         if (getIntent().getBooleanExtra("hasParent", false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -41,6 +44,17 @@ public class People extends AppCompatActivity {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PEOPLE);
+            }
+        }
     }
 
     @Override
