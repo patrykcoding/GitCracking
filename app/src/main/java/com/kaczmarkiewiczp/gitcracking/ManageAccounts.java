@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.AccountsAdapter;
@@ -55,6 +56,17 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
         intent.putExtra("accountHasBeenModified", accountHasBeenModified);
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showAccounts() {
