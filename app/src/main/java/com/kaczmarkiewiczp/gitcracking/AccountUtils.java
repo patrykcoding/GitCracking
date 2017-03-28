@@ -54,6 +54,11 @@ public class AccountUtils {
         return this.userLogin;
     }
 
+    public String getUserName(String login) {
+        SharedPreferences sp = getSharedPreferences();
+        return sp.getString(login + ":name", "");
+    }
+
     public static String getUserIconUrl(Context context, String login) {
         SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         return sp.getString(login + ":icon", "");

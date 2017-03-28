@@ -3,14 +3,18 @@ package com.kaczmarkiewiczp.gitcracking.adapter;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.kaczmarkiewiczp.gitcracking.R;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 
 import java.util.ArrayList;
 
@@ -20,12 +24,20 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
     private ArrayList<String> userIconList;
     private ArrayList<String> userNameList;
     private ArrayList<String> userLoginList;
+    private ArrayList<Boolean> isRemovableList;
     private Context context;
+    private final ListItemClickListener onClickListener;
 
-    public AccountsAdapter() {
+    public interface ListItemClickListener {
+        void onListItemClick(String userName);
+    }
+
+    public AccountsAdapter(ListItemClickListener listener) {
         userIconList = new ArrayList<>();
         userNameList = new ArrayList<>();
         userLoginList = new ArrayList<>();
+        isRemovableList = new ArrayList<>();
+        onClickListener = listener;
     }
 
     @Override
@@ -41,7 +53,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         String userIconUrl = userIconList.get(position);
         String userName = userNameList.get(position);
         String userLogin = userLoginList.get(position);
@@ -60,6 +72,25 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
         } else {
             holder.textViewUserName.setVisibility(View.GONE);
         }
+        if (isRemovableList.get(position)) {
+            holder.imageViewRemove.setImageResource(R.drawable.ic_delete_forever_black_24dp);
+            holder.imageViewRemove.setClickable(true);
+            holder.imageViewRemove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.onClick(v);
+                }
+            });
+        } else {
+            holder.imageViewRemove.setImageResource(R.drawable.ic_delete_forever_grey_24dp);
+            holder.imageViewRemove.setClickable(false);
+            holder.imageViewRemove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context, "Can't remove current user", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -70,7 +101,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
         return userLoginList.size();
     }
 
-    public void addUser(String userLogin, @Nullable String userName, String userIconUrl) {
+    public void addUser(String userLogin, @Nullable String userName, String userIconUrl, boolean canRemove) {
         userLoginList.add(userLogin);
         if (userName != null) {
             userNameList.add(userName);
@@ -78,6 +109,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
             // user's name can be null but we still want all three lists to grow at the same rate
             userNameList.add("");
         }
+        isRemovableList.add(canRemove);
         userIconList.add(userIconUrl);
         notifyItemInserted(userLoginList.size() - 1);
     }
@@ -90,17 +122,26 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
         notifyItemRangeRemoved(0, size);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public final ImageView imageViewUserIcon;
         public final TextView textViewUserName;
         public final TextView textViewUserLogin;
+        public final ImageView imageViewRemove;
 
         public ViewHolder(View view) {
             super(view);
             imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_user_icon);
             textViewUserName = (TextView) view.findViewById(R.id.tv_user_name);
             textViewUserLogin = (TextView) view.findViewById(R.id.tv_user_login);
+            imageViewRemove = (ImageView) view.findViewById(R.id.iv_remove);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int clickedPosition = getAdapterPosition();
+            String userName = userLoginList.get(clickedPosition);
+            onClickListener.onListItemClick(userName);
         }
     }
 }

@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_repositories"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.kaczmarkiewiczp.gitcracking.ManageAccounts">
-
-</android.support.constraint.ConstraintLayout>
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:fillViewport="true"
+    tools:context="com.kaczmarkiewiczp.gitcracking.ManageAccounts"
+    android:orientation="vertical">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimaryDark"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/AppThemeNoActionBar.PopupOverlay" />
+    <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+        android:id="@+id/rv_accounts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_below="@+id/toolbar"
+        app:fastScrollPopupBgColor="@color/colorPrimary"
+        app:fastScrollThumbColor="@color/colorPrimary" />
+</RelativeLayout>
