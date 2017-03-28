@@ -116,17 +116,7 @@ public class NavBarUtils {
                     return false;
                 }
             });
-    public SecondaryDrawerItem logout = new SecondaryDrawerItem()
-            .withName("Log out")
-            .withIdentifier(8)
-            .withSelectable(false)
-            .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                @Override
-                public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                    drawerItemClicked(view, position, drawerItem);
-                    return false;
-                }
-            });
+
     public ProfileSettingDrawerItem addAccount = new ProfileSettingDrawerItem()
             .withName("Add account")
             .withIdentifier(ACCOUNT_ADD)
@@ -171,8 +161,7 @@ public class NavBarUtils {
                         pullRequests,
                         people,
                         new DividerDrawerItem(),
-                        settings,
-                        logout
+                        settings
                 )
                 .withSelectedItem(initialSelection);
         drawer = drawerBuilder.build();
@@ -211,9 +200,6 @@ public class NavBarUtils {
             case PEOPLE:
                 activity.startActivity(new Intent(activity, People.class));
                 break;
-            case 8:
-                //AccountUtils.logout(activity);
-                activity.startActivity(new Intent(activity, MainActivity.class));
             case PROFILE_SETTINGS:
                 activity.startActivityForResult(new Intent(activity, ManageAccounts.class), 1);
                 return;

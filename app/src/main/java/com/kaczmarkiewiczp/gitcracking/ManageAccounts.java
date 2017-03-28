@@ -76,7 +76,11 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
             String name = accountUtils.getUserName(user);
             String iconUrl = AccountUtils.getUserIconUrl(this, user);
             Boolean canRemove;
-            canRemove = !accountUtils.getUserLogin().equals(user);
+            if (accountUtils.accountsCount() == 1) {
+                canRemove = true;
+            } else {
+                canRemove = !accountUtils.getUserLogin().equals(user);
+            }
             accountsAdapter.addUser(user, name, iconUrl, canRemove);
         }
     }
@@ -103,5 +107,13 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
         accountUtils.removeUser(userName);
         accountsAdapter.removeUser(userName);
         accountHasBeenModified = true;
+
+        // send user to login screen if there are no other accounts
+        if (accountUtils.accountsCount() < 1) {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
     }
 }
