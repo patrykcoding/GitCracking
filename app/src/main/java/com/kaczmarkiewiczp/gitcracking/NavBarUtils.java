@@ -253,6 +253,9 @@ public class NavBarUtils {
                 .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
                     @Override
                     public boolean onProfileChanged(View view, IProfile profile, boolean current) {
+                        if (current) {
+                            return false;
+                        }
                         profileSelected(profile);
                         return false;
                     }
@@ -297,6 +300,10 @@ public class NavBarUtils {
         });
     }
     private void profileSelected(IProfile profile) {
+        if (profile.getIdentifier() == ACCOUNT_ADD || profile.getIdentifier() == PROFILE_SETTINGS) {
+            return;
+        }
+
         String selectedAccount = profile.getName().toString();
         AccountUtils.setDefaultUser(activity, selectedAccount);
         Intent intent = new Intent(activity, Dashboard.class);

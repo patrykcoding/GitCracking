@@ -38,12 +38,15 @@ import static xdroid.toaster.Toaster.toast;
 public class AddAccount extends AppCompatActivity {
 
     private Context context;
+    private AccountUtils accountUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         context = this;
+
+        accountUtils = new AccountUtils(context);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
         toolbar.setTitle("GitCracking");
@@ -93,8 +96,21 @@ public class AddAccount extends AppCompatActivity {
             Toast toast = Toast.makeText(context, "Please provide your password", Toast.LENGTH_SHORT);
             toast.show();
             return;
+        } else if (accountUtils.isAlreadyAUser(username)) {
+            userExists();
+            etUsername.setText("");
+            etPassword.setText("");
+            return;
         }
         new LoginTask().execute(username, password);
+    }
+
+    private void userExists() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        alertDialog.setTitle("User already exists");
+        alertDialog.setCancelable(true);
+        alertDialog.setNeutralButton("Dismiss", null);
+        alertDialog.show();
     }
 
     private void failedLogin() {

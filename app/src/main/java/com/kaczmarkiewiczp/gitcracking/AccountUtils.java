@@ -77,6 +77,11 @@ public class AccountUtils {
         editor.apply();
     }
 
+    public Boolean isAlreadyAUser(String userLogin) {
+        Set<String> accounts = getAccounts(context);
+        return accounts.contains(userLogin);
+    }
+
     public static boolean isAuth(Context context) {
         SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         String defaultUser = sp.getString("defaultUser", "");
