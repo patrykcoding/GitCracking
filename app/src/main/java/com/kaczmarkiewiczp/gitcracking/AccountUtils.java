@@ -2,6 +2,7 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import org.eclipse.egit.github.core.Authorization;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -53,21 +54,8 @@ public class AccountUtils {
         return this.userLogin;
     }
 
-    public String getUserName() {
-        return this.userName;
-    }
-
-    public String getUserName(String login) {
-        SharedPreferences sp = getSharedPreferences();
-        return sp.getString(login + ":name", "");
-    }
-
-    public String getUserIconUrl() {
-        return this.userIconUrl;
-    }
-
-    public String getUserIconUrl(String login) {
-        SharedPreferences sp = getSharedPreferences();
+    public static String getUserIconUrl(Context context, String login) {
+        SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         return sp.getString(login + ":icon", "");
     }
 
@@ -105,6 +93,7 @@ public class AccountUtils {
         this.token = sp.getString(this.userLogin + ":token", "");
         this.userName = sp.getString(this.userLogin + ":name", "");
         this.userIconUrl = sp.getString(this.userLogin + ":icon", "");
+        Log.i("###", userIconUrl);
     }
 
     private void addAccount() {
