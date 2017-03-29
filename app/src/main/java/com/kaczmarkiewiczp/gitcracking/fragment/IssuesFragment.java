@@ -1,6 +1,7 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.IssueDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
 
@@ -39,7 +41,7 @@ import java.util.List;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
-public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClickListener{
+public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClickListener {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
@@ -155,9 +157,12 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
 
     @Override
     public void onIssueClick(Issue clickedIssue) {
-        Log.i("#IssuesFragment", "click");
-        String toastMessage = "issue " + clickedIssue.getTitle() + " clicked";
-        Toast.makeText(context, toastMessage , Toast.LENGTH_LONG).show();
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("issue", clickedIssue);
+        intent.putExtras(bundle);
+        intent.setClass(context, IssueDetail.class);
+        startActivity(intent);
     }
 
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {

@@ -19,8 +19,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:id="@+id/linearLayout">
 
+        <!-- holds issue title and number -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,6 +32,7 @@
             android:paddingEnd="12dp">
 
             <TextView
+                android:id="@+id/tv_issue_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@android:style/TextAppearance.Material.Large"
@@ -43,6 +46,7 @@
                 android:layout_weight="1" />
 
             <TextView
+                android:id="@+id/tv_issue_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="#38" />
@@ -57,6 +61,7 @@
             android:paddingTop="4dp"
             tools:text="kaczmarkiewiczp/repo" />
 
+        <!-- holds user icon, user name, and creation date -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -66,8 +71,10 @@
             android:paddingTop="16dp">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/iv_user_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:scaleType="fitXY"
                 android:src="@android:drawable/sym_def_app_icon" />
 
             <LinearLayout
@@ -90,13 +97,14 @@
                         tools:text="kaczmarkiewiczp" />
 
                     <TextView
+                        android:id="@+id/tv_open_close_action"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="opened this issue" />
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/tv_open_date"
+                    android:id="@+id/tv_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="12dp"
@@ -105,59 +113,114 @@
             </LinearLayout>
         </LinearLayout>
 
-        <include layout="@layout/divider"/>
+        <include layout="@layout/divider" />
 
+        <!-- holds milestone, assignee, labels, and description -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="16dp">
+            android:paddingTop="16dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
 
+            <!-- milestone -->
+            <LinearLayout
+                android:id="@+id/ll_milestone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_milestone" />
+
+                <TextView
+                    android:id="@+id/tv_milestone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="12dp"
+                    tools:text="Milestone" />
+
+                <ProgressBar
+                    android:id="@+id/pb_milestone"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="4dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="12dp"/>
+            </LinearLayout>
+
+            <!-- labels/tags -->
             <com.google.android.flexbox.FlexboxLayout
                 android:id="@+id/fl_tags"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:paddingBottom="16dp"
+                android:visibility="gone"
+                tools:visibility="visible"
                 app:flexWrap="wrap">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_label_outline_black_24dp" />
                 <!-- tags (as TextView) will be inserted programmatically here -->
             </com.google.android.flexbox.FlexboxLayout>
 
-            <com.google.android.flexbox.FlexboxLayout
-                android:id="@+id/fl_assignees"
+            <!-- assignee -->
+            <LinearLayout
+                android:id="@+id/ll_assignee"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="16dp"
-                app:flexWrap="wrap">
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:paddingBottom="16dp">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_person_outline_black_24dp" />
-                <!-- tags (as TextView) will be inserted programmatically here -->
-            </com.google.android.flexbox.FlexboxLayout>
+                    android:src="@drawable/ic_person_outline_black_24dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="12dp" />
+
+                <ImageView
+                    android:id="@+id/iv_assignee_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp" />
+
+                <TextView
+                    android:id="@+id/tv_assignee_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="0dp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_issue_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="gone"
                 android:textAppearance="@android:style/TextAppearance.Material.Medium"
-                tools:text="Boring description goes here"/>
+                tools:text="Boring description goes here"
+                tools:visibility="visible" />
 
-            <include layout="@layout/divider"/>
         </LinearLayout>
+
+        <View android:id="@+id/description_divider"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
     </LinearLayout>
 
     <android.support.design.widget.BottomNavigationView
