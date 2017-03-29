@@ -144,9 +144,11 @@ public class NavBarUtils {
 
     private Drawer drawer;
     private Activity activity;
+    protected AccountUtils accountUtils;
 
     NavBarUtils(Activity activity, Toolbar toolbar, int initialSelection) {
         this.activity = activity;
+        accountUtils = new AccountUtils(activity);
         AccountHeader accountHeader = createAccountHeader(activity);
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
@@ -215,13 +217,13 @@ public class NavBarUtils {
     private AccountHeader createAccountHeader(Activity activity) {
         userIconLoaderInitializer();
         List<IProfile> profiles = new ArrayList<>();
-        Set<String> accounts = AccountUtils.getAccounts(activity);
-        String currentUser = AccountUtils.getCurrentUser(activity);
+        Set<String> accounts = accountUtils.getAccounts();
+        String currentUser = accountUtils.getCurrentUser();
         ProfileDrawerItem activeUser = null;
         Iterator<String> iterator = accounts.iterator();
         while (iterator.hasNext()) {
             String login = iterator.next();
-            String iconUrl = AccountUtils.getUserIconUrl(activity, login);
+            String iconUrl = accountUtils.getUserIconUrl(login);
             ProfileDrawerItem profileDrawerItem = new ProfileDrawerItem()
                     .withName(login)
                     .withIcon(iconUrl);
@@ -293,7 +295,7 @@ public class NavBarUtils {
         }
 
         String selectedAccount = profile.getName().toString();
-        AccountUtils.setDefaultUser(activity, selectedAccount);
+        accountUtils.setDefaultUser(selectedAccount);
         Intent intent = new Intent(activity, Dashboard.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         activity.startActivity(intent);
