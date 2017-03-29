@@ -6,12 +6,4 @@
         android:icon="@drawable/ic_refresh_black_24dp"
         android:title="refresh"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_settings"
-        android:title="settings"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_about"
-        android:title="about"
-        app:showAsAction="never" />
 </menu>
