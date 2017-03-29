@@ -18,6 +18,7 @@ import org.eclipse.egit.github.core.event.ForkPayload;
 import org.eclipse.egit.github.core.event.IssueCommentPayload;
 import org.eclipse.egit.github.core.event.IssuesPayload;
 import org.eclipse.egit.github.core.event.PullRequestPayload;
+import org.eclipse.egit.github.core.event.PullRequestReviewCommentPayload;
 import org.ocpsoft.prettytime.PrettyTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,6 +95,9 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
                 break;
             case Event.TYPE_WATCH:
                 watchEvent(holder, currentEvent);
+                break;
+            case Event.TYPE_PULL_REQUEST_REVIEW_COMMENT:
+                pullRequestReviewCommentEvent(holder, currentEvent);
                 break;
             default:
                 Log.d(LOG_TAG, "unknown event of type '" + type + "', payload '" + currentEvent.getPayload().toString() + "'");
@@ -278,6 +282,45 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         holder.textViewRepository.setVisibility(View.VISIBLE);
         holder.textViewRepository.setText(repository);
 
+
+        holder.linearLayoutDescription.setVisibility(View.VISIBLE);
+        holder.textViewDescription.setText(description);
+    }
+
+    private void pullRequestReviewCommentEvent(ViewHolder holder, Event event) {
+        PullRequestReviewCommentPayload pullRequestReviewCommentPayload = (PullRequestReviewCommentPayload) event.getPayload();
+        String repository = event.getRepo().getName();
+        String ref = String.valueOf(pullRequestReviewCommentPayload.getPullRequest().getNumber());
+        String preposition = "in";
+        String description = pullRequestReviewCommentPayload.getPullRequest().getTitle();
+        String refType;
+
+        switch (pullRequestReviewCommentPayload.getAction()) {
+            case "created":
+                refType = "Commented on pull request";
+                break;
+            case "edited":
+                refType = "Edited comment on pull request";
+                break;
+            case "deleted":
+                refType = "Deleted comment on pull request";
+                break;
+            default:
+                refType = ""; // this will never happen
+
+        }
+
+        holder.textViewRefType.setVisibility(View.VISIBLE);
+        holder.textViewRefType.setText(refType);
+
+        holder.textViewRef.setVisibility(View.VISIBLE);
+        holder.textViewRef.setText(ref);
+
+        holder.textViewRepository.setVisibility(View.VISIBLE);
+        holder.textViewRepository.setText(repository);
+
+        holder.textViewPreposition.setVisibility(View.VISIBLE);
+        holder.textViewPreposition.setText(preposition);
 
         holder.linearLayoutDescription.setVisibility(View.VISIBLE);
         holder.textViewDescription.setText(description);
