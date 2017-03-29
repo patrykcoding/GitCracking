@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,9 +28,15 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     private ArrayList<Issue> issues;
     private Context context;
+    private final IssueClickListener onClickListener;
 
-    public IssuesAdapter() {
+    public interface IssueClickListener {
+        void onIssueClick(Issue clickedIssue);
+    }
+
+    public IssuesAdapter(IssueClickListener listener) {
         issues = new ArrayList<>();
+        onClickListener = listener;
     }
 
     @Override
@@ -138,7 +145,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         notifyItemRangeRemoved(0, size);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
 
         public final TextView textViewRepository;
         public final TextView textViewIssueNumber;
@@ -161,6 +168,15 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
             linearLayoutComments = (LinearLayout) view.findViewById(R.id.ll_comments);
             textViewCommentsCount = (TextView) view.findViewById(R.id.tv_comments_count);
             flexBoxLayoutTags = (FlexboxLayout) view.findViewById(R.id.fl_tags);
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int positionClicked = getAdapterPosition();
+            Issue clickedIssue = issues.get(positionClicked);
+            onClickListener.onIssueClick(clickedIssue);
         }
     }
 }
