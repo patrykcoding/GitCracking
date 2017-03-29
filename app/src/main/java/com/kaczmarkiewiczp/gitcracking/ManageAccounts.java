@@ -70,11 +70,11 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
     }
 
     private void showAccounts() {
-        Set<String> accounts = AccountUtils.getAccounts(this);
+        Set<String> accounts = accountUtils.getAccounts();
 
         for (String user : accounts) {
             String name = accountUtils.getUserName(user);
-            String iconUrl = AccountUtils.getUserIconUrl(this, user);
+            String iconUrl = accountUtils.getUserIconUrl(user);
             Boolean canRemove;
             if (accountUtils.accountsCount() == 1) {
                 canRemove = true;
