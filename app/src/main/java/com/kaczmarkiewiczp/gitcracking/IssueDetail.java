@@ -1,6 +1,10 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
@@ -55,7 +59,7 @@ public class IssueDetail extends AppCompatActivity {
 
     private void setTitleContent() {
         String title = issue.getTitle();
-        String issueNumber = String.valueOf(issue.getNumber());
+        String issueNumber = "#" + String.valueOf(issue.getNumber());
 
         TextView textViewTitle = (TextView) findViewById(R.id.tv_issue_title);
         TextView textViewIssueNumber = (TextView) findViewById(R.id.tv_issue_number);
@@ -98,6 +102,7 @@ public class IssueDetail extends AppCompatActivity {
         textViewDate.setText(prettyTime.format(date));
     }
 
+    @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     private void setMilestoneContent() {
         Milestone milestone = issue.getMilestone();
         LinearLayout linearLayoutMilestone = (LinearLayout) findViewById(R.id.ll_milestone);
@@ -116,31 +121,42 @@ public class IssueDetail extends AppCompatActivity {
         linearLayoutMilestone.setVisibility(View.VISIBLE);
         textViewMilestone.setText(milestoneTitle);
         progressBarMilestone.setMax(openIssues + closedIssues);
-        progressBarMilestone.setProgress(openIssues);
+        progressBarMilestone.setProgress(closedIssues);
+
+        Date dueDate = milestone.getDueOn();
+        Date today = new Date();
+        int progressColor;
+        if (dueDate.after(today)) {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                progressColor = getColor(R.color.milestone_progress_overdue);
+            } else {
+                progressColor = getResources().getColor(R.color.milestone_progress_overdue);
+            }
+        } else {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                progressColor = getColor(R.color.milestone_progress);
+            } else {
+                progressColor = getResources().getColor(R.color.milestone_progress);
+            }
+        }
+        progressBarMilestone.getProgressDrawable().setColorFilter(progressColor, PorterDuff.Mode.SRC_IN);
 
         setDescriptionDivider();
     }
 
     private void setLabelsContent() {
         List<Label> labels = issue.getLabels();
-        FlexboxLayout flexboxLayoutLabels = (FlexboxLayout) findViewById(R.id.fl_tags);
+        LinearLayout linearLayoutLabels = (LinearLayout) findViewById(R.id.ll_tags);
 
         if (labels == null || labels.size() < 1) {
-            flexboxLayoutLabels.setVisibility(View.GONE);
+            linearLayoutLabels.setVisibility(View.GONE);
             return;
         }
-
-        flexboxLayoutLabels.setVisibility(View.VISIBLE);
+        linearLayoutLabels.setVisibility(View.VISIBLE);
+        FlexboxLayout flexboxLayoutLabels = (FlexboxLayout) findViewById(R.id.fl_tags);
         if (flexboxLayoutLabels.getChildCount() > 0) {
             flexboxLayoutLabels.removeAllViews();
         }
-        ImageView labelIcon = new ImageView(this);
-        labelIcon.setImageResource(R.drawable.ic_label_outline_black_24dp);
-        FlexboxLayout.LayoutParams layoutParams = new FlexboxLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(0, 0, 22, 12);
-        labelIcon.setLayoutParams(layoutParams);
-        flexboxLayoutLabels.addView(labelIcon);
-
         for (Label label : labels) {
             String colorString = label.getColor();
             int rgb = Color.parseColor("#" + colorString);
@@ -194,6 +210,7 @@ public class IssueDetail extends AppCompatActivity {
         setDescriptionDivider();
     }
 
+    @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
     private void setDescriptionContent() {
         String description = issue.getBodyHtml();
         TextView textViewDescription = (TextView) findViewById(R.id.tv_issue_description);
@@ -204,7 +221,11 @@ public class IssueDetail extends AppCompatActivity {
         }
 
         textViewDescription.setVisibility(View.VISIBLE);
-        textViewDescription.setText(Html.fromHtml(description));
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            textViewDescription.setText(Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT));
+        } else {
+            textViewDescription.setText(Html.fromHtml(description));
+        }
 
         setDescriptionDivider();
     }
