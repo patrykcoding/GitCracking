@@ -1,12 +1,14 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,8 +18,10 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.IssueDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
 
@@ -37,7 +41,7 @@ import java.util.List;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
-public class IssuesFragment extends Fragment {
+public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClickListener {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
@@ -74,7 +78,7 @@ public class IssuesFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        issuesAdapter = new IssuesAdapter();
+        issuesAdapter = new IssuesAdapter(this);
         recyclerView.setAdapter(issuesAdapter);
         recyclerView.setItemAnimator(new SlideInUpAnimator());
         recyclerView.getItemAnimator().setAddDuration(1000);
@@ -149,6 +153,16 @@ public class IssuesFragment extends Fragment {
         TextView message = (TextView) rootView.findViewById(R.id.tv_empty_view);
         message.setText(getString(R.string.no_issues));
         emptyView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onIssueClick(Issue clickedIssue) {
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("issue", clickedIssue);
+        intent.putExtras(bundle);
+        intent.setClass(context, IssueDetail.class);
+        startActivity(intent);
     }
 
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
