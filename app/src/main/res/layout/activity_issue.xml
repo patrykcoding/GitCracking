@@ -23,7 +23,7 @@
         android:id="@+id/linearLayout">
 
         <!-- holds issue title and number -->
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -31,26 +31,29 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp">
 
-            <TextView
-                android:id="@+id/tv_issue_title"
+            <com.google.android.flexbox.FlexboxLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@android:style/TextAppearance.Material.Large"
-                android:paddingStart="0dp"
-                android:paddingEnd="4dp"
-                tools:text="Stuff ain't working" />
-            <!-- this is necessary in order to move TextView to the right -->
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:orientation="horizontal"
+                android:layout_gravity="top|start"
+                app:flexWrap="wrap">
+
+                <TextView
+                    android:id="@+id/tv_issue_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
+                    tools:text="Stuff ain't working" />
+            </com.google.android.flexbox.FlexboxLayout>
 
             <TextView
                 android:id="@+id/tv_issue_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginStart="8dp"
                 tools:text="#38" />
-        </LinearLayout>
+        </FrameLayout>
 
         <TextView
             android:id="@+id/tv_issue_repo"
@@ -135,15 +138,15 @@
                 tools:visibility="visible">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_milestone" />
 
                 <TextView
                     android:id="@+id/tv_milestone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingStart="20dp"
+                    android:paddingStart="12dp"
                     android:paddingEnd="12dp"
                     tools:text="Milestone" />
 
@@ -154,21 +157,34 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="4dp"
                     android:paddingStart="0dp"
-                    android:paddingEnd="12dp"/>
+                    android:paddingEnd="12dp" />
             </LinearLayout>
 
             <!-- labels/tags -->
-            <com.google.android.flexbox.FlexboxLayout
-                android:id="@+id/fl_tags"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/ll_tags"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:paddingBottom="16dp"
-                android:visibility="gone"
+                android:orientation="horizontal"
                 tools:visibility="visible"
-                app:flexWrap="wrap">
-                <!-- tags (as TextView) will be inserted programmatically here -->
-            </com.google.android.flexbox.FlexboxLayout>
+                android:visibility="gone">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_label_outline_black_24dp"/>
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/fl_tags"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="0dp"
+                    app:flexWrap="wrap">
+                    <!-- tags (as TextView) will be inserted programmatically here -->
+                </com.google.android.flexbox.FlexboxLayout>
+            </LinearLayout>
 
             <!-- assignee -->
             <LinearLayout
@@ -204,16 +220,17 @@
                 android:id="@+id/tv_issue_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="16dp"
                 android:visibility="gone"
                 android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:autoLink="all"
+                android:textIsSelectable="true"
                 tools:text="Boring description goes here"
                 tools:visibility="visible" />
 
         </LinearLayout>
 
-        <View android:id="@+id/description_divider"
-            xmlns:android="http://schemas.android.com/apk/res/android"
+        <View
+            android:id="@+id/description_divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"

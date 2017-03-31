@@ -5,4 +5,6 @@
     <color name="colorPrimaryDark">#1976D2</color>
     <color name="colorAccent">#FF5722</color>
     <color name="colorGray">#424242</color>
+    <color name="milestone_progress_overdue">#b71c1c</color>
+    <color name="milestone_progress">#558b2f</color>
 </resources>
