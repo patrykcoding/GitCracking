@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,15 @@ public class IssueDetail extends AppCompatActivity {
             finish();
             return;
         }
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary));
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Issue #" + issue.getNumber());
+        setSupportActionBar(toolbar);
+        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+        navBarUtils.setNavigationDrawerButtonAsUp();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        navBarUtils.killAllActivitiesOnNewActivityStart(true);
+        
         setContent();
     }
 
