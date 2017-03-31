@@ -194,6 +194,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
         String repository = event.getRepo().getName();
         String ref = String.valueOf(issueCommentPayload.getIssue().getNumber());
         String description = issueCommentPayload.getIssue().getTitle();
+        String preposition = "in";
         String refType;
 
         switch (issueCommentPayload.getAction()) {
@@ -218,6 +219,9 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.View
 
         holder.textViewRepository.setVisibility(View.VISIBLE);
         holder.textViewRepository.setText(repository);
+
+        holder.textViewPreposition.setVisibility(View.VISIBLE);
+        holder.textViewPreposition.setText(preposition);
 
         holder.linearLayoutDescription.setVisibility(View.VISIBLE);
         holder.textViewDescription.setText(description);
