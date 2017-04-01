@@ -1,9 +1,7 @@
 package com.kaczmarkiewiczp.gitcracking;
 
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,6 +30,7 @@ import java.util.List;
 public class IssueDetail extends AppCompatActivity {
 
     private Issue issue;
+    private FloatingActionMenu floatingActionMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +53,8 @@ public class IssueDetail extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         navBarUtils.killAllActivitiesOnNewActivityStart(true);
 
+        floatingActionMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+        floatingActionMenu.setClosedOnTouchOutside(true);
         setContent();
     }
 
