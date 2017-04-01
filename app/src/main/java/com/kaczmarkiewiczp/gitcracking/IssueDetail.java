@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -137,7 +138,7 @@ public class IssueDetail extends AppCompatActivity {
         Date dueDate = milestone.getDueOn();
         Date today = new Date();
         int progressColor;
-        if (dueDate.after(today)) {
+        if (today.after(dueDate)) {
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 progressColor = getColor(R.color.milestone_progress_overdue);
             } else {
