@@ -4,21 +4,28 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
+import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
+import com.kaczmarkiewiczp.gitcracking.adapter.AccountsAdapter;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
@@ -28,7 +35,6 @@ import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.ocpsoft.prettytime.PrettyTime;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +45,8 @@ public class IssueDetail extends AppCompatActivity {
     private Repository repository;
     private FloatingActionMenu floatingActionMenu;
     private GitHubClient gitHubClient;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ProgressBar loadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +73,39 @@ public class IssueDetail extends AppCompatActivity {
 
         floatingActionMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
         floatingActionMenu.setClosedOnTouchOutside(true);
+        loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_issue);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new GetIssue().execute(issue);
+            }
+        });
+
         setContent();
+        new GetIssue().execute(issue);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.actions, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+         switch (item.getItemId()) {
+             case R.id.action_refresh:
+                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
+                 findViewById(R.id.action_refresh).startAnimation(rotate);
+                 loadingIndicator.setVisibility(View.VISIBLE);
+                 swipeRefreshLayout.setEnabled(false);
+                 new GetIssue().execute(issue);
+                 return true;
+             default:
+                return super.onOptionsItemSelected(item);
+         }
     }
 
     public void changeIssueState(View view) {
@@ -77,7 +117,7 @@ public class IssueDetail extends AppCompatActivity {
         } else {
             issue = issue.setState(IssueService.STATE_OPEN);
         }
-        new UpdateIssue().execute(issue);
+        new UpdateIssueState().execute(issue);
     }
 
     private void setContent() {
@@ -299,7 +339,43 @@ public class IssueDetail extends AppCompatActivity {
         }
     }
 
-    private class UpdateIssue extends AsyncTask<Issue, Void, Boolean> {
+    private class GetIssue extends AsyncTask<Issue, Void, Boolean> {
+
+        Issue newIssue;
+        @Override
+        protected Boolean doInBackground(Issue... params) {
+            Issue issue = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                newIssue = issueService.getIssue(repository, issue.getNumber());
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (!success) {
+                return;
+            }
+            issue = newIssue;
+            setContent();
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+            if (!swipeRefreshLayout.isEnabled()) {
+                swipeRefreshLayout.setEnabled(true);
+            }
+            if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                loadingIndicator.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private class UpdateIssueState extends AsyncTask<Issue, Void, Boolean> {
 
         Issue updatedIssue;
 
@@ -317,9 +393,30 @@ public class IssueDetail extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
             issue = updatedIssue;
+            if (!success) {
+                return;
+            }
+            setContent();
+
+            FloatingActionButton fab_close_issue = (FloatingActionButton) findViewById(R.id.fab_close_issue);
+            String message;
+            if (issue.getState().equals("open")) {
+                message = "Issue reopened";
+                fab_close_issue.setLabelText("Open issue");
+            } else {
+                message = "Issue closed";
+                fab_close_issue.setLabelText("Close issue");
+            }
+            Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG)
+                    .setAction("UNDO", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            changeIssueState(findViewById(android.R.id.content));
+                        }
+                    }).show();
         }
     }
 }
