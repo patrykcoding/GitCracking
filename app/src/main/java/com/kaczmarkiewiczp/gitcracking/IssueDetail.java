@@ -22,6 +22,7 @@ import com.google.android.flexbox.FlexboxLayout;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.ocpsoft.prettytime.PrettyTime;
 
@@ -31,6 +32,7 @@ import java.util.List;
 public class IssueDetail extends AppCompatActivity {
 
     private Issue issue;
+    private Repository repository;
     private FloatingActionMenu floatingActionMenu;
 
     @Override
@@ -39,7 +41,8 @@ public class IssueDetail extends AppCompatActivity {
         setContentView(R.layout.activity_issue);
         Bundle bundle = getIntent().getExtras();
         issue = (Issue) bundle.getSerializable("issue");
-        if (issue == null) {
+        repository = (Repository) bundle.getSerializable("repository");
+        if (issue == null || repository == null) {
             // something really bad happened - return
             // TODO show error screen
             finish();
@@ -81,10 +84,9 @@ public class IssueDetail extends AppCompatActivity {
     }
 
     private void setRepositoryContent() {
-        String repositoryUrl = issue.getUrl();
-        int repositoryNameStartIndex = 29;
-        int repositoryNameEndIndex = repositoryUrl.indexOf("/issues/");
-        String repositoryName = repositoryUrl.substring(repositoryNameStartIndex, repositoryNameEndIndex);
+        String repositoryName = repository.getName();
+        String repositoryOwner = repository.getOwner().getLogin();
+        repositoryName = repositoryOwner + "/" + repositoryName;
 
         TextView textViewRepositoryName = (TextView) findViewById(R.id.tv_issue_repo);
         textViewRepositoryName.setText(repositoryName);

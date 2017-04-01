@@ -17,6 +17,7 @@ import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
+import org.eclipse.egit.github.core.Repository;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
@@ -27,15 +28,17 @@ import java.util.List;
 public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder> {
 
     private ArrayList<Issue> issues;
+    private ArrayList<Repository> repositories;
     private Context context;
     private final IssueClickListener onClickListener;
 
     public interface IssueClickListener {
-        void onIssueClick(Issue clickedIssue);
+        void onIssueClick(Issue clickedIssue, Repository issueRepository);
     }
 
     public IssuesAdapter(IssueClickListener listener) {
         issues = new ArrayList<>();
+        repositories = new ArrayList<>();
         onClickListener = listener;
     }
 
@@ -53,10 +56,10 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String url = issues.get(position).getUrl();
-        int repositoryNameStartIndex = 29;
-        String repository = url.substring(repositoryNameStartIndex, url.indexOf("/issues/"));
-
+        Repository repo = repositories.get(position);
+        String repositoryName = repo.getName();
+        String repositoryOwner = repo.getOwner().getLogin();
+        String repository = repositoryOwner + "/" + repositoryName;
         String issueNumber = String.valueOf(issues.get(position).getNumber());
         issueNumber = "#" + issueNumber;
 
@@ -132,11 +135,10 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         return issues.size();
     }
 
-    public void setIssues(ArrayList<Issue> issues) {
-        int size = this.issues.size();
-        int count = issues.size();
-        this.issues.addAll(issues);
-        notifyItemRangeInserted(size, count);
+    public void addIssue(Issue issue, Repository repository) {
+        issues.add(issue);
+        repositories.add(repository);
+        notifyItemInserted(issues.size() - 1);
     }
 
     public void clearIssues() {
@@ -176,7 +178,8 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         public void onClick(View v) {
             int positionClicked = getAdapterPosition();
             Issue clickedIssue = issues.get(positionClicked);
-            onClickListener.onIssueClick(clickedIssue);
+            Repository issueRepository = repositories.get(positionClicked);
+            onClickListener.onIssueClick(clickedIssue, issueRepository);
         }
     }
 }
