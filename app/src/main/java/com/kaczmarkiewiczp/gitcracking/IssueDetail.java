@@ -2,6 +2,7 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,16 +25,22 @@ import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class IssueDetail extends AppCompatActivity {
 
     private Issue issue;
     private Repository repository;
     private FloatingActionMenu floatingActionMenu;
+    private GitHubClient gitHubClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +51,6 @@ public class IssueDetail extends AppCompatActivity {
         repository = (Repository) bundle.getSerializable("repository");
         if (issue == null || repository == null) {
             // something really bad happened - return
-            // TODO show error screen
             finish();
             return;
         }
@@ -56,10 +62,24 @@ public class IssueDetail extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         navBarUtils.killAllActivitiesOnNewActivityStart(true);
+        AccountUtils accountUtils = new AccountUtils(this);
+        gitHubClient = accountUtils.getGitHubClient();
 
         floatingActionMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
         floatingActionMenu.setClosedOnTouchOutside(true);
         setContent();
+    }
+
+    public void changeIssueState(View view) {
+        floatingActionMenu.close(true);
+        String currentState = issue.getState();
+
+        if (currentState.equals(IssueService.STATE_OPEN)) {
+            issue = issue.setState(IssueService.STATE_CLOSED);
+        } else {
+            issue = issue.setState(IssueService.STATE_OPEN);
+        }
+        new UpdateIssue().execute(issue);
     }
 
     private void setContent() {
@@ -248,6 +268,30 @@ public class IssueDetail extends AppCompatActivity {
         View separator = findViewById(R.id.description_divider);
         if (separator.getVisibility() == View.GONE) {
             separator.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private class UpdateIssue extends AsyncTask<Issue, Void, Boolean> {
+
+        Issue updatedIssue;
+
+        @Override
+        protected Boolean doInBackground(Issue... params) {
+            Issue issue = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                updatedIssue = issueService.editIssue(repository, issue);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            issue = updatedIssue;
         }
     }
 }
