@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 
 import org.eclipse.egit.github.core.Issue;
@@ -52,7 +53,7 @@ public class IssueDetail extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         navBarUtils.killAllActivitiesOnNewActivityStart(true);
-        
+
         setContent();
     }
 
