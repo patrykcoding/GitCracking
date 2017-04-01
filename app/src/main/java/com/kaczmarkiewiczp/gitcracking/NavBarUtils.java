@@ -42,6 +42,7 @@ public class NavBarUtils {
     public static final int PEOPLE = 5;
     public static final int ACCOUNT_ADD = 6;
     public static final int PROFILE_SETTINGS = 7;
+    public static final int NO_SELECTION = -1;
 
     public PrimaryDrawerItem dashboard = new PrimaryDrawerItem()
             .withName("Dashboard")
@@ -144,11 +145,13 @@ public class NavBarUtils {
 
     private Drawer drawer;
     private Activity activity;
-    protected AccountUtils accountUtils;
+    private Boolean shouldKillAllActivitiesOnNewActivity;
+    private AccountUtils accountUtils;
 
     NavBarUtils(Activity activity, Toolbar toolbar, int initialSelection) {
         this.activity = activity;
         accountUtils = new AccountUtils(activity);
+        shouldKillAllActivitiesOnNewActivity = false;
         AccountHeader accountHeader = createAccountHeader(activity);
         DrawerBuilder drawerBuilder = new DrawerBuilder();
         drawerBuilder.withActivity(activity)
@@ -180,37 +183,45 @@ public class NavBarUtils {
         });
     }
 
+    public void killAllActivitiesOnNewActivityStart(Boolean killActivities) {
+        shouldKillAllActivitiesOnNewActivity = killActivities;
+    }
+
     private void drawerItemClicked(View view, int position, IDrawerItem drawerItem) {
         int drawerIdentifier = (int) drawerItem.getIdentifier();
         if (drawer.getCurrentSelectedPosition() == position) {
             return;
         }
-
+        Intent intent = new Intent();
+        if (shouldKillAllActivitiesOnNewActivity) {
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        }
         switch (drawerIdentifier) {
             case DASHBOARD:
-                activity.startActivity(new Intent(activity, Dashboard.class));
+                intent.setClass(activity, Dashboard.class);
                 break;
             case REPOSITORIES:
-                activity.startActivity(new Intent(activity, Repositories.class));
+                intent.setClass(activity, Repositories.class);
                 break;
             case ISSUES:
-                activity.startActivity(new Intent(activity, Issues.class));
+                intent.setClass(activity, Issues.class);
                 break;
             case PULL_REQUESTS:
-                activity.startActivity(new Intent(activity, PullRequests.class));
+                intent.setClass(activity, PullRequests.class);
                 break;
             case PEOPLE:
-                activity.startActivity(new Intent(activity, People.class));
+                intent.setClass(activity, People.class);
                 break;
             case PROFILE_SETTINGS:
-                activity.startActivityForResult(new Intent(activity, ManageAccounts.class), 1);
+                intent.setClass(activity, ManageAccounts.class);
                 return;
             case ACCOUNT_ADD:
-                activity.startActivity(new Intent(activity, AddAccount.class));
+                intent.setClass(activity, AddAccount.class);
                 return;
             default:
                 return;
         }
+        activity.startActivity(intent);
         activity.finish();
     }
 
