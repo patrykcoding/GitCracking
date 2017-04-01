@@ -27,13 +27,11 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.RepositoryService;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 public class IssueDetail extends AppCompatActivity {
 
@@ -83,6 +81,7 @@ public class IssueDetail extends AppCompatActivity {
     }
 
     private void setContent() {
+        setIssueStateContent();
         setTitleContent();
         setRepositoryContent();
         setUserContent();
@@ -90,6 +89,35 @@ public class IssueDetail extends AppCompatActivity {
         setLabelsContent();
         setAssigneeContent();
         setDescriptionContent();
+    }
+
+    @SuppressWarnings("deprecation") // for getColor -- check in code for android version
+    private void setIssueStateContent() {
+        String status = issue.getState();
+        status = status.substring(0, 1).toUpperCase() + status.substring(1);
+
+        LinearLayout linearLayoutIssueStatus = (LinearLayout) findViewById(R.id.ll_issue_status);
+        ImageView imageViewIssueStatus = (ImageView) findViewById(R.id.iv_issue_status);
+        TextView textViewIssueStatus = (TextView) findViewById(R.id.tv_issue_status);
+
+        int color;
+        if (status.equals("Open")) {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                color = getColor(R.color.issue_open);
+            } else {
+                color = getResources().getColor(R.color.issue_open);
+            }
+            imageViewIssueStatus.setImageResource(R.drawable.ic_issue_opened_white);
+        } else { //if (status.equals("Closed"))
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                color = getColor(R.color.issue_closed);
+            } else {
+                color = getResources().getColor(R.color.issue_closed);
+            }
+            imageViewIssueStatus.setImageResource(R.drawable.ic_issue_closed_white);
+        }
+        linearLayoutIssueStatus.setBackgroundColor(color);
+        textViewIssueStatus.setText(status);
     }
 
     private void setTitleContent() {

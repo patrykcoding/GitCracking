@@ -7,4 +7,6 @@
     <color name="colorGray">#424242</color>
     <color name="milestone_progress_overdue">#d32f2f</color>
     <color name="milestone_progress">#4caf50</color>
+    <color name="issue_open">#43a047</color>
+    <color name="issue_closed">#c62828</color>
 </resources>

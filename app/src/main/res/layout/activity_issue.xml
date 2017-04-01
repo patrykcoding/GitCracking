@@ -22,7 +22,32 @@
         android:layout_below="@+id/toolbar"
         android:orientation="vertical"
         android:id="@+id/linearLayout">
-
+        <LinearLayout
+            android:id="@+id/ll_issue_status"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:orientation="horizontal"
+            android:background="@color/issue_open"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="12dp"
+            android:gravity="center_vertical"
+            android:elevation="4dp">
+            <ImageView
+                android:id="@+id/iv_issue_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_issue_opened_white"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="0dp"/>
+            <TextView
+                android:id="@+id/tv_issue_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:paddingStart="4dp"
+                android:paddingEnd="16dp"
+                tools:text="Open"/>
+        </LinearLayout>
         <!-- holds issue title and number -->
         <FrameLayout
             android:layout_width="match_parent"
@@ -248,46 +273,52 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:paddingStart="0dp"
-        android:paddingEnd="16dp"
         android:paddingBottom="16dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="0dp"
         fab:menu_backgroundColor="#ccffffff"
-        fab:menu_icon="@drawable/ic_edit_black_24dp">
+        fab:menu_icon="@drawable/ic_edit_black_24dp"
+        tools:visibility="invisible">
+
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_milestone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_milestone_white"
-            fab:fab_size="mini"
-            fab:fab_label="Milestone" />
+            fab:fab_label="Milestone"
+            fab:fab_size="mini" />
+
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_labels"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_label_white_24dp"
-            fab:fab_size="mini"
-            fab:fab_label="Labels" />
+            fab:fab_label="Labels"
+            fab:fab_size="mini" />
+
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_assignee"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_assignee_white_24dp"
-            fab:fab_size="mini"
-            fab:fab_label="Assignee" />
+            fab:fab_label="Assignee"
+            fab:fab_size="mini" />
+
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_comment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_comment_white_24dp"
-            fab:fab_size="mini"
-            fab:fab_label="Comment"/>
+            fab:fab_label="Comment"
+            fab:fab_size="mini" />
+
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_close_issue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_check_black_24dp"
             android:onClick="changeIssueState"
-            fab:fab_size="mini"
-            fab:fab_label="Close issue" />
+            android:src="@drawable/ic_check_black_24dp"
+            fab:fab_label="Close issue"
+            fab:fab_size="mini" />
     </com.github.clans.fab.FloatingActionMenu>
 </RelativeLayout>
