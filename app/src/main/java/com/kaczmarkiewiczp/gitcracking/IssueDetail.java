@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-public class IssueDetail extends AppCompatActivity {
+public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.SaveMilestoneListener {
 
     private Issue issue;
     private Repository repository;
@@ -152,7 +152,6 @@ public class IssueDetail extends AppCompatActivity {
         builder.setSingleChoiceItems(options, currentMilestone, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("#IssueDetail", String.valueOf(which));
                 selectedOption[0] = which;
             }
         });
@@ -170,14 +169,28 @@ public class IssueDetail extends AppCompatActivity {
                 new UpdateIssue().execute(issue);
             }
         });
+        final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                milestoneDialog.show(getSupportFragmentManager(), "Milestone");
             }
         });
         builder.setNegativeButton("Cancel", null);
         builder.show();
+    }
+
+    @Override
+    public void onSaveMilestone(CreateMilestoneDialog dialog) {
+        String title = dialog.getMilestoneTitle();
+        String description = dialog.getMilestoneDescription();
+
+        dialog.dismiss();
+        Milestone milestone = new Milestone();
+        milestone.setTitle(title);
+        milestone.setDescription(description);
+        milestone.setState("open");
+        new NewMilestone().execute(milestone);
     }
 
     private void setContent() {
@@ -523,6 +536,33 @@ public class IssueDetail extends AppCompatActivity {
                         }
                     }).show();
                     */
+        }
+    }
+
+    private class NewMilestone extends AsyncTask<Milestone, Void, Boolean> {
+
+        private Milestone newMilestone;
+
+        @Override
+        protected Boolean doInBackground(Milestone... params) {
+            Milestone milestone = params[0];
+            MilestoneService milestoneService = new MilestoneService(gitHubClient);
+
+            try {
+                newMilestone = milestoneService.createMilestone(repository, milestone);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                issue.setMilestone(newMilestone);
+                new UpdateIssue().execute(issue);
+            }
         }
     }
 }

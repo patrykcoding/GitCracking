@@ -19,4 +19,6 @@
     <string name="location_pin">Location pin</string>
     <string name="pull_request_count">Pull Request count</string>
     <string name="issues_count">Issues count</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
 </resources>
