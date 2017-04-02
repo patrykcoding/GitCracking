@@ -1,15 +1,18 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,8 +28,9 @@ import com.bumptech.glide.Glide;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
-import com.kaczmarkiewiczp.gitcracking.adapter.AccountsAdapter;
 
+import org.eclipse.egit.github.core.Comment;
+import org.eclipse.egit.github.core.Contributor;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
@@ -34,6 +38,9 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.LabelService;
+import org.eclipse.egit.github.core.service.MilestoneService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.ocpsoft.prettytime.PrettyTime;
 import java.io.IOException;
 import java.util.Date;
@@ -43,6 +50,10 @@ public class IssueDetail extends AppCompatActivity {
 
     private Issue issue;
     private Repository repository;
+    private List<Comment> comments;
+    private List<Label> repositoryLabels;
+    private List<Contributor> repositoryContributors;
+    private List<Milestone> repositoryMilestones;
     private FloatingActionMenu floatingActionMenu;
     private GitHubClient gitHubClient;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -82,6 +93,7 @@ public class IssueDetail extends AppCompatActivity {
             }
         });
 
+        setUpOnClickListeners();
         setContent();
         new GetIssue().execute(issue);
     }
@@ -117,7 +129,55 @@ public class IssueDetail extends AppCompatActivity {
         } else {
             issue = issue.setState(IssueService.STATE_OPEN);
         }
-        new UpdateIssueState().execute(issue);
+        new UpdateIssue().execute(issue);
+    }
+
+    public void setMilestone() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Milestone");
+        String[] options = new String[repositoryMilestones.size() + 1];
+        int currentMilestone = 0;
+        final int[] selectedOption = new int[1];
+
+        options[0] = "No milestone";
+        int i = 1;
+        for (Milestone milestone : repositoryMilestones) {
+            if (issue.getMilestone() != null && issue.getMilestone().getTitle().equals(milestone.getTitle())) {
+                currentMilestone = i;
+            }
+            options[i++] = milestone.getTitle();
+        }
+
+        builder.setSingleChoiceItems(options, currentMilestone, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("#IssueDetail", String.valueOf(which));
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (selectedOption[0] == 0) {
+                    Milestone noMilestone = new Milestone();
+                    noMilestone.setTitle("");
+                    issue.setMilestone(noMilestone);
+                } else {
+                    Milestone newMilestone = repositoryMilestones.get(selectedOption[0] - 1);
+                    issue.setMilestone(newMilestone);
+                }
+                new UpdateIssue().execute(issue);
+            }
+        });
+        builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 
     private void setContent() {
@@ -131,6 +191,14 @@ public class IssueDetail extends AppCompatActivity {
         setDescriptionContent();
     }
 
+    private void setUpOnClickListeners() {
+        findViewById(R.id.fab_milestone).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMilestone();
+            }
+        });
+    }
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     private void setIssueStateContent() {
         String status = issue.getState();
@@ -339,16 +407,27 @@ public class IssueDetail extends AppCompatActivity {
         }
     }
 
+    /************************************************************************************************
+     * Background tasks
+     ************************************************************************************************/
+
     private class GetIssue extends AsyncTask<Issue, Void, Boolean> {
 
         Issue newIssue;
+
         @Override
         protected Boolean doInBackground(Issue... params) {
             Issue issue = params[0];
             IssueService issueService = new IssueService(gitHubClient);
+            RepositoryService repositoryService = new RepositoryService(gitHubClient);
+            MilestoneService milestoneService = new MilestoneService(gitHubClient);
+            LabelService labelService = new LabelService(gitHubClient);
 
             try {
                 newIssue = issueService.getIssue(repository, issue.getNumber());
+                repositoryContributors = repositoryService.getContributors(repository, false);
+                repositoryMilestones= milestoneService.getMilestones(repository, "open");
+                repositoryLabels = labelService.getLabels(repository);
             } catch (IOException e) {
                 return false;
             }
@@ -375,7 +454,31 @@ public class IssueDetail extends AppCompatActivity {
         }
     }
 
-    private class UpdateIssueState extends AsyncTask<Issue, Void, Boolean> {
+    private class GetComments extends AsyncTask<Issue, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Issue... params) {
+            Issue issue = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+            try {
+                comments = issueService.getComments(repository, issue.getNumber());
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (!success) {
+                return;
+            }
+            // TODO show comments
+        }
+    }
+
+    private class UpdateIssue extends AsyncTask<Issue, Void, Boolean> {
 
         Issue updatedIssue;
 
@@ -401,6 +504,7 @@ public class IssueDetail extends AppCompatActivity {
             }
             setContent();
 
+            /*
             FloatingActionButton fab_close_issue = (FloatingActionButton) findViewById(R.id.fab_close_issue);
             String message;
             if (issue.getState().equals("open")) {
@@ -417,6 +521,7 @@ public class IssueDetail extends AppCompatActivity {
                             changeIssueState(findViewById(android.R.id.content));
                         }
                     }).show();
+                    */
         }
     }
 }
