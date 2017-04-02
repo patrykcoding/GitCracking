@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,7 +24,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
-import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -43,6 +41,8 @@ import org.eclipse.egit.github.core.service.MilestoneService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.ocpsoft.prettytime.PrettyTime;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -140,7 +140,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         int currentMilestone = 0;
         final int[] selectedOption = new int[1];
 
-        options[0] = "No milestone";
+        options[0] = "NO MILESTONE";
         int i = 1;
         for (Milestone milestone : repositoryMilestones) {
             if (issue.getMilestone() != null && issue.getMilestone().getTitle().equals(milestone.getTitle())) {
@@ -296,6 +296,11 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         Milestone milestone = issue.getMilestone();
         LinearLayout linearLayoutMilestone = (LinearLayout) findViewById(R.id.ll_milestone);
         if (milestone == null) {
+            // milestone is the first element for the section, if (after refresh) there is no milestone
+            // for this issue, make the divider invisible (it could have been visible before refresh)
+            // other elements (assignee, labels) don't have to do this, and if they're visible, they
+            // will set the divider to visible
+            setDescriptionDivider(false);
             linearLayoutMilestone.setVisibility(View.GONE);
             return;
         }
@@ -331,7 +336,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             }
             progressBarMilestone.getProgressDrawable().setColorFilter(progressColor, PorterDuff.Mode.SRC_IN);
         }
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
     private void setLabelsContent() {
@@ -370,7 +375,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             textViewLabel.setLayoutParams(labelLayoutParams);
             flexboxLayoutLabels.addView(textViewLabel);
         }
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
     private void setAssigneeContent() {
@@ -397,7 +402,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 .into(imageViewAssigneeIcon);
         textViewAssigneeName.setText(assigneeName);
 
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
     @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
@@ -417,13 +422,19 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             textViewDescription.setText(Html.fromHtml(description));
         }
 
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
-    private void setDescriptionDivider() {
+    private void setDescriptionDivider(boolean visible) {
         View separator = findViewById(R.id.description_divider);
-        if (separator.getVisibility() == View.GONE) {
-            separator.setVisibility(View.VISIBLE);
+        if (visible) {
+            if (separator.getVisibility() == View.GONE) {
+                separator.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (separator.getVisibility() != View.GONE) {
+                separator.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -448,6 +459,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 repositoryContributors = repositoryService.getContributors(repository, false);
                 repositoryMilestones= milestoneService.getMilestones(repository, "open");
                 repositoryLabels = labelService.getLabels(repository);
+
+                Collections.sort(repositoryMilestones, new MilestonesComparator());
             } catch (IOException e) {
                 return false;
             }
@@ -470,6 +483,13 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             }
             if (loadingIndicator.getVisibility() == View.VISIBLE) {
                 loadingIndicator.setVisibility(View.GONE);
+            }
+        }
+
+        public class MilestonesComparator implements Comparator<Milestone> {
+            @Override
+            public int compare(Milestone o1, Milestone o2) {
+                return o2.getTitle().compareTo(o1.getTitle());
             }
         }
     }
