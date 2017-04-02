@@ -296,6 +296,11 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         Milestone milestone = issue.getMilestone();
         LinearLayout linearLayoutMilestone = (LinearLayout) findViewById(R.id.ll_milestone);
         if (milestone == null) {
+            // milestone is the first element for the section, if (after refresh) there is no milestone
+            // for this issue, make the divider invisible (it could have been visible before refresh)
+            // other elements (assignee, labels) don't have to do this, and if they're visible, they
+            // will set the divider to visible
+            setDescriptionDivider(false);
             linearLayoutMilestone.setVisibility(View.GONE);
             return;
         }
@@ -331,7 +336,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             }
             progressBarMilestone.getProgressDrawable().setColorFilter(progressColor, PorterDuff.Mode.SRC_IN);
         }
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
     private void setLabelsContent() {
@@ -370,7 +375,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             textViewLabel.setLayoutParams(labelLayoutParams);
             flexboxLayoutLabels.addView(textViewLabel);
         }
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
     private void setAssigneeContent() {
@@ -397,7 +402,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 .into(imageViewAssigneeIcon);
         textViewAssigneeName.setText(assigneeName);
 
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
     @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
@@ -417,13 +422,19 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             textViewDescription.setText(Html.fromHtml(description));
         }
 
-        setDescriptionDivider();
+        setDescriptionDivider(true);
     }
 
-    private void setDescriptionDivider() {
+    private void setDescriptionDivider(boolean visible) {
         View separator = findViewById(R.id.description_divider);
-        if (separator.getVisibility() == View.GONE) {
-            separator.setVisibility(View.VISIBLE);
+        if (visible) {
+            if (separator.getVisibility() == View.GONE) {
+                separator.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (separator.getVisibility() != View.GONE) {
+                separator.setVisibility(View.GONE);
+            }
         }
     }
 
