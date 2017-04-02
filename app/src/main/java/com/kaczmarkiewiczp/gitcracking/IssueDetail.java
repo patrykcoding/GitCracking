@@ -173,7 +173,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(getSupportFragmentManager(), "Milestone");
+                milestoneDialog.show(getFragmentManager(), "Milestone");
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -185,11 +185,17 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         String title = dialog.getMilestoneTitle();
         String description = dialog.getMilestoneDescription();
 
-        dialog.dismiss();
         Milestone milestone = new Milestone();
         milestone.setTitle(title);
         milestone.setDescription(description);
         milestone.setState("open");
+        if (dialog.isMilestoneDueDateSet()) {
+            milestone.setDueOn(dialog.getMilestoneDueDate());
+        }
+        dialog.dismiss();
+        Snackbar.make(findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+                .show();
+
         new NewMilestone().execute(milestone);
     }
 
