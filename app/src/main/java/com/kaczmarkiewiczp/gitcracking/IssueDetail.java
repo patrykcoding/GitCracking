@@ -296,21 +296,22 @@ public class IssueDetail extends AppCompatActivity {
         Date dueDate = milestone.getDueOn();
         Date today = new Date();
         int progressColor;
-        if (today.after(dueDate)) {
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                progressColor = getColor(R.color.milestone_progress_overdue);
+        if (dueDate != null) {
+            if (today.after(dueDate)) {
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    progressColor = getColor(R.color.milestone_progress_overdue);
+                } else {
+                    progressColor = getResources().getColor(R.color.milestone_progress_overdue);
+                }
             } else {
-                progressColor = getResources().getColor(R.color.milestone_progress_overdue);
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    progressColor = getColor(R.color.milestone_progress);
+                } else {
+                    progressColor = getResources().getColor(R.color.milestone_progress);
+                }
             }
-        } else {
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                progressColor = getColor(R.color.milestone_progress);
-            } else {
-                progressColor = getResources().getColor(R.color.milestone_progress);
-            }
+            progressBarMilestone.getProgressDrawable().setColorFilter(progressColor, PorterDuff.Mode.SRC_IN);
         }
-        progressBarMilestone.getProgressDrawable().setColorFilter(progressColor, PorterDuff.Mode.SRC_IN);
-
         setDescriptionDivider();
     }
 
