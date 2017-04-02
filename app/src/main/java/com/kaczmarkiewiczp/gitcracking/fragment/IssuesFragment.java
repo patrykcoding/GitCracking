@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -156,10 +157,11 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
     }
 
     @Override
-    public void onIssueClick(Issue clickedIssue) {
+    public void onIssueClick(Issue clickedIssue, Repository issueRepository) {
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
         bundle.putSerializable("issue", clickedIssue);
+        bundle.putSerializable("repository", issueRepository);
         intent.putExtras(bundle);
         intent.setClass(context, IssueDetail.class);
         startActivity(intent);
@@ -167,7 +169,7 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
 
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        private ArrayList<Issue> issues;
+        private ArrayList<Pair> issues;
         private int errorType;
 
         @Override
@@ -205,10 +207,12 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
                     for (Issue issue : repositoryIssues) {
                         if (tabSection == SECTION_ASSIGNED) {
                             if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(user)) {
-                                issues.add(issue);
+                                Pair<Issue, Repository> pair = new Pair<>(issue, repository);
+                                issues.add(pair);
                             }
                         } else if (tabSection == SECTION_CREATED) {
-                            issues.add(issue);
+                            Pair<Issue, Repository> pair = new Pair<>(issue, repository);
+                            issues.add(pair);
                         }
 
                     }
@@ -233,7 +237,11 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
             super.onPostExecute(noError);
 
             if (noError && !issues.isEmpty()) {
-                issuesAdapter.setIssues(issues);
+                for (Pair pair : issues) {
+                    Issue issue = (Issue) pair.first;
+                    Repository repository = (Repository) pair.second;
+                    issuesAdapter.addIssue(issue, repository);
+                }
             } else if (noError && issues.isEmpty()) {
                 showEmptyView();
             } else if (errorType != USER_CANCELLED_ERROR) {
@@ -260,11 +268,13 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
         }
     }
 
-    public class IssuesComparator implements Comparator<Issue> {
+    public class IssuesComparator implements Comparator<Pair> {
 
         @Override
-        public int compare(Issue o1, Issue o2) {
-            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        public int compare(Pair o1, Pair o2) {
+            Issue issue1 = (Issue) o1.first;
+            Issue issue2 = (Issue) o2.first;
+            return issue2.getCreatedAt().compareTo(issue1.getCreatedAt());
         }
     }
 }
