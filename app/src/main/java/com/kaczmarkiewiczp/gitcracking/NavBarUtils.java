@@ -214,9 +214,11 @@ public class NavBarUtils {
                 break;
             case PROFILE_SETTINGS:
                 intent.setClass(activity, ManageAccounts.class);
+                activity.startActivityForResult(intent, 1);
                 return;
             case ACCOUNT_ADD:
                 intent.setClass(activity, AddAccount.class);
+                activity.startActivity(intent);
                 return;
             default:
                 return;
