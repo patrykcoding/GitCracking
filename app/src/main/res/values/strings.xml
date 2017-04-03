@@ -8,7 +8,8 @@
     <string name="loading_failed">Failed to retrieve data from GitHub</string>
     <string name="try_again">TRY AGAIN</string>
     <string name="no_repositories">You don\'t have any repositories</string>
-    <string name="no_issues">You don\'t have any pullRequests</string>
+    <string name="no_pull_requests">You don\'t have any pull requests</string>
+    <string name="no_issues">You don\'t have any issues</string>
     <string name="no_followers">You don\'t have any followers</string>
     <string name="no_following">You\'re not following anyone</string>
     <string name="no_news_feed">Your news feed is empty</string>
