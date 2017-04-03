@@ -35,6 +35,7 @@ import org.eclipse.egit.github.core.Milestone;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.LabelService;
 import org.eclipse.egit.github.core.service.MilestoneService;
@@ -52,7 +53,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     private Repository repository;
     private List<Comment> comments;
     private List<Label> repositoryLabels;
-    private List<Contributor> repositoryContributors;
+    private List<User> repositoryCollaborators;
     private List<Milestone> repositoryMilestones;
     private FloatingActionMenu floatingActionMenu;
     private GitHubClient gitHubClient;
@@ -212,19 +213,19 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         int currentAssignee = 0;
         final int[] selectedOption = new int[1];
         String[] options;
-        if (repositoryContributors == null) {
+        if (repositoryCollaborators == null) {
             options = new String[1];
         } else {
-            options = new String[repositoryContributors.size() + 1];
+            options = new String[repositoryCollaborators.size() + 1];
         }
         options[0] = "NO ASSIGNEE";
         int i = 1;
-        if (repositoryContributors != null) {
-            for (Contributor contributor : repositoryContributors) {
-                if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(contributor.getLogin())) {
+        if (repositoryCollaborators != null) {
+            for (User collaborator : repositoryCollaborators) {
+                if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(collaborator.getLogin())) {
                     currentAssignee = i;
                 }
-                options[i++] = contributor.getLogin();
+                options[i++] = collaborator.getLogin();
             }
         }
 
@@ -238,14 +239,12 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == 0) {
-                    User user = new User();
-                    user.setLogin("");
-                    issue.setAssignee(user);
+                    User emptyUser = new User();
+                    emptyUser.setLogin("");
+                    issue.setAssignee(emptyUser);
                 } else {
-                    Contributor contributor = repositoryContributors.get(selectedOption[0] - 1);
-                    User user = new User();
-                    user.setLogin(contributor.getLogin());
-                    issue.setAssignee(user);
+                    User collaborator = repositoryCollaborators.get(selectedOption[0] - 1);
+                    issue.setAssignee(collaborator);
                 }
                 new UpdateIssue().execute(issue);
             }
@@ -512,18 +511,18 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected Boolean doInBackground(Issue... params) {
             Issue issue = params[0];
             IssueService issueService = new IssueService(gitHubClient);
-            RepositoryService repositoryService = new RepositoryService(gitHubClient);
             MilestoneService milestoneService = new MilestoneService(gitHubClient);
             LabelService labelService = new LabelService(gitHubClient);
+            CollaboratorService collaboratorService = new CollaboratorService(gitHubClient);
 
             try {
                 newIssue = issueService.getIssue(repository, issue.getNumber());
-                repositoryContributors = repositoryService.getContributors(repository, false);
+                repositoryCollaborators = collaboratorService.getCollaborators(repository);
                 repositoryMilestones= milestoneService.getMilestones(repository, "open");
                 repositoryLabels = labelService.getLabels(repository);
 
                 Collections.sort(repositoryMilestones, new MilestonesComparator());
-                Collections.sort(repositoryContributors, new ContributorComparator());
+                Collections.sort(repositoryCollaborators, new CollaboratorComparator());
             } catch (IOException e) {
                 return false;
             }
@@ -556,9 +555,9 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             }
         }
 
-        public class ContributorComparator implements Comparator<Contributor> {
+        public class CollaboratorComparator implements Comparator<User> {
             @Override
-            public int compare(Contributor o1, Contributor o2) {
+            public int compare(User o1, User o2) {
                 return o2.getLogin().compareToIgnoreCase(o1.getLogin());
             }
         }
