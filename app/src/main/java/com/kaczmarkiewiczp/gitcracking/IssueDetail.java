@@ -35,6 +35,7 @@ import org.eclipse.egit.github.core.Milestone;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.LabelService;
 import org.eclipse.egit.github.core.service.MilestoneService;
@@ -52,7 +53,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     private Repository repository;
     private List<Comment> comments;
     private List<Label> repositoryLabels;
-    private List<Contributor> repositoryContributors;
+    private List<User> repositoryCollaborators;
     private List<Milestone> repositoryMilestones;
     private FloatingActionMenu floatingActionMenu;
     private GitHubClient gitHubClient;
@@ -205,6 +206,53 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         new NewMilestone().execute(milestone);
     }
 
+    private void setAssignee() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Assignee");
+        int currentAssignee = 0;
+        final int[] selectedOption = new int[1];
+        String[] options;
+        if (repositoryCollaborators == null) {
+            options = new String[1];
+        } else {
+            options = new String[repositoryCollaborators.size() + 1];
+        }
+        options[0] = "NO ASSIGNEE";
+        int i = 1;
+        if (repositoryCollaborators != null) {
+            for (User collaborator : repositoryCollaborators) {
+                if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(collaborator.getLogin())) {
+                    currentAssignee = i;
+                }
+                options[i++] = collaborator.getLogin();
+            }
+        }
+
+        builder.setSingleChoiceItems(options, currentAssignee, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (selectedOption[0] == 0) {
+                    User emptyUser = new User();
+                    emptyUser.setLogin("");
+                    issue.setAssignee(emptyUser);
+                } else {
+                    User collaborator = repositoryCollaborators.get(selectedOption[0] - 1);
+                    issue.setAssignee(collaborator);
+                }
+                new UpdateIssue().execute(issue);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
     private void setContent() {
         setIssueStateContent();
         setTitleContent();
@@ -223,7 +271,14 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 setMilestone();
             }
         });
+        findViewById(R.id.fab_assignee).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAssignee();
+            }
+        });
     }
+
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     private void setIssueStateContent() {
         String status = issue.getState();
@@ -456,17 +511,18 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected Boolean doInBackground(Issue... params) {
             Issue issue = params[0];
             IssueService issueService = new IssueService(gitHubClient);
-            RepositoryService repositoryService = new RepositoryService(gitHubClient);
             MilestoneService milestoneService = new MilestoneService(gitHubClient);
             LabelService labelService = new LabelService(gitHubClient);
+            CollaboratorService collaboratorService = new CollaboratorService(gitHubClient);
 
             try {
                 newIssue = issueService.getIssue(repository, issue.getNumber());
-                repositoryContributors = repositoryService.getContributors(repository, false);
+                repositoryCollaborators = collaboratorService.getCollaborators(repository);
                 repositoryMilestones= milestoneService.getMilestones(repository, "open");
                 repositoryLabels = labelService.getLabels(repository);
 
                 Collections.sort(repositoryMilestones, new MilestonesComparator());
+                Collections.sort(repositoryCollaborators, new CollaboratorComparator());
             } catch (IOException e) {
                 return false;
             }
@@ -495,7 +551,14 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         public class MilestonesComparator implements Comparator<Milestone> {
             @Override
             public int compare(Milestone o1, Milestone o2) {
-                return o2.getTitle().compareTo(o1.getTitle());
+                return o2.getTitle().compareToIgnoreCase(o1.getTitle());
+            }
+        }
+
+        public class CollaboratorComparator implements Comparator<User> {
+            @Override
+            public int compare(User o1, User o2) {
+                return o2.getLogin().compareToIgnoreCase(o1.getLogin());
             }
         }
     }
