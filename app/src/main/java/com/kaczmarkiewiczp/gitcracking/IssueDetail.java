@@ -28,7 +28,6 @@ import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 
 import org.eclipse.egit.github.core.Comment;
-import org.eclipse.egit.github.core.Contributor;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
@@ -39,15 +38,15 @@ import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.LabelService;
 import org.eclipse.egit.github.core.service.MilestoneService;
-import org.eclipse.egit.github.core.service.RepositoryService;
 import org.ocpsoft.prettytime.PrettyTime;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.SaveMilestoneListener {
+public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
 
     private Issue issue;
     private Repository repository;
@@ -180,7 +179,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(getFragmentManager(), "Milestone");
+                milestoneDialog.show(getFragmentManager(), "New Milestone");
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -253,6 +252,66 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         builder.show();
     }
 
+    private void setLabels() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Labels");
+        String[] options = new String[repositoryLabels.size()]; // TODO crash if there are no labels
+        final List<Label> issueLabels = issue.getLabels();
+        final boolean[] selection = new boolean[repositoryLabels.size()]; // TODO crash if no labels
+        if (repositoryLabels != null) {
+            for (int i = 0; i < repositoryLabels.size(); i++) {
+                Label label = repositoryLabels.get(i);
+                options[i] = label.getName();
+                selection[i] = issueLabels.contains(label);
+            }
+        }
+        builder.setMultiChoiceItems(options, selection, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                selection[which] = isChecked;
+            }
+        });
+
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                List<Label> newLabels = new ArrayList<>();
+                for (int i = 0; i < selection.length; i++) {
+                    if (selection[i]) {
+                        newLabels.add(repositoryLabels.get(i));
+                    }
+                }
+                issue.setLabels(newLabels);
+                new UpdateIssue().execute(issue);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        final CreateLabelDialog createLabelDialog = new CreateLabelDialog();
+        builder.setNeutralButton("New Label", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                createLabelDialog.show(getFragmentManager(), "New Label");
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onSaveLabel(CreateLabelDialog dialog) {
+        String labelName = dialog.getLabelName();
+        String labelColor = dialog.getLabelHexColor();
+
+        Label label = new Label();
+        label.setName(labelName);
+        label.setColor(labelColor);
+
+        dialog.dismiss();
+        Snackbar.make(findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
+                .show();
+        new NewLabel().execute(label);
+    }
+
     private void setContent() {
         setIssueStateContent();
         setTitleContent();
@@ -275,6 +334,12 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             @Override
             public void onClick(View v) {
                 setAssignee();
+            }
+        });
+        findViewById(R.id.fab_labels).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setLabels();
             }
         });
     }
@@ -612,25 +677,35 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 return;
             }
             setContent();
+        }
+    }
 
-            /*
-            FloatingActionButton fab_close_issue = (FloatingActionButton) findViewById(R.id.fab_close_issue);
-            String message;
-            if (issue.getState().equals("open")) {
-                message = "Issue reopened";
-                fab_close_issue.setLabelText("Open issue");
-            } else {
-                message = "Issue closed";
-                fab_close_issue.setLabelText("Close issue");
+    private class NewLabel extends AsyncTask<Label, Void, Boolean> {
+
+        private Label newLabel;
+
+        @Override
+        protected Boolean doInBackground(Label... params) {
+            Label label = params[0];
+            LabelService labelService = new LabelService(gitHubClient);
+
+            try {
+                newLabel = labelService.createLabel(repository, label);
+            } catch (IOException e) {
+                return false;
             }
-            Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG)
-                    .setAction("UNDO", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            changeIssueState(findViewById(android.R.id.content));
-                        }
-                    }).show();
-                    */
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                List<Label> labels = issue.getLabels();
+                labels.add(newLabel);
+                issue.setLabels(labels);
+                new UpdateIssue().execute(issue);
+            }
         }
     }
 

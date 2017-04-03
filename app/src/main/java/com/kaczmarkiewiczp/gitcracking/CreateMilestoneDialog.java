@@ -7,7 +7,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,9 +32,9 @@ public class CreateMilestoneDialog extends DialogFragment {
     private EditText editTextDescription;
     private TextView textViewDueDate;
     private ImageView imageViewClear;
-    private SaveMilestoneListener listener;
+    private milestoneCreationListener listener;
 
-    public interface SaveMilestoneListener {
+    public interface milestoneCreationListener {
         public void onSaveMilestone(CreateMilestoneDialog dialog);
     }
 
@@ -108,7 +107,7 @@ public class CreateMilestoneDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (SaveMilestoneListener) context;
+        listener = (milestoneCreationListener) context;
     }
 
     private void saveButtonPressed() {
