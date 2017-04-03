@@ -21,14 +21,17 @@ import org.eclipse.egit.github.core.Repository;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 
 public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder> {
 
     private ArrayList<Issue> issues;
-    private ArrayList<Repository> repositories;
+    private HashMap<String, Repository> repositories;
     private Context context;
     private final IssueClickListener onClickListener;
 
@@ -38,7 +41,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     public IssuesAdapter(IssueClickListener listener) {
         issues = new ArrayList<>();
-        repositories = new ArrayList<>();
+        repositories = new HashMap<>();
         onClickListener = listener;
     }
 
@@ -56,7 +59,8 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Repository repo = repositories.get(position);
+        Issue issue = issues.get(position);
+        Repository repo = repositories.get(issue.getUrl());
         String repositoryName = repo.getName();
         String repositoryOwner = repo.getOwner().getLogin();
         String repository = repositoryOwner + "/" + repositoryName;
@@ -137,8 +141,14 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
 
     public void addIssue(Issue issue, Repository repository) {
         issues.add(issue);
-        repositories.add(repository);
-        notifyItemInserted(issues.size() - 1);
+        String key = issue.getUrl();
+        repositories.put(key, repository);
+    }
+
+    public void showIssues() {
+        Collections.sort(issues, new IssuesComparator());
+        int count = issues.size();
+        notifyItemRangeInserted(0, count);
     }
 
     public void clearIssues() {
@@ -147,7 +157,15 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         notifyItemRangeRemoved(0, size);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
+    private class IssuesComparator implements Comparator<Issue> {
+
+        @Override
+        public int compare(Issue o1, Issue o2) {
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        }
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
 
         public final TextView textViewRepository;
         public final TextView textViewIssueNumber;
@@ -178,7 +196,8 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         public void onClick(View v) {
             int positionClicked = getAdapterPosition();
             Issue clickedIssue = issues.get(positionClicked);
-            Repository issueRepository = repositories.get(positionClicked);
+            String key = clickedIssue.getUrl();
+            Repository issueRepository = repositories.get(key);
             onClickListener.onIssueClick(clickedIssue, issueRepository);
         }
     }
