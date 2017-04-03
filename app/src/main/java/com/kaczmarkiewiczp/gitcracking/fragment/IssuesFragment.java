@@ -169,13 +169,15 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
 
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
 
-        private ArrayList<Pair> issues;
+        private ArrayList<Issue> issues;
+        private ArrayList<Repository> repositories;
         private int errorType;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             issues = new ArrayList<>();
+            repositories = new ArrayList<>();
             issuesAdapter.clearIssues();
 
             swipeRefreshLayout.setVisibility(View.VISIBLE);
@@ -207,17 +209,16 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
                     for (Issue issue : repositoryIssues) {
                         if (tabSection == SECTION_ASSIGNED) {
                             if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(user)) {
-                                Pair<Issue, Repository> pair = new Pair<>(issue, repository);
-                                issues.add(pair);
+                                issues.add(issue);
+                                repositories.add(repository);
                             }
                         } else if (tabSection == SECTION_CREATED) {
-                            Pair<Issue, Repository> pair = new Pair<>(issue, repository);
-                            issues.add(pair);
+                            issues.add(issue);
+                            repositories.add(repository);
                         }
 
                     }
                 }
-                Collections.sort(issues, new IssuesComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
                     // TODO token is invalid - tell user to login again
@@ -237,11 +238,12 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
             super.onPostExecute(noError);
 
             if (noError && !issues.isEmpty()) {
-                for (Pair pair : issues) {
-                    Issue issue = (Issue) pair.first;
-                    Repository repository = (Repository) pair.second;
+                for (int i = 0; i < issues.size(); i++) {
+                    Issue issue = issues.get(i);
+                    Repository repository = repositories.get(i);
                     issuesAdapter.addIssue(issue, repository);
                 }
+                issuesAdapter.showIssues();
             } else if (noError && issues.isEmpty()) {
                 showEmptyView();
             } else if (errorType != USER_CANCELLED_ERROR) {
@@ -265,16 +267,6 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
             }
-        }
-    }
-
-    public class IssuesComparator implements Comparator<Pair> {
-
-        @Override
-        public int compare(Pair o1, Pair o2) {
-            Issue issue1 = (Issue) o1.first;
-            Issue issue2 = (Issue) o2.first;
-            return issue2.getCreatedAt().compareTo(issue1.getCreatedAt());
         }
     }
 }
