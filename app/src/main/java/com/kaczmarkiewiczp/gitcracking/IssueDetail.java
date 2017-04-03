@@ -205,6 +205,55 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         new NewMilestone().execute(milestone);
     }
 
+    private void setAssignee() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Assignee");
+        int currentAssignee = 0;
+        final int[] selectedOption = new int[1];
+        String[] options;
+        if (repositoryContributors == null) {
+            options = new String[1];
+        } else {
+            options = new String[repositoryContributors.size() + 1];
+        }
+        options[0] = "NO ASSIGNEE";
+        int i = 1;
+        if (repositoryContributors != null) {
+            for (Contributor contributor : repositoryContributors) {
+                if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(contributor.getLogin())) {
+                    currentAssignee = i;
+                }
+                options[i++] = contributor.getLogin();
+            }
+        }
+
+        builder.setSingleChoiceItems(options, currentAssignee, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (selectedOption[0] == 0) {
+                    User user = new User();
+                    user.setLogin("");
+                    issue.setAssignee(user);
+                } else {
+                    Contributor contributor = repositoryContributors.get(selectedOption[0] - 1);
+                    User user = new User();
+                    user.setLogin(contributor.getLogin());
+                    issue.setAssignee(user);
+                }
+                new UpdateIssue().execute(issue);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
     private void setContent() {
         setIssueStateContent();
         setTitleContent();
@@ -223,7 +272,14 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 setMilestone();
             }
         });
+        findViewById(R.id.fab_assignee).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAssignee();
+            }
+        });
     }
+
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     private void setIssueStateContent() {
         String status = issue.getState();
@@ -467,6 +523,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 repositoryLabels = labelService.getLabels(repository);
 
                 Collections.sort(repositoryMilestones, new MilestonesComparator());
+                Collections.sort(repositoryContributors, new ContributorComparator());
             } catch (IOException e) {
                 return false;
             }
@@ -495,7 +552,14 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         public class MilestonesComparator implements Comparator<Milestone> {
             @Override
             public int compare(Milestone o1, Milestone o2) {
-                return o2.getTitle().compareTo(o1.getTitle());
+                return o2.getTitle().compareToIgnoreCase(o1.getTitle());
+            }
+        }
+
+        public class ContributorComparator implements Comparator<Contributor> {
+            @Override
+            public int compare(Contributor o1, Contributor o2) {
+                return o2.getLogin().compareToIgnoreCase(o1.getLogin());
             }
         }
     }
