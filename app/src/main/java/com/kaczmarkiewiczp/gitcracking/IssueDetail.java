@@ -136,19 +136,25 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         floatingActionMenu.close(true);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Milestone");
-        String[] options = new String[repositoryMilestones.size() + 1];
         int currentMilestone = 0;
         final int[] selectedOption = new int[1];
-
+        String[] options;
+        if (repositoryMilestones == null) {
+            options = new String[1];
+        } else {
+            options = new String[repositoryMilestones.size() + 1];
+        }
         options[0] = "NO MILESTONE";
         int i = 1;
-        for (Milestone milestone : repositoryMilestones) {
-            if (issue.getMilestone() != null && issue.getMilestone().getTitle().equals(milestone.getTitle())) {
-                currentMilestone = i;
+        if (repositoryMilestones != null) {
+            for (Milestone milestone : repositoryMilestones) {
+                if (issue.getMilestone() != null && issue.getMilestone().getTitle().equals(milestone.getTitle())) {
+                    currentMilestone = i;
+                }
+                options[i++] = milestone.getTitle();
             }
-            options[i++] = milestone.getTitle();
         }
-
+        
         builder.setSingleChoiceItems(options, currentMilestone, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
