@@ -144,7 +144,7 @@ public class PullRequestsFragment extends Fragment {
 
     private void showEmptyView() {
         TextView message = (TextView) rootView.findViewById(R.id.tv_empty_view);
-        message.setText(getString(R.string.no_issues));
+        message.setText(getString(R.string.no_pull_requests));
         emptyView.setVisibility(View.VISIBLE);
     }
 
