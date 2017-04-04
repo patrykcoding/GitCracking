@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -13,7 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.util.Log;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,7 +25,11 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
@@ -134,6 +138,27 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         }
         new UpdateIssue().execute(issue);
     }
+
+    private void addComment() {
+        floatingActionMenu.close(true);
+        new MaterialDialog.Builder(this)
+                .title("New comment")
+                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .input("Leave a comment", null, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        String comment = input.toString();
+                        if (comment.isEmpty()) {
+                            Toast.makeText(getApplicationContext(), "Comment can't be empty", Toast.LENGTH_LONG).show();
+                        }
+                        new NewComment().execute(comment);
+                    }
+                })
+                .positiveText("Comment")
+                .negativeText("Cancel")
+                .show();
+    }
+
 
     public void setMilestone() {
         floatingActionMenu.close(true);
@@ -344,6 +369,12 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             @Override
             public void onClick(View v) {
                 setLabels();
+            }
+        });
+        findViewById(R.id.fab_comment).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addComment();
             }
         });
     }
@@ -604,7 +635,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             } else {
                 textViewComment.setText(Html.fromHtml(comment.getBodyHtml()));
             }
-            String commentedDate = "commented" + prettyTime.format(comment.getCreatedAt());
+            String commentedDate = "commented " + prettyTime.format(comment.getCreatedAt());
             textViewDate.setText(commentedDate);
             linearLayout.addView(view);
         }
@@ -755,6 +786,32 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (success) {
                 issue.setMilestone(newMilestone);
                 new UpdateIssue().execute(issue);
+            }
+        }
+    }
+
+    private class NewComment extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String comment = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.createComment(repository, issue.getNumber(), comment);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
+                Snackbar.make(relativeLayout, "Comment created", Snackbar.LENGTH_LONG).show();
+                new GetIssue().execute(issue);
             }
         }
     }
