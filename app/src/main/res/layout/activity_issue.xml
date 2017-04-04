@@ -305,8 +305,8 @@
         android:paddingEnd="16dp"
         android:paddingStart="0dp"
         fab:menu_backgroundColor="#ccffffff"
-        fab:menu_icon="@drawable/ic_edit_black_24dp"
-        tools:visibility="invisible">
+        tools:visibility="invisible"
+        app:menu_icon="@drawable/ic_edit_white_24dp">
 
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_milestone"

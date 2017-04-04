@@ -6,14 +6,17 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -604,7 +608,6 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ll_comments);
         PrettyTime prettyTime = new PrettyTime();
         int layoutIdForListItem = R.layout.issue_comment_item;
-        boolean shouldAttachToParentImmediately = true;
 
         if (issueComments == null || issueComments.isEmpty()) {
             linearLayout.setVisibility(View.GONE);
@@ -613,14 +616,40 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             linearLayout.setVisibility(View.VISIBLE);
             linearLayout.removeAllViews();
         }
-        for (Comment comment : issueComments) {
+
+        for (final Comment comment : issueComments) {
             LayoutInflater inflater = LayoutInflater.from(this);
 
-            View view = inflater.inflate(layoutIdForListItem, null, shouldAttachToParentImmediately);
+            View view = inflater.inflate(layoutIdForListItem, null);
             ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_issue_comment_icon);
             TextView textViewLogin = (TextView) view.findViewById(R.id.tv_issue_comment_login);
             TextView textViewDate = (TextView) view.findViewById(R.id.tv_issue_comment_date);
             TextView textViewComment = (TextView) view.findViewById(R.id.tv_issue_comment);
+            final ImageButton imageButtonEdit = (ImageButton) view.findViewById(R.id.ib_edit_comment);
+            imageButtonEdit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popupMenu = new PopupMenu(getApplicationContext(), imageButtonEdit);
+                    popupMenu.getMenuInflater().inflate(R.menu.comment_edit_menu, popupMenu.getMenu());
+                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.edit:
+                                    editComment(comment);
+                                    break;
+                                case R.id.delete:
+                                    deleteComment(comment);
+                                    break;
+                                default:
+                                    return false;
+                            }
+                            return true;
+                        }
+                    });
+                    popupMenu.show();
+                }
+            });
 
             Glide
                     .with(this)
@@ -639,6 +668,42 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             textViewDate.setText(commentedDate);
             linearLayout.addView(view);
         }
+    }
+
+    private void editComment(final Comment comment) {
+        String commentText = comment.getBodyText();
+        new MaterialDialog.Builder(this)
+                .title("Edit comment")
+                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .input(null, commentText, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        String newCommentText = input.toString();
+                        if (newCommentText.isEmpty()) {
+                            Toast.makeText(getApplicationContext(), "Comment can't be empty", Toast.LENGTH_LONG).show();
+                        }
+                        comment.setBody(newCommentText);
+                        new EditComment().execute(comment);
+                    }
+                })
+                .positiveText("Submit")
+                .negativeText("Cancel")
+                .show();
+    }
+
+    private void deleteComment(final Comment comment) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Delete comment");
+        builder.setMessage("Delete this comment?");
+        builder.setNegativeButton("No", null);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String commentId = String.valueOf(comment.getId());
+                new DeleteComment().execute(commentId);
+            }
+        });
+        builder.show();
     }
 
     /************************************************************************************************
@@ -811,6 +876,58 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (success) {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment created", Snackbar.LENGTH_LONG).show();
+                new GetIssue().execute(issue);
+            }
+        }
+    }
+
+    private class EditComment extends AsyncTask<Comment, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Comment... params) {
+            Comment comment = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.editComment(repository, comment);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
+                Snackbar.make(relativeLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
+                new GetIssue().execute(issue);
+            }
+        }
+    }
+
+    private class DeleteComment extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String commentId = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.deleteComment(repository, commentId);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
+                Snackbar.make(relativeLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
                 new GetIssue().execute(issue);
             }
         }
