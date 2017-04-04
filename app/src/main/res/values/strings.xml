@@ -23,4 +23,7 @@
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="due_date_optional">Due date (optional)</string>
+    <string name="new_label_name">New label name</string>
+    <string name="color_pallete">Choose color</string>
+    <string name="label_default_color">#FF5722</string>
 </resources>
