@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -12,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -50,7 +53,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     private Issue issue;
     private Repository repository;
-    private List<Comment> comments;
+    private List<Comment> issueComments;
     private List<Label> repositoryLabels;
     private List<User> repositoryCollaborators;
     private List<Milestone> repositoryMilestones;
@@ -321,6 +324,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         setLabelsContent();
         setAssigneeContent();
         setDescriptionContent();
+        setCommentContent();
     }
 
     private void setUpOnClickListeners() {
@@ -564,6 +568,48 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         }
     }
 
+    @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
+    private void setCommentContent() {
+        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ll_comments);
+        PrettyTime prettyTime = new PrettyTime();
+        int layoutIdForListItem = R.layout.issue_comment_item;
+        boolean shouldAttachToParentImmediately = true;
+
+        if (issueComments == null || issueComments.isEmpty()) {
+            linearLayout.setVisibility(View.GONE);
+            return;
+        } else {
+            linearLayout.setVisibility(View.VISIBLE);
+            linearLayout.removeAllViews();
+        }
+        for (Comment comment : issueComments) {
+            LayoutInflater inflater = LayoutInflater.from(this);
+
+            View view = inflater.inflate(layoutIdForListItem, null, shouldAttachToParentImmediately);
+            ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_issue_comment_icon);
+            TextView textViewLogin = (TextView) view.findViewById(R.id.tv_issue_comment_login);
+            TextView textViewDate = (TextView) view.findViewById(R.id.tv_issue_comment_date);
+            TextView textViewComment = (TextView) view.findViewById(R.id.tv_issue_comment);
+
+            Glide
+                    .with(this)
+                    .load(comment.getUser().getAvatarUrl())
+                    .error(getDrawable(android.R.drawable.sym_def_app_icon))
+                    .placeholder(R.drawable.progress_animation)
+                    .crossFade()
+                    .into(imageViewUserIcon);
+            textViewLogin.setText(comment.getUser().getLogin());
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                textViewComment.setText(Html.fromHtml(comment.getBodyHtml(), Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                textViewComment.setText(Html.fromHtml(comment.getBodyHtml()));
+            }
+            String commentedDate = "commented" + prettyTime.format(comment.getCreatedAt());
+            textViewDate.setText(commentedDate);
+            linearLayout.addView(view);
+        }
+    }
+
     /************************************************************************************************
      * Background tasks
      ************************************************************************************************/
@@ -585,6 +631,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 repositoryCollaborators = collaboratorService.getCollaborators(repository);
                 repositoryMilestones= milestoneService.getMilestones(repository, "open");
                 repositoryLabels = labelService.getLabels(repository);
+                issueComments = issueService.getComments(repository, issue.getNumber());
 
                 Collections.sort(repositoryMilestones, new MilestonesComparator());
                 Collections.sort(repositoryCollaborators, new CollaboratorComparator());
@@ -625,30 +672,6 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             public int compare(User o1, User o2) {
                 return o2.getLogin().compareToIgnoreCase(o1.getLogin());
             }
-        }
-    }
-
-    private class GetComments extends AsyncTask<Issue, Void, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(Issue... params) {
-            Issue issue = params[0];
-            IssueService issueService = new IssueService(gitHubClient);
-            try {
-                comments = issueService.getComments(repository, issue.getNumber());
-            } catch (IOException e) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            super.onPostExecute(success);
-            if (!success) {
-                return;
-            }
-            // TODO show comments
         }
     }
 
