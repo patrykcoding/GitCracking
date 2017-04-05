@@ -26,7 +26,8 @@
         <activity android:name=".People" />
         <activity android:name=".ManageAccounts" />
         <activity android:name=".AddAccount" />
-        <activity android:name=".IssueDetail"></activity>
+        <activity android:name=".IssueDetail" />
+        <activity android:name=".NewIssue"></activity>
     </application>
 
 </manifest>

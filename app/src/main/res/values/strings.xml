@@ -28,4 +28,9 @@
     <string name="label_default_color">#FF5722</string>
     <string name="edit">Edit</string>
     <string name="remove">Remove</string>
+    <string name="leave_a_comment">Leave a comment</string>
+    <string name="select_repository">Select repository</string>
+    <string name="select_labels">Select labels</string>
+    <string name="select_milestone">Select milestone</string>
+    <string name="select_assignee">Select assignee</string>
 </resources>

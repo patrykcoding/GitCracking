@@ -6,7 +6,6 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -16,7 +15,6 @@ import android.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -249,7 +247,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         } else {
             options = new String[repositoryCollaborators.size() + 1];
         }
-        options[0] = "NO ASSIGNEE";
+        options[0] = "--NO ASSIGNEE--";
         int i = 1;
         if (repositoryCollaborators != null) {
             for (User collaborator : repositoryCollaborators) {

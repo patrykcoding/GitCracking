@@ -39,4 +39,14 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fab_new_issue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add_white_24dp"
+        app:layout_anchor="@id/container"
+        app:layout_anchorGravity="bottom|right|end"/>
+
+
 </android.support.design.widget.CoordinatorLayout>
