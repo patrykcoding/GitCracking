@@ -15,7 +15,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -30,6 +32,7 @@ import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.LabelService;
 import org.eclipse.egit.github.core.service.MilestoneService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -97,8 +100,8 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save:
-                new CreateNewIssue().execute();
-               return true;
+                createIssue();
+                return true;
             default:
                 return false;
         }
@@ -131,6 +134,27 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         });
     }
 
+    private void createIssue() {
+        if (selectedRepository == null) {
+            Toast.makeText(context, "You have to select a repository", Toast.LENGTH_LONG).show();
+            return;
+        }
+        EditText editTextTitle = (EditText) findViewById(R.id.et_new_issue_title);
+        EditText editTextComment = (EditText) findViewById(R.id.et_new_issue_comment);
+        String title = editTextTitle.getText().toString();
+        String comment = editTextComment.getText().toString();
+
+        if (title.isEmpty()) {
+            Toast.makeText(context, "Title cannot be empty", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        newIssue.setTitle(title);
+        newIssue.setBody(comment);
+
+        new CreateNewIssue().execute();
+    }
+
     private void setRepository() {
         if (!isRepositoryListReady) {
             ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Loading Repositories", "Please wait", ShowLoadingDialog.REPOSITORY_LOADING, ShowLoadingDialog.REPOSITORY_CALLBACK);
@@ -160,7 +184,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == -1) {
-                    // TODO show message -- has to be selected
+                    Toast.makeText(context, "You have to select a repository", Toast.LENGTH_LONG).show();
                     return;
                 }
                 int index = selectedOption[0];
@@ -367,9 +391,11 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == 0) {
                     newIssue.setAssignee(null);
+                    textViewAssignee.setText(getResources().getString(R.string.select_assignee));
                 } else {
                     User assignee = repositoryCollaborators.get(selectedOption[0] - 1);
                     newIssue.setAssignee(assignee);
+                    textViewAssignee.setText(assignee.getLogin());
                 }
             }
         });
@@ -383,10 +409,12 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
     private class CreateNewIssue extends AsyncTask<Void, Void, Boolean> {
 
+        private ProgressDialog progressDialog;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // TODO show loading
+            progressDialog = ProgressDialog.show(context, "Creating new issue", "Please wait", true);
         }
 
         @Override
@@ -394,7 +422,8 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             IssueService issueService = new IssueService(gitHubClient);
 
             try {
-                issueService.createIssue(selectedRepository, newIssue);
+                newIssue = issueService.createIssue(selectedRepository, newIssue);
+
             } catch (IOException e) {
                 return false;
             }
@@ -411,7 +440,10 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 bundle.putSerializable("repository", selectedRepository);
                 intent.putExtras(bundle);
                 intent.setClass(context, IssueDetail.class);
+
+                progressDialog.dismiss();
                 startActivity(intent);
+                finish();
             }
         }
     }
