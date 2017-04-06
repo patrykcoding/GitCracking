@@ -36,6 +36,8 @@ import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
@@ -539,6 +541,8 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
             try {
                 repositories = repositoryService.getRepositories();
+
+                Collections.sort(repositories, new Comparators.RepositoryComparator());
             } catch (IOException e) {
                 return false;
             }
@@ -570,6 +574,10 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 repositoryLabels = labelService.getLabels(selectedRepository);
                 repositoryMilestones = milestoneService.getMilestones(selectedRepository, "open");
                 repositoryCollaborators = collaboratorService.getCollaborators(selectedRepository);
+
+                Collections.sort(repositoryLabels, new Comparators.LabelsComparator());
+                Collections.sort(repositoryMilestones, new Comparators.MilestonesComparator());
+                Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
             } catch (IOException e) {
                 return false;
             }

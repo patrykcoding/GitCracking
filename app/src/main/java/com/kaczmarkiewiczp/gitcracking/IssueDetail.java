@@ -732,8 +732,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 repositoryLabels = labelService.getLabels(repository);
                 issueComments = issueService.getComments(repository, issue.getNumber());
 
-                Collections.sort(repositoryMilestones, new MilestonesComparator());
-                Collections.sort(repositoryCollaborators, new CollaboratorComparator());
+                Collections.sort(repositoryMilestones, new Comparators.MilestonesComparator());
+                Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
             } catch (IOException e) {
                 return false;
             }
@@ -756,20 +756,6 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             }
             if (loadingIndicator.getVisibility() == View.VISIBLE) {
                 loadingIndicator.setVisibility(View.GONE);
-            }
-        }
-
-        public class MilestonesComparator implements Comparator<Milestone> {
-            @Override
-            public int compare(Milestone o1, Milestone o2) {
-                return o2.getTitle().compareToIgnoreCase(o1.getTitle());
-            }
-        }
-
-        public class CollaboratorComparator implements Comparator<User> {
-            @Override
-            public int compare(User o1, User o2) {
-                return o2.getLogin().compareToIgnoreCase(o1.getLogin());
             }
         }
     }

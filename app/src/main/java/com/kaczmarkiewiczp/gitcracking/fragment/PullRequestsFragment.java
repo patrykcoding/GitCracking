@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
 
@@ -192,7 +193,7 @@ public class PullRequestsFragment extends Fragment {
                         }
                     }
                 }
-                Collections.sort(pullRequests, new PullRequestsComparator());
+                Collections.sort(pullRequests, new Comparators.PullRequestsComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
                     // TODO token is invalid -- tell user to again
@@ -235,14 +236,6 @@ public class PullRequestsFragment extends Fragment {
             }
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
-            }
-        }
-
-        public class PullRequestsComparator implements Comparator<PullRequest> {
-
-            @Override
-            public int compare(PullRequest o1, PullRequest o2) {
-                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
             }
         }
     }
