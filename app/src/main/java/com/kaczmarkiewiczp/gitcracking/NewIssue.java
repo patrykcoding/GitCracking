@@ -199,6 +199,10 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
     }
 
     private void setLabels() {
+        if (selectedRepository == null) {
+            Toast.makeText(context, "Select repository first", Toast.LENGTH_LONG).show();
+            return;
+        }
         if (!isRepositoryDataReady) {
             ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Getting labels", "Please wait", ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.LABELS_CALLBACK);
             loadingDialog.execute();
@@ -275,6 +279,10 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
     }
 
     private void setMilestone() {
+        if (selectedRepository == null) {
+            Toast.makeText(context, "Select repository first", Toast.LENGTH_LONG).show();
+            return;
+        }
         if (!isRepositoryDataReady) {
             ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Getting milestones", "Please wait", ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.MILESTONE_CALLBACK);
             loadingDialog.execute();
@@ -354,6 +362,10 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
     }
 
     private void setAssignee() {
+        if (selectedRepository == null) {
+            Toast.makeText(context, "Select repository first", Toast.LENGTH_LONG).show();
+            return;
+        }
         if (!isRepositoryDataReady) {
             ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Getting collaborators", "Please wait", ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.ASSIGNEE_CALLBACK);
             loadingDialog.execute();
