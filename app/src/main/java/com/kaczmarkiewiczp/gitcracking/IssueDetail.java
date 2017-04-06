@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
+import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -389,6 +390,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         LinearLayout linearLayoutIssueStatus = (LinearLayout) findViewById(R.id.ll_issue_status);
         ImageView imageViewIssueStatus = (ImageView) findViewById(R.id.iv_issue_status);
         TextView textViewIssueStatus = (TextView) findViewById(R.id.tv_issue_status);
+        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab_close_issue);
 
         int color;
         if (status.equals("Open")) {
@@ -398,6 +400,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 color = getResources().getColor(R.color.issue_open);
             }
             imageViewIssueStatus.setImageResource(R.drawable.ic_issue_opened_white);
+            floatingActionButton.setLabelText("Close issue");
         } else { //if (status.equals("Closed"))
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 color = getColor(R.color.issue_closed);
@@ -405,6 +408,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 color = getResources().getColor(R.color.issue_closed);
             }
             imageViewIssueStatus.setImageResource(R.drawable.ic_issue_closed_white);
+            floatingActionButton.setLabelText("Open issue");
+
         }
         linearLayoutIssueStatus.setBackgroundColor(color);
         textViewIssueStatus.setText(status);
