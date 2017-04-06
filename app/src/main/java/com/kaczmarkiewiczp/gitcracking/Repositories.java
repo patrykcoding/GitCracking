@@ -184,7 +184,7 @@ public class Repositories extends AppCompatActivity {
                     }
                     repositories.add(repository);
                 }
-                Collections.sort(repositories, new RepositoryComparator());
+                Collections.sort(repositories, new Comparators.RepositoryComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
                     // TODO token is invalid - tell user to login again
@@ -224,14 +224,6 @@ public class Repositories extends AppCompatActivity {
                 loadingIndicator.setVisibility(View.GONE);
             if (swipeRefreshLayout.isRefreshing())
                 swipeRefreshLayout.setRefreshing(false);
-        }
-    }
-
-    public class RepositoryComparator implements Comparator<Repository> {
-
-        @Override
-        public int compare(Repository o1, Repository o2) {
-            return o1.getName().compareToIgnoreCase(o2.getName());
         }
     }
 }

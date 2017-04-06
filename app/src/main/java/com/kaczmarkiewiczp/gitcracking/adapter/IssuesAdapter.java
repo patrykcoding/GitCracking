@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.flexbox.FlexboxLayout;
+import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Issue;
@@ -146,7 +147,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
     }
 
     public void showIssues() {
-        Collections.sort(issues, new IssuesComparator());
+        Collections.sort(issues, new Comparators.IssuesComparator());
         int count = issues.size();
         notifyItemRangeInserted(0, count);
     }
@@ -155,14 +156,6 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
         int size = issues.size();
         issues.clear();
         notifyItemRangeRemoved(0, size);
-    }
-
-    private class IssuesComparator implements Comparator<Issue> {
-
-        @Override
-        public int compare(Issue o1, Issue o2) {
-            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
