@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -58,6 +59,7 @@ import java.util.List;
 
 public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
 
+    private Context context;
     private Issue issue;
     private Repository repository;
     private List<Comment> issueComments;
@@ -68,6 +70,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     private GitHubClient gitHubClient;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar loadingIndicator;
+    private AsyncTask issueBackgroundTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +84,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             finish();
             return;
         }
+        context = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issue #" + issue.getNumber());
         setSupportActionBar(toolbar);
@@ -99,13 +103,24 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new GetIssue().execute(issue);
+                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    issueBackgroundTask.cancel(true);
+                }
+                issueBackgroundTask = new GetIssue().execute(issue);
             }
         });
 
         setUpOnClickListeners();
         setContent();
-        new GetIssue().execute(issue);
+        issueBackgroundTask = new GetIssue().execute(issue);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            issueBackgroundTask.cancel(true);
+        }
     }
 
     @Override
@@ -123,7 +138,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                  findViewById(R.id.action_refresh).startAnimation(rotate);
                  loadingIndicator.setVisibility(View.VISIBLE);
                  swipeRefreshLayout.setEnabled(false);
-                 new GetIssue().execute(issue);
+                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                     issueBackgroundTask.cancel(true);
+                 }
+                 issueBackgroundTask = new GetIssue().execute(issue);
                  return true;
              default:
                 return super.onOptionsItemSelected(item);
@@ -152,7 +170,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         String comment = input.toString();
                         if (comment.isEmpty()) {
-                            Toast.makeText(getApplicationContext(), "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
                         }
                         new NewComment().execute(comment);
                     }
@@ -632,7 +650,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             imageButtonEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    PopupMenu popupMenu = new PopupMenu(getApplicationContext(), imageButtonEdit);
+                    PopupMenu popupMenu = new PopupMenu(context, imageButtonEdit);
                     popupMenu.getMenuInflater().inflate(R.menu.comment_edit_menu, popupMenu.getMenu());
                     popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
@@ -683,7 +701,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         String newCommentText = input.toString();
                         if (newCommentText.isEmpty()) {
-                            Toast.makeText(getApplicationContext(), "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
                         }
                         comment.setBody(newCommentText);
                         new EditComment().execute(comment);
@@ -865,7 +883,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (success) {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment created", Snackbar.LENGTH_LONG).show();
-                new GetIssue().execute(issue);
+                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
+                    issueBackgroundTask.cancel(true);
+                }
+                issueBackgroundTask = new GetIssue().execute(issue);
             }
         }
     }
@@ -891,7 +912,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (success) {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
-                new GetIssue().execute(issue);
+                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
+                    issueBackgroundTask.cancel(true);
+                }
+                issueBackgroundTask = new GetIssue().execute(issue);
             }
         }
     }
@@ -917,7 +941,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (success) {
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
-                new GetIssue().execute(issue);
+                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
+                    issueBackgroundTask.cancel(true);
+                }
+                issueBackgroundTask = new GetIssue().execute(issue);
             }
         }
     }
