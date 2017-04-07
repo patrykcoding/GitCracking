@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.kaczmarkiewiczp.gitcracking.fragment.CommitsFragment;
+
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
@@ -85,7 +87,7 @@ public class PullRequestDetail extends AppCompatActivity {
 
     class PagerAdapter extends FragmentPagerAdapter {
 
-        private String tabTitles[] = new String[] {"CONVERSATION", "COMMITS", "FILES"};
+        private String tabTitles[] = new String[] {"CONVERSATION", "COMMITS", "CHANGES"};
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
@@ -93,7 +95,22 @@ public class PullRequestDetail extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return null;
+            switch (position) {
+                case 0:
+                    //return null;
+                case 2: // TODO temp
+                case 1:
+                    CommitsFragment commitsFragment = new CommitsFragment();
+                    Bundle args = new Bundle();
+                    args.putSerializable("pull request", pullRequest);
+                    args.putSerializable("repository", repository);
+                    commitsFragment.setArguments(args);
+                    return commitsFragment;
+                //case 2:
+                    //return null;
+                default:
+                    return null;
+            }
         }
 
         @Override
