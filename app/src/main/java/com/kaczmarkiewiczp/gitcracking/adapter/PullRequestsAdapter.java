@@ -10,22 +10,34 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.Repository;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 
 
 public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapter.ViewHolder> {
 
     private ArrayList<PullRequest> pullRequests;
+    private HashMap<String, Repository> repositories;
     private Context context;
+    private final PullRequestClickListener onClickListener;
 
-    public PullRequestsAdapter() {
+    public interface PullRequestClickListener {
+        void onPullRequestClick(PullRequest pullRequest, Repository repository);
+    }
+
+    public PullRequestsAdapter(PullRequestClickListener listener) {
         pullRequests = new ArrayList<>();
+        repositories = new HashMap<>();
+        onClickListener = listener;
     }
 
     @Override
@@ -42,20 +54,21 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String url = pullRequests.get(position).getUrl();
-        int repositoryNameStartIndex = 29;
-        String repository = url.substring(repositoryNameStartIndex, url.indexOf("/pulls/"));
-
-        String prNumber = String.valueOf(pullRequests.get(position).getNumber());
+        PullRequest pullRequest = pullRequests.get(position);
+        Repository repo = repositories.get(pullRequest.getUrl());
+        String repositoryName = repo.getName();
+        String repositoryOwner = repo.getOwner().getLogin();
+        String repository = repositoryOwner + "/" + repositoryName;
+        String prNumber = String.valueOf(pullRequest.getNumber());
         prNumber = "#" + prNumber;
 
-        String title = pullRequests.get(position).getTitle();
-        String userIconUrl = pullRequests.get(position).getUser().getAvatarUrl();
-        String username = pullRequests.get(position).getUser().getLogin();
+        String title = pullRequest.getTitle();
+        String userIconUrl = pullRequest.getUser().getAvatarUrl();
+        String username = pullRequest.getUser().getLogin();
 
-        Date date = pullRequests.get(position).getCreatedAt();
+        Date date = pullRequest.getCreatedAt();
         PrettyTime prettyTime = new PrettyTime();
-        int commentsCount = pullRequests.get(position).getComments();
+        int commentsCount = pullRequest.getComments();
 
         holder.textViewRepository.setText(repository);
         holder.textViewPrNumber.setText(prNumber);
@@ -85,20 +98,26 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
         return pullRequests.size();
     }
 
-    public void setPullRequests(ArrayList<PullRequest> pullRequests) {
-        int size = this.pullRequests.size();
+    public void addPullRequest(PullRequest pullRequest, Repository repository) {
+        pullRequests.add(pullRequest);
+        String key = pullRequest.getUrl();
+        repositories.put(key, repository);
+    }
+
+    public void showPullRequests() {
+        Collections.sort(pullRequests, new Comparators.PullRequestsComparator());
         int count = pullRequests.size();
-        this.pullRequests.addAll(pullRequests);
-        notifyItemRangeInserted(size, count);
+        notifyItemRangeInserted(0, count);
     }
 
     public void clearPullRequests() {
         int size = pullRequests.size();
         pullRequests.clear();
+        repositories.clear();
         notifyItemRangeRemoved(0, size);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public final TextView textViewRepository;
         public final TextView textViewPrNumber;
@@ -119,6 +138,17 @@ public class PullRequestsAdapter extends RecyclerView.Adapter<PullRequestsAdapte
             textViewDate = (TextView) view.findViewById(R.id.tv_date);
             linearLayoutComments = (LinearLayout) view.findViewById(R.id.ll_comments);
             textViewCommentsCount = (TextView) view.findViewById(R.id.tv_comments_count);
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int positionedClicked = getAdapterPosition();
+            PullRequest prClicked = pullRequests.get(positionedClicked);
+            String key = prClicked.getUrl();
+            Repository repository = repositories.get(key);
+            onClickListener.onPullRequestClick(prClicked, repository);
         }
     }
 }

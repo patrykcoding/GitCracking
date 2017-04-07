@@ -155,6 +155,7 @@ public class IssuesAdapter extends RecyclerView.Adapter<IssuesAdapter.ViewHolder
     public void clearIssues() {
         int size = issues.size();
         issues.clear();
+        repositories.clear();
         notifyItemRangeRemoved(0, size);
     }
 
