@@ -33,4 +33,5 @@
     <string name="select_labels">Select labels</string>
     <string name="select_milestone">Select milestone</string>
     <string name="select_assignee">Select assignee</string>
+    <string name="dot">\ ⋅\ </string>
 </resources>
