@@ -31,6 +31,7 @@ import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
@@ -167,10 +168,12 @@ public class Dashboard extends AppCompatActivity {
 
     public class GetNewsFeedData extends AsyncTask<GitHubClient, Void, Boolean> {
 
+        private ArrayList<Event> events;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
+            events = new ArrayList<>();
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
             dashboardAdapter.clearEvents();
@@ -195,8 +198,7 @@ public class Dashboard extends AppCompatActivity {
                     if (isCancelled()) {
                         return false;
                     }
-
-                    dashboardAdapter.addEvent(anEventCollection);
+                    events.add(anEventCollection);
                 }
             } catch (NoSuchPageException e) {
                 return false;
@@ -213,7 +215,11 @@ public class Dashboard extends AppCompatActivity {
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
             }
-            if (!success) {
+            if (success) {
+                for (Event event : events) {
+                    dashboardAdapter.addEvent(event);
+                }
+            } else {
                 dashboardAdapter.clearEvents();
                 showEmptyView();
             }
