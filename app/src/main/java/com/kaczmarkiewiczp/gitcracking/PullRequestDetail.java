@@ -85,7 +85,7 @@ public class PullRequestDetail extends AppCompatActivity {
 
     class PagerAdapter extends FragmentPagerAdapter {
 
-        private String tabTitles[] = new String[] {"CONVERSATION", "COMMITS", "FILES"};
+        private String tabTitles[] = new String[] {"CONVERSATION", "COMMITS", "CHANGES"};
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
