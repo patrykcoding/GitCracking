@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.Comparators;
+import com.kaczmarkiewiczp.gitcracking.PullRequestDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
 
@@ -153,15 +154,13 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
 
     @Override
     public void onPullRequestClick(PullRequest pullRequest, Repository repository) {
-        /*
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
         bundle.putSerializable("pull request", pullRequest);
         bundle.putSerializable("repository", repository);
         intent.putExtras(bundle);
-        */
-        Log.i("prFragment", "click");
-        //intent.setClass()
+        intent.setClass(getContext(), PullRequestDetail.class);
+        startActivity(intent);
     }
 
     public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
