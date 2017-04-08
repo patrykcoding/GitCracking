@@ -207,6 +207,10 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
                     }
                     List<Issue> repositoryIssues = issueService.getIssues(repository, null);
                     for (Issue issue : repositoryIssues) {
+                        if (issue.getPullRequest() != null) {
+                            // github treats pull requests as issues, if this is a PR, skip it
+                            continue;
+                        }
                         if (tabSection == SECTION_ASSIGNED) {
                             if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(user)) {
                                 issues.add(issue);
