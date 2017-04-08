@@ -97,7 +97,8 @@ public class PullRequestDetail extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return null;
+                    //return null;
+                case 2: // TODO temp
                 case 1:
                     CommitsFragment commitsFragment = new CommitsFragment();
                     Bundle args = new Bundle();
@@ -105,8 +106,8 @@ public class PullRequestDetail extends AppCompatActivity {
                     args.putSerializable("repository", repository);
                     commitsFragment.setArguments(args);
                     return commitsFragment;
-                case 2:
-                    return null;
+                //case 2:
+                    //return null;
                 default:
                     return null;
             }
