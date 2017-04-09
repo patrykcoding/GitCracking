@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_pull_request"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/srl_pull_request"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true">
+
+            <LinearLayout
+                android:id="@+id/ll_pr_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusableInTouchMode="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/ll_pr_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/issue_open"
+                    android:elevation="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/iv_pr_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="0dp"
+                        android:layout_marginStart="16dp"
+                        android:src="@drawable/ic_git_pull_request_white" />
+
+                    <TextView
+                        android:id="@+id/tv_pr_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingEnd="16dp"
+                        android:paddingStart="4dp"
+                        android:textColor="@android:color/white"
+                        tools:text="Open" />
+                </LinearLayout>
+                <!-- holds issue title and number -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingEnd="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="12dp">
+
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|start"
+                        android:orientation="horizontal"
+                        app:flexWrap="wrap">
+
+                        <TextView
+                            android:id="@+id/tv_pr_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@android:style/TextAppearance.Material.Large"
+                            tools:text="Add new features" />
+                    </com.google.android.flexbox.FlexboxLayout>
+
+                    <TextView
+                        android:id="@+id/tv_pr_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginStart="8dp"
+                        tools:text="#38" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_pr_repo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="4dp"
+                    tools:text="kaczmarkiewiczp/repo" />
+
+                <!-- holds user icon, user name, and creation date -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingEnd="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="16dp">
+
+                    <ImageView
+                        android:id="@+id/iv_user_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:scaleType="fitXY"
+                        android:src="@android:drawable/sym_def_app_icon" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tv_user_login"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingEnd="8dp"
+                                android:paddingStart="12dp"
+                                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                                tools:text="kaczmarkiewiczp" />
+
+                            <TextView
+                                android:id="@+id/tv_open_close_action"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                tools:text="opened this pull request" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingEnd="0dp"
+                            android:paddingStart="12dp"
+                            tools:text="8 days ago" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <include layout="@layout/divider" />
+
+                <!-- holds milestone, assignee, labels, and description -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingEnd="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="16dp">
+
+                    <!-- milestone -->
+                    <LinearLayout
+                        android:id="@+id/ll_milestone"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingBottom="16dp"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_milestone" />
+
+                        <TextView
+                            android:id="@+id/tv_milestone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingEnd="12dp"
+                            android:paddingStart="12dp"
+                            tools:text="Milestone" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_milestone"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingEnd="12dp"
+                            android:paddingStart="0dp"
+                            android:paddingTop="4dp" />
+                    </LinearLayout>
+
+                    <!-- labels/tags -->
+                    <LinearLayout
+                        android:id="@+id/ll_tags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingBottom="16dp"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_label_outline_black_24dp" />
+
+                        <com.google.android.flexbox.FlexboxLayout
+                            android:id="@+id/fl_tags"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingEnd="0dp"
+                            android:paddingStart="10dp"
+                            app:flexWrap="wrap">
+                            <!-- tags (as TextView) will be inserted programmatically here -->
+                        </com.google.android.flexbox.FlexboxLayout>
+                    </LinearLayout>
+
+                    <!-- assignee -->
+                    <LinearLayout
+                        android:id="@+id/ll_assignee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingBottom="16dp"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingEnd="12dp"
+                            android:paddingStart="0dp"
+                            android:src="@drawable/ic_person_outline_black_24dp" />
+
+                        <ImageView
+                            android:id="@+id/iv_assignee_icon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp" />
+
+                        <TextView
+                            android:id="@+id/tv_assignee_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingEnd="0dp"
+                            android:paddingStart="4dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_pr_description"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:autoLink="all"
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textIsSelectable="true"
+                        android:visibility="gone"
+                        tools:text="Boring description goes here"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/description_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@android:color/darker_gray"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <LinearLayout
+                    android:id="@+id/ll_comments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingEnd="0dp"
+                    android:paddingTop="12dp">
+                    <!-- comments will be inserted here -->
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/fab_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:paddingBottom="16dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="0dp"
+        app:menu_icon="@drawable/ic_edit_white_24dp"
+        fab:menu_backgroundColor="#ccffffff"
+        tools:visibility="invisible">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_milestone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_milestone_white"
+            fab:fab_label="Milestone"
+            fab:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_labels"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_label_white_24dp"
+            fab:fab_label="Labels"
+            fab:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_assignee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_assignee_white_24dp"
+            fab:fab_label="Assignee"
+            fab:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_comment_white_24dp"
+            fab:fab_label="Comment"
+            fab:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_merge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="changeIssueState"
+            android:src="@drawable/ic_check_black_24dp"
+            fab:fab_label="Close issue"
+            fab:fab_size="mini" />
+    </com.github.clans.fab.FloatingActionMenu>
+
+    <ProgressBar
+        android:id="@+id/pb_loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="64dp"
+        android:elevation="8dp"
+        android:visibility="gone" />
+</RelativeLayout>

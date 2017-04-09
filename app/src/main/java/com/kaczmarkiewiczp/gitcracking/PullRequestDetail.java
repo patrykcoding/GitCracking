@@ -11,13 +11,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.CommitsFragment;
+import com.kaczmarkiewiczp.gitcracking.fragment.PRDetailFragment;
 
-import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 
@@ -35,7 +34,7 @@ public class PullRequestDetail extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pull_request_detail);
+        setContentView(R.layout.activity_pr_detail);
         Bundle bundle = getIntent().getExtras();
         pullRequest = (PullRequest) bundle.getSerializable("pull request");
         repository = (Repository) bundle.getSerializable("repository");
@@ -95,15 +94,17 @@ public class PullRequestDetail extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+            Bundle args = new Bundle();
+            args.putSerializable("pull request", pullRequest);
+            args.putSerializable("repository", repository);
             switch (position) {
                 case 0:
-                    //return null;
+                    PRDetailFragment prDetailFragment = new PRDetailFragment();
+                    prDetailFragment.setArguments(args);
+                    return prDetailFragment;
                 case 2: // TODO temp
                 case 1:
                     CommitsFragment commitsFragment = new CommitsFragment();
-                    Bundle args = new Bundle();
-                    args.putSerializable("pull request", pullRequest);
-                    args.putSerializable("repository", repository);
                     commitsFragment.setArguments(args);
                     return commitsFragment;
                 //case 2:
