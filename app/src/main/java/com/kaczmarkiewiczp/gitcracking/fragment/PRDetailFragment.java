@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +34,6 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
-import com.kaczmarkiewiczp.gitcracking.IssueDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Comment;
@@ -334,7 +332,7 @@ public class PRDetailFragment extends Fragment {
     private void setCommentContent() {
         LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_comments);
         PrettyTime prettyTime = new PrettyTime();
-        int layoutIdForListItem = R.layout.issue_comment_item;
+        int layoutIdForListItem = R.layout.comment_item;
 
         if (prComments == null || prComments.isEmpty()) {
             linearLayout.setVisibility(View.GONE);
@@ -348,10 +346,10 @@ public class PRDetailFragment extends Fragment {
             LayoutInflater inflater = LayoutInflater.from(context);
 
             View view = inflater.inflate(layoutIdForListItem, null);
-            ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_issue_comment_icon);
-            TextView textViewLogin = (TextView) view.findViewById(R.id.tv_issue_comment_login);
-            TextView textViewDate = (TextView) view.findViewById(R.id.tv_issue_comment_date);
-            TextView textViewComment = (TextView) view.findViewById(R.id.tv_issue_comment);
+            ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_comment_icon);
+            TextView textViewLogin = (TextView) view.findViewById(R.id.tv_comment_login);
+            TextView textViewDate = (TextView) view.findViewById(R.id.tv_comment_date);
+            TextView textViewComment = (TextView) view.findViewById(R.id.tv_comment);
             final ImageButton imageButtonEdit = (ImageButton) view.findViewById(R.id.ib_edit_comment);
             imageButtonEdit.setOnClickListener(new View.OnClickListener() {
                 @Override

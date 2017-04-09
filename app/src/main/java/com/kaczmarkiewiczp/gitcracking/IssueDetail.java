@@ -53,7 +53,6 @@ import org.ocpsoft.prettytime.PrettyTime;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -628,7 +627,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     private void setCommentContent() {
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ll_comments);
         PrettyTime prettyTime = new PrettyTime();
-        int layoutIdForListItem = R.layout.issue_comment_item;
+        int layoutIdForListItem = R.layout.comment_item;
 
         if (issueComments == null || issueComments.isEmpty()) {
             linearLayout.setVisibility(View.GONE);
@@ -642,10 +641,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             LayoutInflater inflater = LayoutInflater.from(this);
 
             View view = inflater.inflate(layoutIdForListItem, null);
-            ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_issue_comment_icon);
-            TextView textViewLogin = (TextView) view.findViewById(R.id.tv_issue_comment_login);
-            TextView textViewDate = (TextView) view.findViewById(R.id.tv_issue_comment_date);
-            TextView textViewComment = (TextView) view.findViewById(R.id.tv_issue_comment);
+            ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_comment_icon);
+            TextView textViewLogin = (TextView) view.findViewById(R.id.tv_comment_login);
+            TextView textViewDate = (TextView) view.findViewById(R.id.tv_comment_date);
+            TextView textViewComment = (TextView) view.findViewById(R.id.tv_comment);
             final ImageButton imageButtonEdit = (ImageButton) view.findViewById(R.id.ib_edit_comment);
             imageButtonEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
