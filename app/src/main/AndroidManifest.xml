@@ -27,7 +27,8 @@
         <activity android:name=".ManageAccounts" />
         <activity android:name=".AddAccount" />
         <activity android:name=".IssueDetail" />
-        <activity android:name=".NewIssue"></activity>
+        <activity android:name=".NewIssue" />
+        <activity android:name=".PullRequestDetail"></activity>
     </application>
 
 </manifest>

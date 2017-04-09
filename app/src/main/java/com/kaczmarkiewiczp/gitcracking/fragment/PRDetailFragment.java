@@ -1,4 +1,4 @@
-package com.kaczmarkiewiczp.gitcracking;
+package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -6,29 +6,28 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.InputType;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,11 +36,17 @@ import com.bumptech.glide.Glide;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
+import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.Comparators;
+import com.kaczmarkiewiczp.gitcracking.CreateLabelDialog;
+import com.kaczmarkiewiczp.gitcracking.CreateMilestoneDialog;
+import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -50,118 +55,95 @@ import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.LabelService;
 import org.eclipse.egit.github.core.service.MilestoneService;
 import org.ocpsoft.prettytime.PrettyTime;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
+public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
 
+    private View rootView;
     private Context context;
-    private Issue issue;
-    private Repository repository;
-    private List<Comment> issueComments;
-    private List<Label> repositoryLabels;
-    private List<User> repositoryCollaborators;
-    private List<Milestone> repositoryMilestones;
-    private FloatingActionMenu floatingActionMenu;
-    private GitHubClient gitHubClient;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar loadingIndicator;
-    private AsyncTask issueBackgroundTask;
+    private GitHubClient gitHubClient;
+    private FloatingActionMenu floatingActionMenu;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private PullRequest pullRequest;
+    private Repository repository;
+    private Issue prIssue;
+    private List<Comment> prComments;
+    private List<Milestone> repositoryMilestones;
+    private List<User> repositoryCollaborators;
+    private List<Label> repositoryLabels;
+    private FragmentActivity fragmentActivity;
+
+    public PRDetailFragment() {
+        // requires empty constructor
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_pr_detail, container, false);
+        rootView = view;
+        context = view.getContext();
+
+        Bundle bundle = getArguments();
+        pullRequest = (PullRequest) bundle.getSerializable("pull request");
+        repository = (Repository) bundle.getSerializable("repository");
+
+        AccountUtils accountUtils = new AccountUtils(context);
+        gitHubClient = accountUtils.getGitHubClient();
+        floatingActionMenu = (FloatingActionMenu) view.findViewById(R.id.fab_menu);
+        floatingActionMenu.setClosedOnTouchOutside(true);
+        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_issue);
+        // TODO set up on swipe listener
+
+        setupOnClickListeners();
+        new GetPRIssue().execute(pullRequest);
+
+        return view;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_issue);
-        Bundle bundle = getIntent().getExtras();
-        issue = (Issue) bundle.getSerializable("issue");
-        repository = (Repository) bundle.getSerializable("repository");
-        if (issue == null || repository == null) {
-            // something really bad happened - return
-            finish();
-            return;
-        }
-        context = this;
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Issue #" + issue.getNumber());
-        setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
-        navBarUtils.setNavigationDrawerButtonAsUp();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        navBarUtils.killAllActivitiesOnNewActivityStart(true);
-        AccountUtils accountUtils = new AccountUtils(this);
-        gitHubClient = accountUtils.getGitHubClient();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        fragmentActivity = (FragmentActivity) context;
+    }
 
-        floatingActionMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
-        floatingActionMenu.setClosedOnTouchOutside(true);
-        loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_issue);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+    private void setupOnClickListeners() {
+        rootView.findViewById(R.id.fab_comment).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onRefresh() {
-                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    issueBackgroundTask.cancel(true);
-                }
-                issueBackgroundTask = new GetIssue().execute(issue);
+            public void onClick(View v) {
+                addComment();
             }
         });
-
-        setUpOnClickListeners();
-        setContent();
-        issueBackgroundTask = new GetIssue().execute(issue);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-            issueBackgroundTask.cancel(true);
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.actions, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-         switch (item.getItemId()) {
-             case R.id.action_refresh:
-                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
-                 findViewById(R.id.action_refresh).startAnimation(rotate);
-                 loadingIndicator.setVisibility(View.VISIBLE);
-                 swipeRefreshLayout.setEnabled(false);
-                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                     issueBackgroundTask.cancel(true);
-                 }
-                 issueBackgroundTask = new GetIssue().execute(issue);
-                 return true;
-             default:
-                return super.onOptionsItemSelected(item);
-         }
-    }
-
-    public void changeIssueState(View view) {
-        floatingActionMenu.close(true);
-        String currentState = issue.getState();
-
-        if (currentState.equals(IssueService.STATE_OPEN)) {
-            issue = issue.setState(IssueService.STATE_CLOSED);
-        } else {
-            issue = issue.setState(IssueService.STATE_OPEN);
-        }
-        new UpdateIssue().execute(issue);
+        rootView.findViewById(R.id.fab_milestone).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMilestone();
+            }
+        });
+        rootView.findViewById(R.id.fab_labels).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setLabels();
+            }
+        });
+        rootView.findViewById(R.id.fab_assignee).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAssignee();
+            }
+        });
     }
 
     private void addComment() {
         floatingActionMenu.close(true);
-        new MaterialDialog.Builder(this)
+        new MaterialDialog.Builder(context)
                 .title("New comment")
                 .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
                 .input("Leave a comment", null, new MaterialDialog.InputCallback() {
@@ -182,7 +164,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     public void setMilestone() {
         floatingActionMenu.close(true);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Select Milestone");
         int currentMilestone = 0;
         final int[] selectedOption = new int[1];
@@ -196,13 +178,13 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         int i = 1;
         if (repositoryMilestones != null) {
             for (Milestone milestone : repositoryMilestones) {
-                if (issue.getMilestone() != null && issue.getMilestone().getTitle().equals(milestone.getTitle())) {
+                if (prIssue.getMilestone() != null && prIssue.getMilestone().getTitle().equals(milestone.getTitle())) {
                     currentMilestone = i;
                 }
                 options[i++] = milestone.getTitle();
             }
         }
-        
+
         builder.setSingleChoiceItems(options, currentMilestone, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -215,19 +197,23 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 if (selectedOption[0] == 0) {
                     Milestone noMilestone = new Milestone();
                     noMilestone.setTitle("");
-                    issue.setMilestone(noMilestone);
+                    prIssue.setMilestone(noMilestone);
                 } else {
                     Milestone newMilestone = repositoryMilestones.get(selectedOption[0] - 1);
-                    issue.setMilestone(newMilestone);
+                    prIssue.setMilestone(newMilestone);
                 }
-                new UpdateIssue().execute(issue);
+                new UpdatePRIssue().execute(prIssue);
             }
         });
         final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
+        milestoneDialog.setTargetFragment(this, 0);
+        final FragmentManager fragmentManager = getFragmentManager();
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(getSupportFragmentManager(), "New Milestone");
+                milestoneDialog.show(fragmentManager, "New Milestone");
+                //android.app.FragmentTransaction fragmentTransation =
+                //fragmentTransation.replace(R.layout.create_milestone_dialog, milestoneDialog);
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -247,7 +233,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             milestone.setDueOn(dialog.getMilestoneDueDate());
         }
         dialog.dismiss();
-        Snackbar.make(findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(R.id.rl_pull_request), "Milestone created", Snackbar.LENGTH_LONG)
                 .show();
 
         new NewMilestone().execute(milestone);
@@ -255,7 +241,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     private void setAssignee() {
         floatingActionMenu.close(true);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Select Assignee");
         int currentAssignee = 0;
         final int[] selectedOption = new int[1];
@@ -269,7 +255,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         int i = 1;
         if (repositoryCollaborators != null) {
             for (User collaborator : repositoryCollaborators) {
-                if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(collaborator.getLogin())) {
+                if (prIssue.getAssignee() != null && prIssue.getAssignee().getLogin().equals(collaborator.getLogin())) {
                     currentAssignee = i;
                 }
                 options[i++] = collaborator.getLogin();
@@ -288,12 +274,12 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 if (selectedOption[0] == 0) {
                     User emptyUser = new User();
                     emptyUser.setLogin("");
-                    issue.setAssignee(emptyUser);
+                    prIssue.setAssignee(emptyUser);
                 } else {
                     User collaborator = repositoryCollaborators.get(selectedOption[0] - 1);
-                    issue.setAssignee(collaborator);
+                    prIssue.setAssignee(collaborator);
                 }
-                new UpdateIssue().execute(issue);
+                new UpdatePRIssue().execute(prIssue);
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -302,10 +288,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     private void setLabels() {
         floatingActionMenu.close(true);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Select Labels");
         String[] options = new String[repositoryLabels.size()]; // TODO crash if there are no labels
-        final List<Label> issueLabels = issue.getLabels();
+        final List<Label> issueLabels = prIssue.getLabels();
         final boolean[] selection = new boolean[repositoryLabels.size()]; // TODO crash if no labels
         if (repositoryLabels != null) {
             for (int i = 0; i < repositoryLabels.size(); i++) {
@@ -330,8 +316,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                         newLabels.add(repositoryLabels.get(i));
                     }
                 }
-                issue.setLabels(newLabels);
-                new UpdateIssue().execute(issue);
+                prIssue.setLabels(newLabels);
+                new UpdatePRIssue().execute(prIssue);
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -339,7 +325,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         builder.setNeutralButton("New Label", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                createLabelDialog.show(getFragmentManager(), "New Label");
+                createLabelDialog.show(fragmentActivity.getFragmentManager(), "New Label");
             }
         });
         builder.show();
@@ -355,7 +341,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         label.setColor(labelColor);
 
         dialog.dismiss();
-        Snackbar.make(findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
                 .show();
         new NewLabel().execute(label);
     }
@@ -372,75 +358,47 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         setCommentContent();
     }
 
-    private void setUpOnClickListeners() {
-        findViewById(R.id.fab_milestone).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setMilestone();
-            }
-        });
-        findViewById(R.id.fab_assignee).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setAssignee();
-            }
-        });
-        findViewById(R.id.fab_labels).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setLabels();
-            }
-        });
-        findViewById(R.id.fab_comment).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addComment();
-            }
-        });
-    }
-
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     private void setIssueStateContent() {
-        String status = issue.getState();
+        String status = prIssue.getState();
         status = status.substring(0, 1).toUpperCase() + status.substring(1);
 
-        LinearLayout linearLayoutIssueStatus = (LinearLayout) findViewById(R.id.ll_issue_status);
-        ImageView imageViewIssueStatus = (ImageView) findViewById(R.id.iv_issue_status);
-        TextView textViewIssueStatus = (TextView) findViewById(R.id.tv_issue_status);
-        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab_close_issue);
+        LinearLayout linearLayoutPRStatus = (LinearLayout) rootView.findViewById(R.id.ll_pr_status);
+        ImageView imageViewPRStatus = (ImageView) rootView.findViewById(R.id.iv_pr_status);
+        TextView textViewPRStatus = (TextView) rootView.findViewById(R.id.tv_pr_status);
+        FloatingActionButton floatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab_merge);
 
         int color;
         if (status.equals("Open")) {
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                color = getColor(R.color.issue_open);
+                color = context.getColor(R.color.pr_open);
             } else {
-                color = getResources().getColor(R.color.issue_open);
+                color = getResources().getColor(R.color.pr_open);
             }
-            imageViewIssueStatus.setImageResource(R.drawable.ic_issue_opened_white);
-            floatingActionButton.setLabelText("Close issue");
+            imageViewPRStatus.setImageResource(R.drawable.ic_git_pull_request_white);
         } else { //if (status.equals("Closed"))
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                color = getColor(R.color.issue_closed);
+                color = context.getColor(R.color.pr_closed);
             } else {
                 color = getResources().getColor(R.color.issue_closed);
             }
-            imageViewIssueStatus.setImageResource(R.drawable.ic_issue_closed_white);
-            floatingActionButton.setLabelText("Open issue");
+            imageViewPRStatus.setImageResource(R.drawable.ic_git_pull_request_white);
+            floatingActionButton.setVisibility(View.GONE);
 
         }
-        linearLayoutIssueStatus.setBackgroundColor(color);
-        textViewIssueStatus.setText(status);
+        linearLayoutPRStatus.setBackgroundColor(color);
+        textViewPRStatus.setText(status);
     }
 
     private void setTitleContent() {
-        String title = issue.getTitle();
-        String issueNumber = "#" + String.valueOf(issue.getNumber());
+        String title = prIssue.getTitle();
+        String prNumber = "#" + String.valueOf(prIssue.getNumber());
 
-        TextView textViewTitle = (TextView) findViewById(R.id.tv_issue_title);
-        TextView textViewIssueNumber = (TextView) findViewById(R.id.tv_issue_number);
+        TextView textViewTitle = (TextView) rootView.findViewById(R.id.tv_pr_title);
+        TextView textViewIssueNumber = (TextView) rootView.findViewById(R.id.tv_pr_number);
 
         textViewTitle.setText(title);
-        textViewIssueNumber.setText(issueNumber);
+        textViewIssueNumber.setText(prNumber);
     }
 
     private void setRepositoryContent() {
@@ -448,26 +406,26 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         String repositoryOwner = repository.getOwner().getLogin();
         repositoryName = repositoryOwner + "/" + repositoryName;
 
-        TextView textViewRepositoryName = (TextView) findViewById(R.id.tv_issue_repo);
+        TextView textViewRepositoryName = (TextView) rootView.findViewById(R.id.tv_pr_repo);
         textViewRepositoryName.setText(repositoryName);
     }
 
     private void setUserContent() {
-        String userLogin = issue.getUser().getLogin();
-        String userIconUrl = issue.getUser().getAvatarUrl();
-        Date date = issue.getCreatedAt();
+        String userLogin = prIssue.getUser().getLogin();
+        String userIconUrl = prIssue.getUser().getAvatarUrl();
+        Date date = prIssue.getCreatedAt();
         PrettyTime prettyTime = new PrettyTime();
-        String action = "opened this issue";
+        String action = "opened this pull request";
 
-        ImageView imageViewUserIcon = (ImageView) findViewById(R.id.iv_user_icon);
-        TextView textViewUser = (TextView) findViewById(R.id.tv_user_login);
-        TextView textViewAction = (TextView) findViewById(R.id.tv_open_close_action);
-        TextView textViewDate = (TextView) findViewById(R.id.tv_date);
+        ImageView imageViewUserIcon = (ImageView) rootView.findViewById(R.id.iv_user_icon);
+        TextView textViewUser = (TextView) rootView.findViewById(R.id.tv_user_login);
+        TextView textViewAction = (TextView) rootView.findViewById(R.id.tv_open_close_action);
+        TextView textViewDate = (TextView) rootView.findViewById(R.id.tv_date);
 
         Glide
                 .with(this)
                 .load(userIconUrl)
-                .error(getDrawable(android.R.drawable.sym_def_app_icon))
+                .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
                 .placeholder(R.drawable.progress_animation)
                 .crossFade()
                 .into(imageViewUserIcon);
@@ -478,8 +436,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     private void setMilestoneContent() {
-        Milestone milestone = issue.getMilestone();
-        LinearLayout linearLayoutMilestone = (LinearLayout) findViewById(R.id.ll_milestone);
+        Milestone milestone = prIssue.getMilestone();
+        LinearLayout linearLayoutMilestone = (LinearLayout) rootView.findViewById(R.id.ll_milestone);
         if (milestone == null) {
             // milestone is the first element for the section, if (after refresh) there is no milestone
             // for this issue, make the divider invisible (it could have been visible before refresh)
@@ -490,8 +448,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             return;
         }
 
-        TextView textViewMilestone = (TextView) findViewById(R.id.tv_milestone);
-        ProgressBar progressBarMilestone = (ProgressBar) findViewById(R.id.pb_milestone);
+        TextView textViewMilestone = (TextView) rootView.findViewById(R.id.tv_milestone);
+        ProgressBar progressBarMilestone = (ProgressBar) rootView.findViewById(R.id.pb_milestone);
 
         String milestoneTitle = milestone.getTitle();
         int openIssues = milestone.getOpenIssues();
@@ -508,13 +466,13 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         if (dueDate != null) {
             if (today.after(dueDate)) {
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    progressColor = getColor(R.color.milestone_progress_overdue);
+                    progressColor = context.getColor(R.color.milestone_progress_overdue);
                 } else {
                     progressColor = getResources().getColor(R.color.milestone_progress_overdue);
                 }
             } else {
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    progressColor = getColor(R.color.milestone_progress);
+                    progressColor = context.getColor(R.color.milestone_progress);
                 } else {
                     progressColor = getResources().getColor(R.color.milestone_progress);
                 }
@@ -525,15 +483,15 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     }
 
     private void setLabelsContent() {
-        List<Label> labels = issue.getLabels();
-        LinearLayout linearLayoutLabels = (LinearLayout) findViewById(R.id.ll_tags);
+        List<Label> labels = prIssue.getLabels();
+        LinearLayout linearLayoutLabels = (LinearLayout) rootView.findViewById(R.id.ll_tags);
 
         if (labels == null || labels.size() < 1) {
             linearLayoutLabels.setVisibility(View.GONE);
             return;
         }
         linearLayoutLabels.setVisibility(View.VISIBLE);
-        FlexboxLayout flexboxLayoutLabels = (FlexboxLayout) findViewById(R.id.fl_tags);
+        FlexboxLayout flexboxLayoutLabels = (FlexboxLayout) rootView.findViewById(R.id.fl_tags);
         if (flexboxLayoutLabels.getChildCount() > 0) {
             flexboxLayoutLabels.removeAllViews();
         }
@@ -545,7 +503,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             int b = Color.blue(rgb);
             double a = 1 - (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-            TextView textViewLabel = new TextView(this);
+            TextView textViewLabel = new TextView(context);
             textViewLabel.setText(label.getName());
             textViewLabel.setBackgroundColor(Color.parseColor("#" + colorString));
             if (a < 0.5) {
@@ -564,8 +522,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     }
 
     private void setAssigneeContent() {
-        User assignee = issue.getAssignee();
-        LinearLayout linearLayoutAssignee = (LinearLayout) findViewById(R.id.ll_assignee);
+        User assignee = prIssue.getAssignee();
+        LinearLayout linearLayoutAssignee = (LinearLayout) rootView.findViewById(R.id.ll_assignee);
         if (assignee == null) {
             linearLayoutAssignee.setVisibility(View.GONE);
             return;
@@ -574,14 +532,14 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         String assigneeName = assignee.getLogin();
         String assigneeIconUrl = assignee.getAvatarUrl();
 
-        TextView textViewAssigneeName = (TextView) findViewById(R.id.tv_assignee_name);
-        ImageView imageViewAssigneeIcon = (ImageView) findViewById(R.id.iv_assignee_icon);
+        TextView textViewAssigneeName = (TextView) rootView.findViewById(R.id.tv_assignee_name);
+        ImageView imageViewAssigneeIcon = (ImageView) rootView.findViewById(R.id.iv_assignee_icon);
 
         linearLayoutAssignee.setVisibility(View.VISIBLE);
         Glide
                 .with(this)
                 .load(assigneeIconUrl)
-                .error(getDrawable(android.R.drawable.sym_def_app_icon))
+                .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
                 .placeholder(R.drawable.progress_animation)
                 .crossFade()
                 .into(imageViewAssigneeIcon);
@@ -592,8 +550,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
     private void setDescriptionContent() {
-        String description = issue.getBodyHtml();
-        TextView textViewDescription = (TextView) findViewById(R.id.tv_issue_description);
+        String description = prIssue.getBodyHtml();
+        TextView textViewDescription = (TextView) rootView.findViewById(R.id.tv_pr_description);
 
         if (description == null || description.isEmpty()) {
             textViewDescription.setVisibility(View.GONE);
@@ -611,7 +569,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     }
 
     private void setDescriptionDivider(boolean visible) {
-        View separator = findViewById(R.id.description_divider);
+        View separator = rootView.findViewById(R.id.description_divider);
         if (visible) {
             if (separator.getVisibility() == View.GONE) {
                 separator.setVisibility(View.VISIBLE);
@@ -625,11 +583,11 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
     private void setCommentContent() {
-        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.ll_comments);
+        LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_comments);
         PrettyTime prettyTime = new PrettyTime();
         int layoutIdForListItem = R.layout.comment_item;
 
-        if (issueComments == null || issueComments.isEmpty()) {
+        if (prComments == null || prComments.isEmpty()) {
             linearLayout.setVisibility(View.GONE);
             return;
         } else {
@@ -637,8 +595,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             linearLayout.removeAllViews();
         }
 
-        for (final Comment comment : issueComments) {
-            LayoutInflater inflater = LayoutInflater.from(this);
+        for (final Comment comment : prComments) {
+            LayoutInflater inflater = LayoutInflater.from(context);
 
             View view = inflater.inflate(layoutIdForListItem, null);
             ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_comment_icon);
@@ -674,7 +632,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             Glide
                     .with(this)
                     .load(comment.getUser().getAvatarUrl())
-                    .error(getDrawable(android.R.drawable.sym_def_app_icon))
+                    .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
                     .placeholder(R.drawable.progress_animation)
                     .crossFade()
                     .into(imageViewUserIcon);
@@ -692,7 +650,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
 
     private void editComment(final Comment comment) {
         String commentText = comment.getBodyText();
-        new MaterialDialog.Builder(this)
+        new MaterialDialog.Builder(context)
                 .title("Edit comment")
                 .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
                 .input(null, commentText, new MaterialDialog.InputCallback() {
@@ -712,7 +670,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     }
 
     private void deleteComment(final Comment comment) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Delete comment");
         builder.setMessage("Delete this comment?");
         builder.setNegativeButton("No", null);
@@ -726,28 +684,32 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         builder.show();
     }
 
-    /************************************************************************************************
-     * Background tasks
-     ************************************************************************************************/
+    /***********************************************************************************************
+     * Background tasks classes
+     **********************************************************************************************/
 
-    private class GetIssue extends AsyncTask<Issue, Void, Boolean> {
-
-        Issue newIssue;
+    private class GetPRIssue extends AsyncTask<PullRequest, Void, Boolean> {
 
         @Override
-        protected Boolean doInBackground(Issue... params) {
-            Issue issue = params[0];
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // TODO show loading indicator
+        }
+
+        @Override
+        protected Boolean doInBackground(PullRequest... params) {
+            PullRequest pullRequest = params[0];
             IssueService issueService = new IssueService(gitHubClient);
             MilestoneService milestoneService = new MilestoneService(gitHubClient);
-            LabelService labelService = new LabelService(gitHubClient);
             CollaboratorService collaboratorService = new CollaboratorService(gitHubClient);
+            LabelService labelService = new LabelService(gitHubClient);
 
             try {
-                newIssue = issueService.getIssue(repository, issue.getNumber());
+                prIssue = issueService.getIssue(repository, pullRequest.getNumber());
+                prComments = issueService.getComments(repository, prIssue.getNumber());
+                repositoryMilestones = milestoneService.getMilestones(repository, "open");
                 repositoryCollaborators = collaboratorService.getCollaborators(repository);
-                repositoryMilestones= milestoneService.getMilestones(repository, "open");
                 repositoryLabels = labelService.getLabels(repository);
-                issueComments = issueService.getComments(repository, issue.getNumber());
 
                 Collections.sort(repositoryMilestones, new Comparators.MilestonesComparator());
                 Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
@@ -763,23 +725,13 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (!success) {
                 return;
             }
-            issue = newIssue;
             setContent();
-            if (swipeRefreshLayout.isRefreshing()) {
-                swipeRefreshLayout.setRefreshing(false);
-            }
-            if (!swipeRefreshLayout.isEnabled()) {
-                swipeRefreshLayout.setEnabled(true);
-            }
-            if (loadingIndicator.getVisibility() == View.VISIBLE) {
-                loadingIndicator.setVisibility(View.GONE);
-            }
         }
     }
 
-    private class UpdateIssue extends AsyncTask<Issue, Void, Boolean> {
+    private class UpdatePRIssue extends AsyncTask<Issue, Void, Boolean> {
 
-        Issue updatedIssue;
+        Issue updatedPRIssue;
 
         @Override
         protected Boolean doInBackground(Issue... params) {
@@ -787,7 +739,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             IssueService issueService = new IssueService(gitHubClient);
 
             try {
-                updatedIssue = issueService.editIssue(repository, issue);
+                updatedPRIssue = issueService.editIssue(repository, issue);
             } catch (IOException e) {
                 return false;
             }
@@ -797,10 +749,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
-            issue = updatedIssue;
             if (!success) {
                 return;
             }
+            prIssue = updatedPRIssue;
             setContent();
         }
     }
@@ -826,10 +778,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                List<Label> labels = issue.getLabels();
+                List<Label> labels = prIssue.getLabels();
                 labels.add(newLabel);
-                issue.setLabels(labels);
-                new UpdateIssue().execute(issue);
+                prIssue.setLabels(labels);
+                new UpdatePRIssue().execute(prIssue);
             }
         }
     }
@@ -855,8 +807,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                issue.setMilestone(newMilestone);
-                new UpdateIssue().execute(issue);
+                prIssue.setMilestone(newMilestone);
+                new UpdatePRIssue().execute(prIssue);
             }
         }
     }
@@ -869,7 +821,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             IssueService issueService = new IssueService(gitHubClient);
 
             try {
-                issueService.createComment(repository, issue.getNumber(), comment);
+                issueService.createComment(repository, prIssue.getNumber(), comment);
             } catch (IOException e) {
                 return false;
             }
@@ -880,12 +832,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
-                Snackbar.make(relativeLayout, "Comment created", Snackbar.LENGTH_LONG).show();
-                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
-                    issueBackgroundTask.cancel(true);
-                }
-                issueBackgroundTask = new GetIssue().execute(issue);
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
             }
         }
     }
@@ -909,12 +859,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
-                Snackbar.make(relativeLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
-                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
-                    issueBackgroundTask.cancel(true);
-                }
-                issueBackgroundTask = new GetIssue().execute(issue);
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
             }
         }
     }
@@ -938,12 +886,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
-                Snackbar.make(relativeLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
-                if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
-                    issueBackgroundTask.cancel(true);
-                }
-                issueBackgroundTask = new GetIssue().execute(issue);
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
             }
         }
     }

@@ -1,11 +1,13 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.Comparators;
+import com.kaczmarkiewiczp.gitcracking.PullRequestDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
 
@@ -37,7 +40,7 @@ import java.util.List;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
-public class PullRequestsFragment extends Fragment {
+public class PullRequestsFragment extends Fragment implements PullRequestsAdapter.PullRequestClickListener {
     public final String ARG_SECTION_NUMBER = "sectionNumber";
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
@@ -72,7 +75,7 @@ public class PullRequestsFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        prAdapter = new PullRequestsAdapter();
+        prAdapter = new PullRequestsAdapter(this);
         recyclerView.setAdapter(prAdapter);
         recyclerView.setItemAnimator(new SlideInUpAnimator());
         recyclerView.getItemAnimator().setAddDuration(1000);
@@ -149,15 +152,28 @@ public class PullRequestsFragment extends Fragment {
         emptyView.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public void onPullRequestClick(PullRequest pullRequest, Repository repository) {
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("pull request", pullRequest);
+        bundle.putSerializable("repository", repository);
+        intent.putExtras(bundle);
+        intent.setClass(getContext(), PullRequestDetail.class);
+        startActivity(intent);
+    }
+
     public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
 
         private ArrayList<PullRequest> pullRequests;
+        private ArrayList<Repository> repositories;
         private int errorType;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             pullRequests = new ArrayList<>();
+            repositories = new ArrayList<>();
             prAdapter.clearPullRequests();
 
             swipeRefreshLayout.setVisibility(View.VISIBLE);
@@ -191,9 +207,9 @@ public class PullRequestsFragment extends Fragment {
                         } else if (tabSection == SECTION_CREATED) {
                             pullRequests.add(pullRequest);
                         }
+                        repositories.add(repository);
                     }
                 }
-                Collections.sort(pullRequests, new Comparators.PullRequestsComparator());
             } catch (RequestException e) {
                 if (e.getMessage().equals("Bad credentials")) {
                     // TODO token is invalid -- tell user to again
@@ -213,7 +229,12 @@ public class PullRequestsFragment extends Fragment {
             super.onPostExecute(noError);
 
             if (noError && !pullRequests.isEmpty()) {
-                prAdapter.setPullRequests(pullRequests);
+                for (int i = 0; i < pullRequests.size(); i++) {
+                    PullRequest pullRequest = pullRequests.get(i);
+                    Repository repository = repositories.get(i);
+                    prAdapter.addPullRequest(pullRequest, repository);
+                }
+                prAdapter.showPullRequests();
             } else if (noError && pullRequests.isEmpty()) {
                 showEmptyView();
             } else if (errorType != USER_CANCELLED_ERROR) {

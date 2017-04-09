@@ -1,11 +1,13 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -75,7 +78,7 @@ public class CreateMilestoneDialog extends DialogFragment {
         textViewDueDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                datePickerDialog.show(getFragmentManager(), "Datepicker");
+                datePickerDialog.show(getActivity().getFragmentManager(), "Datepicker");
             }
         });
 
@@ -107,7 +110,11 @@ public class CreateMilestoneDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (milestoneCreationListener) context;
+        if (getTargetFragment() != null) {
+            listener = (milestoneCreationListener) getTargetFragment();
+        } else {
+            listener = (milestoneCreationListener) context;
+        }
     }
 
     private void saveButtonPressed() {
