@@ -13,6 +13,8 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -202,10 +204,14 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             }
         });
         final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
+        milestoneDialog.setTargetFragment(this, 0);
+        final FragmentManager fragmentManager = getFragmentManager();
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(fragmentActivity.getFragmentManager(), "New Milestone");
+                milestoneDialog.show(fragmentManager, "New Milestone");
+                //android.app.FragmentTransaction fragmentTransation =
+                //fragmentTransation.replace(R.layout.create_milestone_dialog, milestoneDialog);
             }
         });
         builder.setNegativeButton("Cancel", null);

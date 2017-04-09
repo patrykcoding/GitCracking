@@ -335,7 +335,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(getFragmentManager(), "New Milestone");
+                milestoneDialog.show(getSupportFragmentManager(), "New Milestone");
             }
         });
         builder.setNegativeButton("Cancel", null);
