@@ -13,6 +13,8 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -35,6 +37,7 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.CreateLabelDialog;
 import com.kaczmarkiewiczp.gitcracking.CreateMilestoneDialog;
 import com.kaczmarkiewiczp.gitcracking.R;
@@ -55,6 +58,7 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -202,10 +206,11 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             }
         });
         final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
+        milestoneDialog.setTargetFragment(this, 0);
         builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(fragmentActivity.getFragmentManager(), "New Milestone");
+                milestoneDialog.show(getFragmentManager(), "New Milestone");
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -225,7 +230,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             milestone.setDueOn(dialog.getMilestoneDueDate());
         }
         dialog.dismiss();
-        Snackbar.make(rootView.findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(R.id.rl_pull_request), "Milestone created", Snackbar.LENGTH_LONG)
                 .show();
 
         new NewMilestone().execute(milestone);
@@ -314,10 +319,11 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         });
         builder.setNegativeButton("Cancel", null);
         final CreateLabelDialog createLabelDialog = new CreateLabelDialog();
+        createLabelDialog.setTargetFragment(this, 0);
         builder.setNeutralButton("New Label", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                createLabelDialog.show(fragmentActivity.getFragmentManager(), "New Label");
+                createLabelDialog.show(getFragmentManager(), "New Label");
             }
         });
         builder.show();
@@ -333,7 +339,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         label.setColor(labelColor);
 
         dialog.dismiss();
-        Snackbar.make(rootView.findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(R.id.rl_pull_request), "Label created", Snackbar.LENGTH_LONG)
                 .show();
         new NewLabel().execute(label);
     }
@@ -702,6 +708,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 repositoryMilestones = milestoneService.getMilestones(repository, "open");
                 repositoryCollaborators = collaboratorService.getCollaborators(repository);
                 repositoryLabels = labelService.getLabels(repository);
+
+                Collections.sort(repositoryMilestones, new Comparators.MilestonesComparator());
+                Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
             } catch (IOException e) {
                 return false;
             }

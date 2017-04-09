@@ -4,13 +4,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,7 +22,7 @@ import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
-public class CreateLabelDialog extends android.app.DialogFragment {
+public class CreateLabelDialog extends DialogFragment {
 
     private EditText editTextLabelName;
     private LinearLayout linearLayoutLabelColor;
@@ -104,7 +102,11 @@ public class CreateLabelDialog extends android.app.DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (labelCreationListener) context;
+        if (getTargetFragment() != null) {
+            listener = (labelCreationListener) getTargetFragment();
+        } else {
+            listener = (labelCreationListener) context;
+        }
     }
 
     private void colorSelected(int color) {
