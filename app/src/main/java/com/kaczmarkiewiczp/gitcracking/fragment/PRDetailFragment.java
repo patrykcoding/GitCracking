@@ -37,6 +37,7 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.CreateLabelDialog;
 import com.kaczmarkiewiczp.gitcracking.CreateMilestoneDialog;
 import com.kaczmarkiewiczp.gitcracking.R;
@@ -57,6 +58,7 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -708,6 +710,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 repositoryMilestones = milestoneService.getMilestones(repository, "open");
                 repositoryCollaborators = collaboratorService.getCollaborators(repository);
                 repositoryLabels = labelService.getLabels(repository);
+
+                Collections.sort(repositoryMilestones, new Comparators.MilestonesComparator());
+                Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
             } catch (IOException e) {
                 return false;
             }
