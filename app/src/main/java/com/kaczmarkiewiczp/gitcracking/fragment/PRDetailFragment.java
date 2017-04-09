@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -34,6 +35,8 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.CreateLabelDialog;
+import com.kaczmarkiewiczp.gitcracking.CreateMilestoneDialog;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Comment;
@@ -44,14 +47,18 @@ import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.LabelService;
+import org.eclipse.egit.github.core.service.MilestoneService;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class PRDetailFragment extends Fragment {
+public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
 
     private View rootView;
     private Context context;
@@ -63,6 +70,10 @@ public class PRDetailFragment extends Fragment {
     private Repository repository;
     private Issue prIssue;
     private List<Comment> prComments;
+    private List<Milestone> repositoryMilestones;
+    private List<User> repositoryCollaborators;
+    private List<Label> repositoryLabels;
+    private FragmentActivity fragmentActivity;
 
     public PRDetailFragment() {
         // requires empty constructor
@@ -87,10 +98,244 @@ public class PRDetailFragment extends Fragment {
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_issue);
         // TODO set up on swipe listener
 
-        //setupOnClickListeners();
+        setupOnClickListeners();
         new GetPRIssue().execute(pullRequest);
 
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        fragmentActivity = (FragmentActivity) context;
+    }
+
+    private void setupOnClickListeners() {
+        rootView.findViewById(R.id.fab_comment).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addComment();
+            }
+        });
+        rootView.findViewById(R.id.fab_milestone).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMilestone();
+            }
+        });
+        rootView.findViewById(R.id.fab_labels).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setLabels();
+            }
+        });
+        rootView.findViewById(R.id.fab_assignee).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAssignee();
+            }
+        });
+    }
+
+    private void addComment() {
+        floatingActionMenu.close(true);
+        new MaterialDialog.Builder(context)
+                .title("New comment")
+                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .input("Leave a comment", null, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        String comment = input.toString();
+                        if (comment.isEmpty()) {
+                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        new NewComment().execute(comment);
+                    }
+                })
+                .positiveText("Comment")
+                .negativeText("Cancel")
+                .show();
+    }
+
+    public void setMilestone() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Select Milestone");
+        int currentMilestone = 0;
+        final int[] selectedOption = new int[1];
+        String[] options;
+        if (repositoryMilestones == null) {
+            options = new String[1];
+        } else {
+            options = new String[repositoryMilestones.size() + 1];
+        }
+        options[0] = "NO MILESTONE";
+        int i = 1;
+        if (repositoryMilestones != null) {
+            for (Milestone milestone : repositoryMilestones) {
+                if (prIssue.getMilestone() != null && prIssue.getMilestone().getTitle().equals(milestone.getTitle())) {
+                    currentMilestone = i;
+                }
+                options[i++] = milestone.getTitle();
+            }
+        }
+
+        builder.setSingleChoiceItems(options, currentMilestone, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (selectedOption[0] == 0) {
+                    Milestone noMilestone = new Milestone();
+                    noMilestone.setTitle("");
+                    prIssue.setMilestone(noMilestone);
+                } else {
+                    Milestone newMilestone = repositoryMilestones.get(selectedOption[0] - 1);
+                    prIssue.setMilestone(newMilestone);
+                }
+                new UpdatePRIssue().execute(prIssue);
+            }
+        });
+        final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
+        builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                milestoneDialog.show(fragmentActivity.getFragmentManager(), "New Milestone");
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    @Override
+    public void onSaveMilestone(CreateMilestoneDialog dialog) {
+        String title = dialog.getMilestoneTitle();
+        String description = dialog.getMilestoneDescription();
+
+        Milestone milestone = new Milestone();
+        milestone.setTitle(title);
+        milestone.setDescription(description);
+        milestone.setState("open");
+        if (dialog.isMilestoneDueDateSet()) {
+            milestone.setDueOn(dialog.getMilestoneDueDate());
+        }
+        dialog.dismiss();
+        Snackbar.make(rootView.findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+                .show();
+
+        new NewMilestone().execute(milestone);
+    }
+
+    private void setAssignee() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Select Assignee");
+        int currentAssignee = 0;
+        final int[] selectedOption = new int[1];
+        String[] options;
+        if (repositoryCollaborators == null) {
+            options = new String[1];
+        } else {
+            options = new String[repositoryCollaborators.size() + 1];
+        }
+        options[0] = "--NO ASSIGNEE--";
+        int i = 1;
+        if (repositoryCollaborators != null) {
+            for (User collaborator : repositoryCollaborators) {
+                if (prIssue.getAssignee() != null && prIssue.getAssignee().getLogin().equals(collaborator.getLogin())) {
+                    currentAssignee = i;
+                }
+                options[i++] = collaborator.getLogin();
+            }
+        }
+
+        builder.setSingleChoiceItems(options, currentAssignee, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (selectedOption[0] == 0) {
+                    User emptyUser = new User();
+                    emptyUser.setLogin("");
+                    prIssue.setAssignee(emptyUser);
+                } else {
+                    User collaborator = repositoryCollaborators.get(selectedOption[0] - 1);
+                    prIssue.setAssignee(collaborator);
+                }
+                new UpdatePRIssue().execute(prIssue);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void setLabels() {
+        floatingActionMenu.close(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Select Labels");
+        String[] options = new String[repositoryLabels.size()]; // TODO crash if there are no labels
+        final List<Label> issueLabels = prIssue.getLabels();
+        final boolean[] selection = new boolean[repositoryLabels.size()]; // TODO crash if no labels
+        if (repositoryLabels != null) {
+            for (int i = 0; i < repositoryLabels.size(); i++) {
+                Label label = repositoryLabels.get(i);
+                options[i] = label.getName();
+                selection[i] = issueLabels.contains(label);
+            }
+        }
+        builder.setMultiChoiceItems(options, selection, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                selection[which] = isChecked;
+            }
+        });
+
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                List<Label> newLabels = new ArrayList<>();
+                for (int i = 0; i < selection.length; i++) {
+                    if (selection[i]) {
+                        newLabels.add(repositoryLabels.get(i));
+                    }
+                }
+                prIssue.setLabels(newLabels);
+                new UpdatePRIssue().execute(prIssue);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        final CreateLabelDialog createLabelDialog = new CreateLabelDialog();
+        builder.setNeutralButton("New Label", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                createLabelDialog.show(fragmentActivity.getFragmentManager(), "New Label");
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onSaveLabel(CreateLabelDialog dialog) {
+        String labelName = dialog.getLabelName();
+        String labelColor = dialog.getLabelHexColor();
+
+        Label label = new Label();
+        label.setName(labelName);
+        label.setColor(labelColor);
+
+        dialog.dismiss();
+        Snackbar.make(rootView.findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
+                .show();
+        new NewLabel().execute(label);
     }
 
     private void setContent() {
@@ -431,6 +676,10 @@ public class PRDetailFragment extends Fragment {
         builder.show();
     }
 
+    /***********************************************************************************************
+     * Background tasks classes
+     **********************************************************************************************/
+
     private class GetPRIssue extends AsyncTask<PullRequest, Void, Boolean> {
 
         @Override
@@ -443,10 +692,16 @@ public class PRDetailFragment extends Fragment {
         protected Boolean doInBackground(PullRequest... params) {
             PullRequest pullRequest = params[0];
             IssueService issueService = new IssueService(gitHubClient);
+            MilestoneService milestoneService = new MilestoneService(gitHubClient);
+            CollaboratorService collaboratorService = new CollaboratorService(gitHubClient);
+            LabelService labelService = new LabelService(gitHubClient);
 
             try {
                 prIssue = issueService.getIssue(repository, pullRequest.getNumber());
                 prComments = issueService.getComments(repository, prIssue.getNumber());
+                repositoryMilestones = milestoneService.getMilestones(repository, "open");
+                repositoryCollaborators = collaboratorService.getCollaborators(repository);
+                repositoryLabels = labelService.getLabels(repository);
             } catch (IOException e) {
                 return false;
             }
@@ -460,6 +715,117 @@ public class PRDetailFragment extends Fragment {
                 return;
             }
             setContent();
+        }
+    }
+
+    private class UpdatePRIssue extends AsyncTask<Issue, Void, Boolean> {
+
+        Issue updatedPRIssue;
+
+        @Override
+        protected Boolean doInBackground(Issue... params) {
+            Issue issue = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                updatedPRIssue = issueService.editIssue(repository, issue);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (!success) {
+                return;
+            }
+            prIssue = updatedPRIssue;
+            setContent();
+        }
+    }
+
+    private class NewLabel extends AsyncTask<Label, Void, Boolean> {
+
+        private Label newLabel;
+
+        @Override
+        protected Boolean doInBackground(Label... params) {
+            Label label = params[0];
+            LabelService labelService = new LabelService(gitHubClient);
+
+            try {
+                newLabel = labelService.createLabel(repository, label);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                List<Label> labels = prIssue.getLabels();
+                labels.add(newLabel);
+                prIssue.setLabels(labels);
+                new UpdatePRIssue().execute(prIssue);
+            }
+        }
+    }
+
+    private class NewMilestone extends AsyncTask<Milestone, Void, Boolean> {
+
+        private Milestone newMilestone;
+
+        @Override
+        protected Boolean doInBackground(Milestone... params) {
+            Milestone milestone = params[0];
+            MilestoneService milestoneService = new MilestoneService(gitHubClient);
+
+            try {
+                newMilestone = milestoneService.createMilestone(repository, milestone);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                prIssue.setMilestone(newMilestone);
+                new UpdatePRIssue().execute(prIssue);
+            }
+        }
+    }
+
+    private class NewComment extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String comment = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.createComment(repository, prIssue.getNumber(), comment);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
+            }
         }
     }
 
