@@ -1,30 +1,44 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.text.Html;
+import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.IssueDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 
+import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
@@ -50,6 +64,7 @@ public class PRDetailFragment extends Fragment {
     private PullRequest pullRequest;
     private Repository repository;
     private Issue prIssue;
+    private List<Comment> prComments;
 
     public PRDetailFragment() {
         // requires empty constructor
@@ -89,7 +104,7 @@ public class PRDetailFragment extends Fragment {
         setLabelsContent();
         setAssigneeContent();
         setDescriptionContent();
-        //setCommentContent();
+        setCommentContent();
     }
 
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
@@ -110,8 +125,6 @@ public class PRDetailFragment extends Fragment {
                 color = getResources().getColor(R.color.pr_open);
             }
             imageViewPRStatus.setImageResource(R.drawable.ic_git_pull_request_white);
-            floatingActionButton.setVisibility(View.VISIBLE);
-            floatingActionButton.setLabelText("Merge");
         } else { //if (status.equals("Closed"))
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 color = context.getColor(R.color.pr_closed);
@@ -317,6 +330,109 @@ public class PRDetailFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
+    private void setCommentContent() {
+        LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_comments);
+        PrettyTime prettyTime = new PrettyTime();
+        int layoutIdForListItem = R.layout.issue_comment_item;
+
+        if (prComments == null || prComments.isEmpty()) {
+            linearLayout.setVisibility(View.GONE);
+            return;
+        } else {
+            linearLayout.setVisibility(View.VISIBLE);
+            linearLayout.removeAllViews();
+        }
+
+        for (final Comment comment : prComments) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+
+            View view = inflater.inflate(layoutIdForListItem, null);
+            ImageView imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_issue_comment_icon);
+            TextView textViewLogin = (TextView) view.findViewById(R.id.tv_issue_comment_login);
+            TextView textViewDate = (TextView) view.findViewById(R.id.tv_issue_comment_date);
+            TextView textViewComment = (TextView) view.findViewById(R.id.tv_issue_comment);
+            final ImageButton imageButtonEdit = (ImageButton) view.findViewById(R.id.ib_edit_comment);
+            imageButtonEdit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popupMenu = new PopupMenu(context, imageButtonEdit);
+                    popupMenu.getMenuInflater().inflate(R.menu.comment_edit_menu, popupMenu.getMenu());
+                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.edit:
+                                    editComment(comment);
+                                    break;
+                                case R.id.delete:
+                                    deleteComment(comment);
+                                    break;
+                                default:
+                                    return false;
+                            }
+                            return true;
+                        }
+                    });
+                    popupMenu.show();
+                }
+            });
+
+            Glide
+                    .with(this)
+                    .load(comment.getUser().getAvatarUrl())
+                    .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
+                    .placeholder(R.drawable.progress_animation)
+                    .crossFade()
+                    .into(imageViewUserIcon);
+            textViewLogin.setText(comment.getUser().getLogin());
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                textViewComment.setText(Html.fromHtml(comment.getBodyHtml(), Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                textViewComment.setText(Html.fromHtml(comment.getBodyHtml()));
+            }
+            String commentedDate = "commented " + prettyTime.format(comment.getCreatedAt());
+            textViewDate.setText(commentedDate);
+            linearLayout.addView(view);
+        }
+    }
+
+    private void editComment(final Comment comment) {
+        String commentText = comment.getBodyText();
+        new MaterialDialog.Builder(context)
+                .title("Edit comment")
+                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .input(null, commentText, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        String newCommentText = input.toString();
+                        if (newCommentText.isEmpty()) {
+                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
+                        }
+                        comment.setBody(newCommentText);
+                        new EditComment().execute(comment);
+                    }
+                })
+                .positiveText("Submit")
+                .negativeText("Cancel")
+                .show();
+    }
+
+    private void deleteComment(final Comment comment) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Delete comment");
+        builder.setMessage("Delete this comment?");
+        builder.setNegativeButton("No", null);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String commentId = String.valueOf(comment.getId());
+                new DeleteComment().execute(commentId);
+            }
+        });
+        builder.show();
+    }
+
     private class GetPRIssue extends AsyncTask<PullRequest, Void, Boolean> {
 
         @Override
@@ -332,6 +448,7 @@ public class PRDetailFragment extends Fragment {
 
             try {
                 prIssue = issueService.getIssue(repository, pullRequest.getNumber());
+                prComments = issueService.getComments(repository, prIssue.getNumber());
             } catch (IOException e) {
                 return false;
             }
@@ -345,6 +462,60 @@ public class PRDetailFragment extends Fragment {
                 return;
             }
             setContent();
+        }
+    }
+
+    private class EditComment extends AsyncTask<Comment, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Comment... params) {
+            Comment comment = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.editComment(repository, comment);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
+            }
+        }
+    }
+
+    private class DeleteComment extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String commentId = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.deleteComment(repository, commentId);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
+            }
         }
     }
 }
