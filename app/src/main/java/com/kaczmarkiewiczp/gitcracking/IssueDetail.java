@@ -170,6 +170,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                         String comment = input.toString();
                         if (comment.isEmpty()) {
                             Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            return;
                         }
                         new NewComment().execute(comment);
                     }
@@ -178,7 +179,6 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                 .negativeText("Cancel")
                 .show();
     }
-
 
     public void setMilestone() {
         floatingActionMenu.close(true);

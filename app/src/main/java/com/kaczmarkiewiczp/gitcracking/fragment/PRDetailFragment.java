@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.flexbox.FlexboxLayout;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.IssueDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Comment;
@@ -87,10 +89,40 @@ public class PRDetailFragment extends Fragment {
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_issue);
         // TODO set up on swipe listener
 
-        //setupOnClickListeners();
+        setupOnClickListeners();
         new GetPRIssue().execute(pullRequest);
 
         return view;
+    }
+
+    private void setupOnClickListeners() {
+        rootView.findViewById(R.id.fab_comment).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addComment();
+            }
+        });
+    }
+
+    private void addComment() {
+        floatingActionMenu.close(true);
+        new MaterialDialog.Builder(context)
+                .title("New comment")
+                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .input("Leave a comment", null, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        String comment = input.toString();
+                        if (comment.isEmpty()) {
+                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        new NewComment().execute(comment);
+                    }
+                })
+                .positiveText("Comment")
+                .negativeText("Cancel")
+                .show();
     }
 
     private void setContent() {
@@ -460,6 +492,33 @@ public class PRDetailFragment extends Fragment {
                 return;
             }
             setContent();
+        }
+    }
+
+    private class NewComment extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String comment = params[0];
+            IssueService issueService = new IssueService(gitHubClient);
+
+            try {
+                issueService.createComment(repository, prIssue.getNumber(), comment);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
+
+                new GetPRIssue().execute(pullRequest);
+            }
         }
     }
 
