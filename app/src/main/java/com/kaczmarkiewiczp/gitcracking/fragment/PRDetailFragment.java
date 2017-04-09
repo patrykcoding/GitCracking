@@ -231,7 +231,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             milestone.setDueOn(dialog.getMilestoneDueDate());
         }
         dialog.dismiss();
-        Snackbar.make(rootView.findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(R.id.rl_pull_request), "Milestone created", Snackbar.LENGTH_LONG)
                 .show();
 
         new NewMilestone().execute(milestone);

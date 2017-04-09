@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -109,8 +110,11 @@ public class CreateMilestoneDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (milestoneCreationListener) context;
-
+        if (getTargetFragment() != null) {
+            listener = (milestoneCreationListener) getTargetFragment();
+        } else {
+            listener = (milestoneCreationListener) context;
+        }
     }
 
     private void saveButtonPressed() {
