@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.R;
@@ -34,6 +35,7 @@ public class CommitsFragment extends Fragment {
     private Repository repository;
     private CommitsAdapter commitsAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
     private GitHubClient gitHubClient;
 
@@ -61,6 +63,7 @@ public class CommitsFragment extends Fragment {
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_commits);
         // TODO refreshing
+        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
 
         accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
@@ -77,6 +80,9 @@ public class CommitsFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            if (!swipeRefreshLayout.isRefreshing()) {
+                loadingIndicator.setVisibility(View.VISIBLE);
+            }
             commits = new ArrayList<>();
         }
 
@@ -103,6 +109,12 @@ public class CommitsFragment extends Fragment {
 
             for (RepositoryCommit repositoryCommit : commits) {
                 commitsAdapter.addCommit(repositoryCommit);
+            }
+
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            } else if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                loadingIndicator.setVisibility(View.GONE);
             }
         }
     }
