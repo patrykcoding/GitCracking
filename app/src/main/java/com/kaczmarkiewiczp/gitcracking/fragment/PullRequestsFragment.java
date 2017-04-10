@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -58,6 +59,11 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     private AsyncTask backgroundTask;
     private LinearLayout errorView;
     private LinearLayout emptyView;
+    private PullRequestCountListener countListener;
+
+    public interface PullRequestCountListener {
+        void onPullRequestCountHasChanged(int tabSection, int count);
+    }
 
     public PullRequestsFragment() {
         // requires empty constructor
@@ -101,6 +107,12 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
         backgroundTask = new GetPullRequests().execute(gitHubClient);
 
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        countListener = (PullRequestCountListener) context;
     }
 
     @Override
@@ -235,6 +247,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
                     prAdapter.addPullRequest(pullRequest, repository);
                 }
                 prAdapter.showPullRequests();
+                countListener.onPullRequestCountHasChanged(tabSection, pullRequests.size());
             } else if (noError && pullRequests.isEmpty()) {
                 showEmptyView();
             } else if (errorType != USER_CANCELLED_ERROR) {
