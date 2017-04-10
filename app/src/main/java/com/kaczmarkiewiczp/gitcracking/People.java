@@ -15,7 +15,7 @@ import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.PeopleFragment;
 
-public class People extends AppCompatActivity {
+public class People extends AppCompatActivity implements PeopleFragment.PeopleCountListener {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -68,8 +68,13 @@ public class People extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class PagerAdapter extends FragmentPagerAdapter {
+    @Override
+    public void onPeopleCountHasChanged(int tabSection, int count) {
+        pagerAdapter.setTabBadge(tabSection, count);
+    }
 
+    class PagerAdapter extends FragmentPagerAdapter {
+        private String tabStrings[] = new String[] {"FOLLOWERS", "FOLLOWING"};
         private String tabTitle[] = new String[] {"FOLLOWERS", "FOLLOWING"};
 
         public PagerAdapter(FragmentManager fragmentManager) {
@@ -99,6 +104,11 @@ public class People extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             return tabTitle[position];
+        }
+
+        public void setTabBadge(int position, int count) {
+            String title = tabStrings[position] + " (" + count + ")";
+            tabTitle[position] = title;
         }
     }
 }
