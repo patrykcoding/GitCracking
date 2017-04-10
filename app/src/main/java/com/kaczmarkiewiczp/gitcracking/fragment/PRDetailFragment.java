@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
@@ -75,6 +76,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     private List<Milestone> repositoryMilestones;
     private List<User> repositoryCollaborators;
     private List<Label> repositoryLabels;
+    private CoordinatorLayout coordinatorLayout;
     private FragmentActivity fragmentActivity;
 
     public PRDetailFragment() {
@@ -92,12 +94,15 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         pullRequest = (PullRequest) bundle.getSerializable("pull request");
         repository = (Repository) bundle.getSerializable("repository");
 
+        coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
+        coordinatorLayout.setVisibility(View.INVISIBLE);
+
         AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
         floatingActionMenu = (FloatingActionMenu) view.findViewById(R.id.fab_menu);
         floatingActionMenu.setClosedOnTouchOutside(true);
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_issue);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_pull_request);
         // TODO set up on swipe listener
 
         setupOnClickListeners();
@@ -228,7 +233,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             milestone.setDueOn(dialog.getMilestoneDueDate());
         }
         dialog.dismiss();
-        Snackbar.make(rootView.findViewById(R.id.rl_pull_request), "Milestone created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(R.id.cl_pull_request), "Milestone created", Snackbar.LENGTH_LONG)
                 .show();
 
         new NewMilestone().execute(milestone);
@@ -337,7 +342,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         label.setColor(labelColor);
 
         dialog.dismiss();
-        Snackbar.make(rootView.findViewById(R.id.rl_pull_request), "Label created", Snackbar.LENGTH_LONG)
+        Snackbar.make(rootView.findViewById(R.id.cl_pull_request), "Label created", Snackbar.LENGTH_LONG)
                 .show();
         new NewLabel().execute(label);
     }
@@ -689,7 +694,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // TODO show loading indicator
+            if (!swipeRefreshLayout.isRefreshing()) {
+                loadingIndicator.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -712,6 +719,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             } catch (IOException e) {
                 return false;
             }
+            SystemClock.sleep(5000);
             return true;
         }
 
@@ -722,6 +730,14 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 return;
             }
             setContent();
+            if (coordinatorLayout.getVisibility() == View.INVISIBLE) {
+                coordinatorLayout.setVisibility(View.VISIBLE);
+            }
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            } else if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                loadingIndicator.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -828,7 +844,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
 
                 new GetPRIssue().execute(pullRequest);
@@ -855,7 +871,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
 
                 new GetPRIssue().execute(pullRequest);
@@ -882,7 +898,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.rl_pull_request);
+                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
 
                 new GetPRIssue().execute(pullRequest);
