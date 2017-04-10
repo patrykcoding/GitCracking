@@ -26,7 +26,7 @@
                 android:paddingTop="16dp">
 
                 <ImageView
-                    android:id="@+id/iv_issue_comment_icon"
+                    android:id="@+id/iv_comment_icon"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:scaleType="fitXY"
@@ -40,14 +40,14 @@
                     android:paddingStart="12dp">
 
                     <TextView
-                        android:id="@+id/tv_issue_comment_login"
+                        android:id="@+id/tv_comment_login"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="@android:style/TextAppearance.Material.Medium"
                         tools:text="kaczmarkiewiczp" />
 
                     <TextView
-                        android:id="@+id/tv_issue_comment_date"
+                        android:id="@+id/tv_comment_date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:text="1 day ago" />
@@ -75,7 +75,7 @@
                 android:layout_marginEnd="12dp" />
 
             <TextView
-                android:id="@+id/tv_issue_comment"
+                android:id="@+id/tv_comment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:text="This is a comment"
