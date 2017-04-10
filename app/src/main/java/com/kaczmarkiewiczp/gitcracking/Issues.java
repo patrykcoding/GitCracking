@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import android.view.View;
@@ -20,18 +22,20 @@ import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
 
-public class Issues extends AppCompatActivity {
+public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
     private TabLayout tabLayout;
     private Toolbar toolbar;
     private NavBarUtils navBarUtils;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issues);
+        context = this;
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issues");
@@ -81,7 +85,13 @@ public class Issues extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onIssueCountHasChanged(int tabSection, int count) {
+        pagerAdapter.setTabBadge(tabSection, count);
+    }
+
     class PagerAdapter extends FragmentPagerAdapter {
+        private String tabStrings[] = new String[] {"CREATED", "ASSIGNED"};
         private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
 
         public PagerAdapter(FragmentManager fragmentManager) {
@@ -111,6 +121,12 @@ public class Issues extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             return tabTitles[position];
+        }
+
+        public void setTabBadge(int position, int count) {
+            String title = tabStrings[position] + " (" + count + ")";
+            tabTitles[position] = title;
+            notifyDataSetChanged();
         }
     }
 }

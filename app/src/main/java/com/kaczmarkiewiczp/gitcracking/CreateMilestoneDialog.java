@@ -32,10 +32,10 @@ public class CreateMilestoneDialog extends DialogFragment {
     private EditText editTextDescription;
     private TextView textViewDueDate;
     private ImageView imageViewClear;
-    private milestoneCreationListener listener;
+    private MilestoneCreationListener listener;
 
-    public interface milestoneCreationListener {
-        public void onSaveMilestone(CreateMilestoneDialog dialog);
+    public interface MilestoneCreationListener {
+        void onSaveMilestone(CreateMilestoneDialog dialog);
     }
 
     @NonNull
@@ -108,9 +108,9 @@ public class CreateMilestoneDialog extends DialogFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (getTargetFragment() != null) {
-            listener = (milestoneCreationListener) getTargetFragment();
+            listener = (MilestoneCreationListener) getTargetFragment();
         } else {
-            listener = (milestoneCreationListener) context;
+            listener = (MilestoneCreationListener) context;
         }
     }
 

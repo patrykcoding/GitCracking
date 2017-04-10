@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -61,6 +62,11 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
     private AsyncTask backgroundTask;
     private LinearLayout errorView;
     private LinearLayout emptyView;
+    private IssueCountListener countListener;
+
+    public interface IssueCountListener {
+        void onIssueCountHasChanged(int tabSection, int count);
+    }
 
     public IssuesFragment() {
         // requires empty constructor
@@ -105,6 +111,12 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
 
         backgroundTask = new GetIssues().execute(gitHubClient);
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        countListener = (IssueCountListener) context;
     }
 
     @Override
@@ -248,6 +260,8 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
                     issuesAdapter.addIssue(issue, repository);
                 }
                 issuesAdapter.showIssues();
+                countListener.onIssueCountHasChanged(tabSection, issues.size());
+
             } else if (noError && issues.isEmpty()) {
                 showEmptyView();
             } else if (errorType != USER_CANCELLED_ERROR) {

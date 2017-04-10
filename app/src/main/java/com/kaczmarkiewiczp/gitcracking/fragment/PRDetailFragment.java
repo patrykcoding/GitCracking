@@ -13,8 +13,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -62,7 +60,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
+public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.MilestoneCreationListener, CreateLabelDialog.labelCreationListener {
 
     private View rootView;
     private Context context;
