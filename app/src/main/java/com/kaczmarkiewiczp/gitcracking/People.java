@@ -109,6 +109,7 @@ public class People extends AppCompatActivity implements PeopleFragment.PeopleCo
         public void setTabBadge(int position, int count) {
             String title = tabStrings[position] + " (" + count + ")";
             tabTitle[position] = title;
+            notifyDataSetChanged();
         }
     }
 }
