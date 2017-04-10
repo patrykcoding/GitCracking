@@ -54,7 +54,11 @@ public class PeopleFragment extends Fragment {
     private AsyncTask backgroundTask;
     private LinearLayout errorView;
     private LinearLayout emptyView;
+    private PeopleCountListener countListener;
 
+    public interface PeopleCountListener {
+        void onPeopleCountHasChanged(int tabSection, int count);
+    }
     public PeopleFragment() {
         // requires empty constructor
     }
@@ -97,6 +101,12 @@ public class PeopleFragment extends Fragment {
 
         backgroundTask = new GetPeople().execute(gitHubClient);
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        countListener = (PeopleCountListener) context;
     }
 
     @Override
@@ -215,6 +225,7 @@ public class PeopleFragment extends Fragment {
                 showEmptyView();
             } else if (noError) {
                 peopleAdapter.setPeople(people);
+                countListener.onPeopleCountHasChanged(tabSection, people.size());
             } else if (errorType != USER_CANCELLED_ERROR) {
                 showErrorMessage(errorType);
             }

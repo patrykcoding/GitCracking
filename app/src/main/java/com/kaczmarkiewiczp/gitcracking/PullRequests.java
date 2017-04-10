@@ -15,7 +15,7 @@ import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.PullRequestsFragment;
 
-public class PullRequests extends AppCompatActivity {
+public class PullRequests extends AppCompatActivity implements PullRequestsFragment.PullRequestCountListener {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -68,7 +68,13 @@ public class PullRequests extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onPullRequestCountHasChanged(int tabSection, int count) {
+        pagerAdapter.setTabBadge(tabSection, count);
+    }
+
     class PagerAdapter extends FragmentPagerAdapter {
+        private String tabStrings[] = new String[] {"CREATED", "ASSIGNED"};
         private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
 
         public PagerAdapter(FragmentManager fragmentManager) {
@@ -98,6 +104,12 @@ public class PullRequests extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             return tabTitles[position];
+        }
+
+        public void setTabBadge(int position, int count) {
+            String title = tabStrings[position] + " (" + count + ")";
+            tabTitles[position] = title;
+            notifyDataSetChanged();
         }
     }
 }

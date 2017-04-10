@@ -56,7 +56,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.milestoneCreationListener, CreateLabelDialog.labelCreationListener {
+public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.MilestoneCreationListener, CreateLabelDialog.labelCreationListener {
 
     private Context context;
     private Issue issue;
