@@ -97,7 +97,15 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         floatingActionMenu.setClosedOnTouchOutside(true);
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_pull_request);
-        // TODO set up on swipe listener
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    fetchingBackgroundTask.cancel(true);
+                }
+                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+            }
+        });
 
         setupOnClickListeners();
 
@@ -108,6 +116,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             setContent();
         } else {
             coordinatorLayout.setVisibility(View.INVISIBLE);
+            if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                fetchingBackgroundTask.cancel(true);
+            }
             fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
         }
 
@@ -123,10 +134,10 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
             fetchingBackgroundTask.cancel(true);
         }
+        super.onDestroy();
     }
 
     private void setupOnClickListeners() {
@@ -777,6 +788,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             }
             prIssue = updatedPRIssue;
             setContent();
+            if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                fetchingBackgroundTask.cancel(true);
+            }
             fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
         }
     }
@@ -859,6 +873,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
 
+                if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    fetchingBackgroundTask.cancel(true);
+                }
                 fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
             }
         }
@@ -886,6 +903,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
 
+                if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    fetchingBackgroundTask.cancel(true);
+                }
                 fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
             }
         }
@@ -913,6 +933,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
 
+                if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    fetchingBackgroundTask.cancel(true);
+                }
                 fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
             }
         }

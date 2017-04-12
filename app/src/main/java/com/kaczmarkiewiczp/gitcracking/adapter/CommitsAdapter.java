@@ -72,6 +72,12 @@ public class CommitsAdapter extends RecyclerView.Adapter<CommitsAdapter.ViewHold
         notifyItemInserted(position);
     }
 
+    public void clearCommits() {
+        int count = commits.size();
+        commits.clear();
+        notifyItemRangeRemoved(0, count);
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
 
         public final TextView textViewCommit;
