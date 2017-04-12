@@ -38,6 +38,7 @@ public class CommitsFragment extends Fragment {
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
     private GitHubClient gitHubClient;
+    private AsyncTask backgroundTask;
 
     public CommitsFragment() {
         // requires empty constructor
@@ -62,13 +63,21 @@ public class CommitsFragment extends Fragment {
         recyclerView.setAdapter(commitsAdapter);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_commits);
-        // TODO refreshing
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetCommits().execute(gitHubClient);
+            }
+        });
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
 
         accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
 
-        new GetCommits().execute(gitHubClient);
+        backgroundTask = new GetCommits().execute(gitHubClient);
 
         return view;
     }
