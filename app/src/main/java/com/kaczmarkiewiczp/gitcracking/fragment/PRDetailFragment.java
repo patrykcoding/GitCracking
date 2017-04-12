@@ -75,6 +75,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     private List<User> repositoryCollaborators;
     private List<Label> repositoryLabels;
     private CoordinatorLayout coordinatorLayout;
+    private AsyncTask fetchingBackgroundTask;
 
     public PRDetailFragment() {
         // requires empty constructor
@@ -107,10 +108,25 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             setContent();
         } else {
             coordinatorLayout.setVisibility(View.INVISIBLE);
-            new GetPRIssue().execute(pullRequest);
+            fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
         }
 
         return view;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Bundle bundle = getArguments();
+        bundle.putSerializable("prIssue", prIssue);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            fetchingBackgroundTask.cancel(true);
+        }
     }
 
     private void setupOnClickListeners() {
@@ -681,13 +697,6 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         builder.show();
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        Bundle bundle = getArguments();
-        bundle.putSerializable("prIssue", prIssue);
-    }
-
     /***********************************************************************************************
      * Background tasks classes
      **********************************************************************************************/
@@ -768,6 +777,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             }
             prIssue = updatedPRIssue;
             setContent();
+            fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
         }
     }
 
@@ -849,7 +859,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
 
-                new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
             }
         }
     }
@@ -876,7 +886,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
 
-                new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
             }
         }
     }
@@ -903,7 +913,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
 
-                new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
             }
         }
     }
