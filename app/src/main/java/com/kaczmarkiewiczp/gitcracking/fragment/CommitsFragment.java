@@ -116,6 +116,7 @@ public class CommitsFragment extends Fragment {
                 return;
             }
 
+            commitsAdapter.clearCommits();
             for (RepositoryCommit repositoryCommit : commits) {
                 commitsAdapter.addCommit(repositoryCommit);
             }
