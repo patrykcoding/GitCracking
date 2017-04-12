@@ -7,13 +7,11 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -77,7 +75,6 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     private List<User> repositoryCollaborators;
     private List<Label> repositoryLabels;
     private CoordinatorLayout coordinatorLayout;
-    private FragmentActivity fragmentActivity;
 
     public PRDetailFragment() {
         // requires empty constructor
@@ -89,13 +86,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         final View view = inflater.inflate(R.layout.fragment_pr_detail, container, false);
         rootView = view;
         context = view.getContext();
-
         Bundle bundle = getArguments();
         pullRequest = (PullRequest) bundle.getSerializable("pull request");
         repository = (Repository) bundle.getSerializable("repository");
-
-        coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
-        coordinatorLayout.setVisibility(View.INVISIBLE);
 
         AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
@@ -106,15 +99,18 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         // TODO set up on swipe listener
 
         setupOnClickListeners();
-        new GetPRIssue().execute(pullRequest);
+
+        coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
+        Issue savedIssue = (Issue) bundle.getSerializable("prIssue");
+        if (savedIssue != null && prIssue.equals(savedIssue)) {
+            prIssue = savedIssue;
+            setContent();
+        } else {
+            coordinatorLayout.setVisibility(View.INVISIBLE);
+            new GetPRIssue().execute(pullRequest);
+        }
 
         return view;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        fragmentActivity = (FragmentActivity) context;
     }
 
     private void setupOnClickListeners() {
@@ -685,6 +681,13 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         builder.show();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        Bundle bundle = getArguments();
+        bundle.putSerializable("prIssue", prIssue);
+    }
+
     /***********************************************************************************************
      * Background tasks classes
      **********************************************************************************************/
@@ -719,7 +722,6 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             } catch (IOException e) {
                 return false;
             }
-            SystemClock.sleep(5000);
             return true;
         }
 
