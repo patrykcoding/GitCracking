@@ -17,6 +17,8 @@ import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,6 +110,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         });
 
         setupOnClickListeners();
+        setHasOptionsMenu(true);
 
         coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
         Issue savedIssue = (Issue) bundle.getSerializable("prIssue");
@@ -138,6 +141,25 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             fetchingBackgroundTask.cancel(true);
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.actions, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.action_refresh:
+                if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    fetchingBackgroundTask.cancel(true);
+                }
+                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void setupOnClickListeners() {
