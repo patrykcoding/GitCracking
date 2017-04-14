@@ -9,6 +9,9 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -77,9 +80,28 @@ public class CommitsFragment extends Fragment {
         accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
 
+        setHasOptionsMenu(true);
         backgroundTask = new GetCommits().execute(gitHubClient);
 
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.actions, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetCommits().execute(gitHubClient);
+                default:
+                    return super.onOptionsItemSelected(item);
+        }
     }
 
     private class GetCommits extends AsyncTask<GitHubClient, Void, Boolean> {
