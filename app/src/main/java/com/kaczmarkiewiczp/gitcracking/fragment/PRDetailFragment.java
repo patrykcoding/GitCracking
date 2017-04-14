@@ -429,9 +429,16 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         String repositoryName = repository.getName();
         String repositoryOwner = repository.getOwner().getLogin();
         repositoryName = repositoryOwner + "/" + repositoryName;
+        String branch = pullRequest.getHead().getLabel();
+        int startIndexOfBranch = branch.indexOf(':');
+        branch = branch.substring(startIndexOfBranch + 1);
 
         TextView textViewRepositoryName = (TextView) rootView.findViewById(R.id.tv_pr_repo);
+        TextView textViewBranchName = (TextView) rootView.findViewById(R.id.tv_branch);
+
         textViewRepositoryName.setText(repositoryName);
+        textViewBranchName.setText(branch);
+
     }
 
     private void setUserContent() {

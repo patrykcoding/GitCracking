@@ -100,6 +100,27 @@
                         android:paddingTop="4dp"
                         tools:text="kaczmarkiewiczp/repo" />
 
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:paddingTop="4dp">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_git_branch"/>
+
+                        <TextView
+                            android:id="@+id/tv_branch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            tools:text="test-branch" />
+                    </LinearLayout>
+
                     <!-- holds user icon, user name, and creation date -->
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -346,6 +367,7 @@
                 fab:fab_size="mini" />
         </com.github.clans.fab.FloatingActionMenu>
     </android.support.design.widget.CoordinatorLayout>
+
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
         android:layout_width="match_parent"
