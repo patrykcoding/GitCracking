@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.R;
@@ -40,7 +41,15 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         String diff = diffs.get(position);
 
         holder.textViewDiffFile.setText(filename);
-        holder.textViewDiff.setText(diff);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        String[] diffLines = diff.split("\\r?\\n");
+        for (String line : diffLines) {
+            TextView textView = new TextView(context);
+            textView.setText(line);
+            textView.setLayoutParams(layoutParams);
+            textView.setPadding(0, 0, 0, 4);
+            holder.linearLayoutDiffLines.addView(textView);
+        }
     }
 
     @Override
@@ -60,12 +69,12 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
     class ViewHolder extends RecyclerView.ViewHolder {
 
         public final TextView textViewDiffFile;
-        public final TextView textViewDiff;
+        public final LinearLayout linearLayoutDiffLines;
 
         public ViewHolder(View view) {
             super(view);
             textViewDiffFile = (TextView) view.findViewById(R.id.tv_diff_file);
-            textViewDiff = (TextView) view.findViewById(R.id.tv_diff);
+            linearLayoutDiffLines = (LinearLayout) view.findViewById(R.id.ll_diff_lines);
         }
     }
 }
