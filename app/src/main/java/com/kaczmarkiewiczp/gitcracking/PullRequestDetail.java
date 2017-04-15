@@ -19,6 +19,7 @@ import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.CommitsFragment;
 import com.kaczmarkiewiczp.gitcracking.fragment.PRDetailFragment;
+import com.kaczmarkiewiczp.gitcracking.fragment.PRDiffFragment;
 
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
@@ -105,13 +106,14 @@ public class PullRequestDetail extends AppCompatActivity {
                     PRDetailFragment prDetailFragment = new PRDetailFragment();
                     prDetailFragment.setArguments(args);
                     return prDetailFragment;
-                case 2: // TODO temp
                 case 1:
                     CommitsFragment commitsFragment = new CommitsFragment();
                     commitsFragment.setArguments(args);
                     return commitsFragment;
-                //case 2:
-                    //return null;
+                case 2:
+                    PRDiffFragment diffFragment = new PRDiffFragment();
+                    diffFragment.setArguments(args);
+                    return diffFragment;
                 default:
                     return null;
             }
