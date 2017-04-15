@@ -1,6 +1,8 @@
 package com.kaczmarkiewiczp.gitcracking.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +37,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         return new ViewHolder(view);
     }
 
+    @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         String filename = files.get(position);
@@ -48,6 +51,33 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
             textView.setText(line);
             textView.setLayoutParams(layoutParams);
             textView.setPadding(0, 0, 0, 4);
+
+            if (line.startsWith("+")) {
+                int color;
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    color = context.getColor(R.color.diff_addition);
+                } else {
+                    color = context.getResources().getColor(R.color.diff_addition);
+                }
+                textView.setBackgroundColor(color);
+            } else if (line.startsWith("-")) {
+                int color;
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    color = context.getColor(R.color.diff_deletion);
+                } else {
+                    color = context.getResources().getColor(R.color.diff_deletion);
+                }
+                textView.setBackgroundColor(color);
+            } else if (line.startsWith("@@") && line.endsWith("@@")) {
+                int color;
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    color = context.getColor(R.color.diff_hunk_range);
+                } else {
+                    color = context.getResources().getColor(R.color.diff_hunk_range);
+                }
+                textView.setBackgroundColor(color);
+                textView.setTextColor(Color.WHITE);
+            }
             holder.linearLayoutDiffLines.addView(textView);
         }
     }
