@@ -68,7 +68,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
                     color = context.getResources().getColor(R.color.diff_deletion);
                 }
                 textView.setBackgroundColor(color);
-            } else if (line.startsWith("@@") && line.endsWith("@@")) {
+            } else if (line.startsWith("@@")) {
                 int color;
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     color = context.getColor(R.color.diff_hunk_range);
