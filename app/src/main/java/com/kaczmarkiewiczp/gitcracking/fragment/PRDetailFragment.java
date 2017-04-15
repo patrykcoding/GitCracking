@@ -114,7 +114,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
 
         coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
         Issue savedIssue = (Issue) bundle.getSerializable("prIssue");
-        if (savedIssue != null && prIssue.equals(savedIssue)) {
+        if (savedIssue != null && savedIssue.equals(prIssue)) {
             prIssue = savedIssue;
             setContent();
         } else {
