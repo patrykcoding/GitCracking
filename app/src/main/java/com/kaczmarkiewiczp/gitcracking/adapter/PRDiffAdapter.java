@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.R;
@@ -62,8 +63,10 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
 
         if (diffIsCollapsed.get(position)) {
             holder.linearLayoutDiffLines.setVisibility(View.GONE);
+            holder.imageViewExpand.setImageResource(R.drawable.ic_expand_more_black_24dp);
         } else {
             holder.linearLayoutDiffLines.setVisibility(View.VISIBLE);
+            holder.imageViewExpand.setImageResource(R.drawable.ic_expand_less_black_24dp);
         }
         holder.linearLayoutDiffLines.removeAllViews();
         holder.textViewDiffFile.setText(filename);
@@ -103,14 +106,16 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
             }
             holder.linearLayoutDiffLines.addView(textView);
         }
-        holder.imageViewExpand.setOnClickListener(new View.OnClickListener() {
+        holder.relativeLayoutFileName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (holder.linearLayoutDiffLines.getVisibility() == View.VISIBLE) {
                     holder.linearLayoutDiffLines.setVisibility(View.GONE);
+                    holder.imageViewExpand.setImageResource(R.drawable.ic_expand_more_black_24dp);
                     diffIsCollapsed.set(position, true);
                 } else {
                     holder.linearLayoutDiffLines.setVisibility(View.VISIBLE);
+                    holder.imageViewExpand.setImageResource(R.drawable.ic_expand_less_black_24dp);
                     diffIsCollapsed.set(position, false);
                 }
             }
@@ -168,6 +173,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         public final LinearLayout linearLayoutDiff;
         public final TextView textViewDiffFile;
         public final ImageView imageViewExpand;
+        public final RelativeLayout relativeLayoutFileName;
         public final LinearLayout linearLayoutDiffLines;
         public final LinearLayout linearLayoutDiffSummary;
         public final TextView textViewChangedFiles;
@@ -180,6 +186,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
             textViewDiffFile = (TextView) view.findViewById(R.id.tv_diff_file);
             linearLayoutDiffLines = (LinearLayout) view.findViewById(R.id.ll_diff_lines);
             imageViewExpand = (ImageView) view.findViewById(R.id.iv_expand);
+            relativeLayoutFileName = (RelativeLayout) view.findViewById(R.id.rl_diff_filename);
             linearLayoutDiffSummary = (LinearLayout) view.findViewById(R.id.ll_diff_summary);
             textViewChangedFiles = (TextView) view.findViewById(R.id.tv_changed_files);
             textViewDiffAdditions = (TextView) view.findViewById(R.id.tv_diff_additions);

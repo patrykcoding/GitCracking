@@ -24,6 +24,7 @@
             android:paddingBottom="8dp">
 
             <RelativeLayout
+                android:id="@+id/rl_diff_filename"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
