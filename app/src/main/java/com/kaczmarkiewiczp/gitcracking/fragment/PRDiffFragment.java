@@ -26,6 +26,7 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryCommitCompare;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
 import java.util.List;
@@ -124,6 +125,7 @@ public class PRDiffFragment extends Fragment {
 
             String base = pullRequest.getBase().getSha();
             String head = pullRequest.getHead().getSha();
+
             try {
                 commitCompare = commitService.compare(repository, base, head);
             } catch (IOException e) {
@@ -137,12 +139,19 @@ public class PRDiffFragment extends Fragment {
             super.onPostExecute(success);
 
             if (success) {
+                int additions = 0;
+                int deletions = 0;
+                int changedFiles = 0;
                 List<CommitFile> commitFiles = commitCompare.getFiles();
                 for (CommitFile commitFile : commitFiles) {
                     String filename = commitFile.getFilename();
                     String diff = commitFile.getPatch();
+                    additions += commitFile.getAdditions();
+                    deletions += commitFile.getDeletions();
+                    changedFiles++;
                     diffAdapter.addFileDiff(filename, diff);
                 }
+                diffAdapter.addSummary(changedFiles, additions, deletions);
             }
 
             if (swipeRefreshLayout.isRefreshing()) {
