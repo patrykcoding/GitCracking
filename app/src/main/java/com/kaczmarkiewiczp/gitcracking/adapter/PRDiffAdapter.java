@@ -149,7 +149,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
     public void addFileDiff(String filename, String diff) {
         files.add(filename);
         diffs.add(diff);
-        diffIsCollapsed.add(false);
+        diffIsCollapsed.add(true);
         notifyDataSetChanged();
     }
 
