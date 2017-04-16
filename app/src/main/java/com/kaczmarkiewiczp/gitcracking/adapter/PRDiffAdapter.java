@@ -19,6 +19,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
 
     private ArrayList<String> files;
     private ArrayList<String> diffs;
+    private ArrayList<Boolean> diffIsCollapsed;
     private int fileChanges;
     private int lineAdditions;
     private int lineDeletions;
@@ -27,6 +28,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
     public PRDiffAdapter() {
         files = new ArrayList<>();
         diffs = new ArrayList<>();
+        diffIsCollapsed = new ArrayList<>();
     }
 
     @Override
@@ -51,14 +53,18 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         }
     }
 
-    private void insertDiff(final ViewHolder holder, int position) {
+    private void insertDiff(final ViewHolder holder, final int position) {
         String filename = files.get(position);
         String diff = diffs.get(position);
 
         holder.linearLayoutDiff.setVisibility(View.VISIBLE);
         holder.linearLayoutDiffSummary.setVisibility(View.GONE);
 
-        holder.linearLayoutDiffLines.setVisibility(View.VISIBLE);
+        if (diffIsCollapsed.get(position)) {
+            holder.linearLayoutDiffLines.setVisibility(View.GONE);
+        } else {
+            holder.linearLayoutDiffLines.setVisibility(View.VISIBLE);
+        }
         holder.linearLayoutDiffLines.removeAllViews();
         holder.textViewDiffFile.setText(filename);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -102,8 +108,10 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
             public void onClick(View v) {
                 if (holder.linearLayoutDiffLines.getVisibility() == View.VISIBLE) {
                     holder.linearLayoutDiffLines.setVisibility(View.GONE);
+                    diffIsCollapsed.set(position, true);
                 } else {
                     holder.linearLayoutDiffLines.setVisibility(View.VISIBLE);
+                    diffIsCollapsed.set(position, false);
                 }
             }
         });
@@ -136,6 +144,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
     public void addFileDiff(String filename, String diff) {
         files.add(filename);
         diffs.add(diff);
+        diffIsCollapsed.add(false);
         notifyDataSetChanged();
     }
 
@@ -143,6 +152,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         int count = files.size();
         files.clear();
         diffs.clear();
+        diffIsCollapsed.clear();
         notifyItemRangeRemoved(0, count + 1);
     }
 
