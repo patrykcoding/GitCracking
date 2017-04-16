@@ -18,6 +18,9 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
 
     private ArrayList<String> files;
     private ArrayList<String> diffs;
+    private int fileChanges;
+    private int lineAdditions;
+    private int lineDeletions;
     private Context context;
 
     public PRDiffAdapter() {
@@ -40,8 +43,19 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        if (position == 0) {
+            insertSummary(holder);
+        } else {
+            insertDiff(holder, position - 1);
+        }
+    }
+
+    private void insertDiff(ViewHolder holder, int position) {
         String filename = files.get(position);
         String diff = diffs.get(position);
+
+        holder.linearLayoutDiff.setVisibility(View.VISIBLE);
+        holder.linearLayoutDiffSummary.setVisibility(View.GONE);
 
         holder.textViewDiffFile.setText(filename);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -82,29 +96,62 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         }
     }
 
+    private void insertSummary(ViewHolder holder) {
+        String changedFiles;
+        if (fileChanges == 1) {
+            changedFiles = String.valueOf(fileChanges) + " changed file";
+        } else {
+            changedFiles = String.valueOf(fileChanges) + " changed files";
+        }
+        String additions = String.valueOf(lineAdditions) + " additions";
+        String deletions = String.valueOf(lineDeletions) + " deletions";
+        holder.linearLayoutDiff.setVisibility(View.GONE);
+        holder.linearLayoutDiffSummary.setVisibility(View.VISIBLE);
+        holder.textViewChangedFiles.setText(changedFiles);
+        holder.textViewDiffAdditions.setText(additions);
+        holder.textViewDiffDeletions.setText(deletions);
+    }
+
     @Override
     public int getItemCount() {
         if (files == null) {
             return 0;
         }
-        return files.size();
+        return files.size() + 1;
     }
 
     public void addFileDiff(String filename, String diff) {
         files.add(filename);
         diffs.add(diff);
-        notifyItemInserted(files.size() - 1);
+        notifyDataSetChanged();
+    }
+
+    public void addSummary(int fileChanges, int additions, int deletions) {
+        this.fileChanges = fileChanges;
+        lineAdditions = additions;
+        lineDeletions = deletions;
+        notifyDataSetChanged();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
+        public final LinearLayout linearLayoutDiff;
         public final TextView textViewDiffFile;
         public final LinearLayout linearLayoutDiffLines;
+        public final LinearLayout linearLayoutDiffSummary;
+        public final TextView textViewChangedFiles;
+        public final TextView textViewDiffAdditions;
+        public final TextView textViewDiffDeletions;
 
         public ViewHolder(View view) {
             super(view);
+            linearLayoutDiff = (LinearLayout) view.findViewById(R.id.ll_diff);
             textViewDiffFile = (TextView) view.findViewById(R.id.tv_diff_file);
             linearLayoutDiffLines = (LinearLayout) view.findViewById(R.id.ll_diff_lines);
+            linearLayoutDiffSummary = (LinearLayout) view.findViewById(R.id.ll_diff_summary);
+            textViewChangedFiles = (TextView) view.findViewById(R.id.tv_changed_files);
+            textViewDiffAdditions = (TextView) view.findViewById(R.id.tv_diff_additions);
+            textViewDiffDeletions = (TextView) view.findViewById(R.id.tv_diff_deletions);
         }
     }
 }
