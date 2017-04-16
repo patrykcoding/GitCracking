@@ -58,6 +58,8 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         holder.linearLayoutDiff.setVisibility(View.VISIBLE);
         holder.linearLayoutDiffSummary.setVisibility(View.GONE);
 
+        holder.linearLayoutDiffLines.setVisibility(View.VISIBLE);
+        holder.linearLayoutDiffLines.removeAllViews();
         holder.textViewDiffFile.setText(filename);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         String[] diffLines = diff.split("\\r?\\n");
@@ -135,6 +137,13 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
         files.add(filename);
         diffs.add(diff);
         notifyDataSetChanged();
+    }
+
+    public void removeDiffs() {
+        int count = files.size();
+        files.clear();
+        diffs.clear();
+        notifyItemRangeRemoved(0, count + 1);
     }
 
     public void addSummary(int fileChanges, int additions, int deletions) {
