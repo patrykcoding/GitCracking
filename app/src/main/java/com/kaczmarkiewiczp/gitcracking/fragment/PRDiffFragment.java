@@ -142,6 +142,7 @@ public class PRDiffFragment extends Fragment {
                 int additions = 0;
                 int deletions = 0;
                 int changedFiles = 0;
+                diffAdapter.removeDiffs();
                 List<CommitFile> commitFiles = commitCompare.getFiles();
                 for (CommitFile commitFile : commitFiles) {
                     String filename = commitFile.getFilename();
