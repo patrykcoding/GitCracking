@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -32,7 +35,7 @@ public class CommitDiff extends AppCompatActivity {
     private PullRequest pullRequest;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar loadingIndicator;
-    Toolbar toolbar;
+    private Toolbar toolbar;
     private AccountUtils accountUtils;
     private GitHubClient gitHubClient;
     private DiffAdapter diffAdapter;
@@ -72,7 +75,10 @@ public class CommitDiff extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO
+                if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetDiff().execute();
             }
         });
         loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
@@ -83,6 +89,27 @@ public class CommitDiff extends AppCompatActivity {
         backgroundTask = new GetDiff().execute();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.actions, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+                backgroundTask = new GetDiff().execute();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private class GetDiff extends AsyncTask<Void, Void, Boolean> {
 
         private RepositoryCommit commit;
@@ -91,6 +118,9 @@ public class CommitDiff extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            if (!swipeRefreshLayout.isRefreshing()) {
+                loadingIndicator.setVisibility(View.VISIBLE);
+            }
             diffAdapter.removeDiffs();
         }
 
@@ -110,9 +140,16 @@ public class CommitDiff extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            } else if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                loadingIndicator.setVisibility(View.GONE);
+            }
+
             if (!success) {
                 return;
             }
+
             int fileChanged = 0;
             int additions = 0;
             int deletions = 0;
