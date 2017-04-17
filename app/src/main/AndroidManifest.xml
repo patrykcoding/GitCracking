@@ -28,7 +28,8 @@
         <activity android:name=".AddAccount" />
         <activity android:name=".IssueDetail" />
         <activity android:name=".NewIssue" />
-        <activity android:name=".PullRequestDetail"></activity>
+        <activity android:name=".PullRequestDetail" />
+        <activity android:name=".CommitDiff"></activity>
     </application>
 
 </manifest>

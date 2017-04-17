@@ -1,6 +1,7 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.CommitDiff;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.CommitsAdapter;
 
@@ -30,7 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommitsFragment extends Fragment {
+public class CommitsFragment extends Fragment implements CommitsAdapter.CommitClickListener {
 
     private View rootView;
     private Context context;
@@ -62,7 +65,7 @@ public class CommitsFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        commitsAdapter = new CommitsAdapter();
+        commitsAdapter = new CommitsAdapter(this);
         recyclerView.setAdapter(commitsAdapter);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_commits);
@@ -102,6 +105,18 @@ public class CommitsFragment extends Fragment {
                 default:
                     return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onCommitClick(RepositoryCommit repositoryCommit) {
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("commit", repositoryCommit);
+        bundle.putSerializable("repository", repository);
+        bundle.putSerializable("pull request", pullRequest);
+        intent.putExtras(bundle);
+        intent.setClass(context, CommitDiff.class);
+        startActivity(intent);
     }
 
     private class GetCommits extends AsyncTask<GitHubClient, Void, Boolean> {

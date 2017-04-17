@@ -16,7 +16,7 @@ import com.kaczmarkiewiczp.gitcracking.R;
 
 import java.util.ArrayList;
 
-public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder> {
+public class DiffAdapter extends RecyclerView.Adapter<DiffAdapter.ViewHolder> {
 
     private ArrayList<String> files;
     private ArrayList<String> diffs;
@@ -26,7 +26,7 @@ public class PRDiffAdapter extends RecyclerView.Adapter<PRDiffAdapter.ViewHolder
     private int lineDeletions;
     private Context context;
 
-    public PRDiffAdapter() {
+    public DiffAdapter() {
         files = new ArrayList<>();
         diffs = new ArrayList<>();
         diffIsCollapsed = new ArrayList<>();

@@ -18,7 +18,7 @@ import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.R;
-import com.kaczmarkiewiczp.gitcracking.adapter.PRDiffAdapter;
+import com.kaczmarkiewiczp.gitcracking.adapter.DiffAdapter;
 
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.PullRequest;
@@ -26,7 +26,6 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryCommitCompare;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +36,7 @@ public class PRDiffFragment extends Fragment {
     private Context context;
     private PullRequest pullRequest;
     private Repository repository;
-    private PRDiffAdapter diffAdapter;
+    private DiffAdapter diffAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar loadingIndicator;
     private AccountUtils accountUtils;
@@ -63,7 +62,7 @@ public class PRDiffFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        diffAdapter = new PRDiffAdapter();
+        diffAdapter = new DiffAdapter();
         recyclerView.setAdapter(diffAdapter);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_diffs);
