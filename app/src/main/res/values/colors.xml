@@ -12,6 +12,7 @@
     <color name="issue_closed">#c62828</color>
     <color name="pr_open">#43a047</color>
     <color name="pr_closed">#c62828</color>
+    <color name="pr_merged">#6F42C1</color>
     <color name="diff_addition">#7800c853</color>
     <color name="diff_deletion">#78d50000</color>
     <color name="diff_hunk_range">#c8616161</color>
