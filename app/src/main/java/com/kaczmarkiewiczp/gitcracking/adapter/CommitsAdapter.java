@@ -20,9 +20,15 @@ public class CommitsAdapter extends RecyclerView.Adapter<CommitsAdapter.ViewHold
 
     private List<RepositoryCommit> commits;
     private Context context;
+    private final CommitClickListener onClickListener;
 
-    public CommitsAdapter() {
+    public interface CommitClickListener {
+        void onCommitClick(RepositoryCommit repositoryCommit);
+    }
+
+    public CommitsAdapter(CommitClickListener listener) {
         commits = new ArrayList<>();
+        onClickListener = listener;
     }
 
     @Override
@@ -78,7 +84,7 @@ public class CommitsAdapter extends RecyclerView.Adapter<CommitsAdapter.ViewHold
         notifyItemRangeRemoved(0, count);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public final TextView textViewCommit;
         public final TextView textViewUser;
@@ -91,6 +97,15 @@ public class CommitsAdapter extends RecyclerView.Adapter<CommitsAdapter.ViewHold
             textViewUser = (TextView) view.findViewById(R.id.tv_committed_by);
             textViewHash = (TextView) view.findViewById(R.id.tv_commit_hash);
             imageViewUserIcon = (ImageView) view.findViewById(R.id.iv_commit_user_icon);
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int positionedClicked = getAdapterPosition();
+            RepositoryCommit clickedCommit = commits.get(positionedClicked);
+            onClickListener.onCommitClick(clickedCommit);
         }
     }
 }

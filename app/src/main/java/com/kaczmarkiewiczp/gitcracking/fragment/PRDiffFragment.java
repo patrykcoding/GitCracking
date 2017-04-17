@@ -26,7 +26,6 @@ import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryCommitCompare;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
 import java.util.List;
