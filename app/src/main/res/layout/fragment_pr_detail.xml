@@ -394,6 +394,14 @@
                 fab:fab_size="mini" />
 
             <com.github.clans.fab.FloatingActionButton
+                android:id="@+id/fab_close_pr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_close_white_24dp"
+                fab:fab_label="Close"
+                fab:fab_size="mini"/>
+
+            <com.github.clans.fab.FloatingActionButton
                 android:id="@+id/fab_merge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

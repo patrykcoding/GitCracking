@@ -167,6 +167,12 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     }
 
     private void setupOnClickListeners() {
+        rootView.findViewById(R.id.fab_close_pr).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changePRState();
+            }
+        });
         rootView.findViewById(R.id.fab_comment).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -191,6 +197,16 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 setAssignee();
             }
         });
+    }
+
+    private void changePRState() {
+        floatingActionMenu.close(true);
+        if (pullRequest.getState().equals("open")) {
+            pullRequest.setState("closed");
+        } else {
+            pullRequest.setState("open");
+        }
+        new UpdatePullRequest().execute(pullRequest);
     }
 
     private void addComment() {
@@ -413,12 +429,15 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         String status = prIssue.getState();
         status = status.substring(0, 1).toUpperCase() + status.substring(1);
         boolean isMergeable = pullRequest.isMergeable();
+        boolean isClosed = pullRequest.getState().equals("closed");
+        boolean isMerged = pullRequest.isMerged();
 
         LinearLayout linearLayoutMergeable = (LinearLayout) rootView.findViewById(R.id.ll_pr_conflicts);
         LinearLayout linearLayoutPRStatus = (LinearLayout) rootView.findViewById(R.id.ll_pr_status);
         ImageView imageViewPRStatus = (ImageView) rootView.findViewById(R.id.iv_pr_status);
         TextView textViewPRStatus = (TextView) rootView.findViewById(R.id.tv_pr_status);
-        FloatingActionButton floatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab_merge);
+        FloatingActionButton fabMerge = (FloatingActionButton) rootView.findViewById(R.id.fab_merge);
+        FloatingActionButton fabClose = (FloatingActionButton) rootView.findViewById(R.id.fab_close_pr);
 
         int color;
         if (status.equals("Open")) {
@@ -435,16 +454,29 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 color = getResources().getColor(R.color.issue_closed);
             }
             imageViewPRStatus.setImageResource(R.drawable.ic_git_pull_request_white);
-            floatingActionButton.setVisibility(View.GONE);
-
         }
         linearLayoutPRStatus.setBackgroundColor(color);
         textViewPRStatus.setText(status);
 
         if (isMergeable) {
             linearLayoutMergeable.setVisibility(View.GONE);
-        } else {
+            fabMerge.setVisibility(View.VISIBLE);
+        } else if (!isMerged) {
             linearLayoutMergeable.setVisibility(View.VISIBLE);
+            fabMerge.setVisibility(View.GONE);
+        }
+
+        if (isClosed) {
+            fabClose.setLabelText("Reopen");
+            fabClose.setImageDrawable(context.getDrawable(R.drawable.ic_check_black_24dp));
+            fabMerge.setVisibility(View.GONE);
+        } else {
+            fabClose.setLabelText("Close");
+            fabClose.setImageDrawable(context.getDrawable(R.drawable.ic_close_white_24dp));
+        }
+
+        if (isMerged) {
+            fabClose.setVisibility(View.GONE);
         }
     }
 
@@ -805,6 +837,40 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         }
     }
 
+    private class UpdatePullRequest extends AsyncTask<PullRequest, Void, Boolean> {
+
+        private PullRequest updatedPR;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingIndicator.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Boolean doInBackground(PullRequest... params) {
+            PullRequest pullRequest = params[0];
+            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
+
+            try {
+                updatedPR = pullRequestService.editPullRequest(repository, pullRequest);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                pullRequest = updatedPR;
+                fetchingBackgroundTask = new GetPRIssue().execute();
+            } else {
+                loadingIndicator.setVisibility(View.GONE);
+            }
+        }
+    }
     private class UpdatePRIssue extends AsyncTask<Issue, Void, Boolean> {
 
         Issue updatedPRIssue;
