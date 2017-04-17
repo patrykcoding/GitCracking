@@ -53,6 +53,7 @@ import org.eclipse.egit.github.core.service.CollaboratorService;
 import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.LabelService;
 import org.eclipse.egit.github.core.service.MilestoneService;
+import org.eclipse.egit.github.core.service.PullRequestService;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);
                 }
-                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute();
             }
         });
 
@@ -113,8 +114,10 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         setHasOptionsMenu(true);
 
         coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
+        PullRequest savedPR = (PullRequest) bundle.getSerializable("pull request");
         Issue savedIssue = (Issue) bundle.getSerializable("prIssue");
-        if (savedIssue != null && savedIssue.equals(prIssue)) {
+        if (savedIssue != null && savedPR != null) {
+            pullRequest = savedPR;
             prIssue = savedIssue;
             setContent();
         } else {
@@ -122,7 +125,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                 fetchingBackgroundTask.cancel(true);
             }
-            fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+            fetchingBackgroundTask = new GetPRIssue().execute();
         }
 
         return view;
@@ -132,6 +135,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     public void onStop() {
         super.onStop();
         Bundle bundle = getArguments();
+        bundle.putSerializable("pull request", pullRequest);
         bundle.putSerializable("prIssue", prIssue);
     }
 
@@ -155,7 +159,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);
                 }
-                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -393,7 +397,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     }
 
     private void setContent() {
-        setIssueStateContent();
+        setPRStateContent();
         setTitleContent();
         setRepositoryContent();
         setUserContent();
@@ -405,10 +409,12 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     }
 
     @SuppressWarnings("deprecation") // for getColor -- check in code for android version
-    private void setIssueStateContent() {
+    private void setPRStateContent() {
         String status = prIssue.getState();
         status = status.substring(0, 1).toUpperCase() + status.substring(1);
+        boolean isMergeable = pullRequest.isMergeable();
 
+        LinearLayout linearLayoutMergeable = (LinearLayout) rootView.findViewById(R.id.ll_pr_conflicts);
         LinearLayout linearLayoutPRStatus = (LinearLayout) rootView.findViewById(R.id.ll_pr_status);
         ImageView imageViewPRStatus = (ImageView) rootView.findViewById(R.id.iv_pr_status);
         TextView textViewPRStatus = (TextView) rootView.findViewById(R.id.tv_pr_status);
@@ -434,6 +440,12 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         }
         linearLayoutPRStatus.setBackgroundColor(color);
         textViewPRStatus.setText(status);
+
+        if (isMergeable) {
+            linearLayoutMergeable.setVisibility(View.GONE);
+        } else {
+            linearLayoutMergeable.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setTitleContent() {
@@ -741,7 +753,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
      * Background tasks classes
      **********************************************************************************************/
 
-    private class GetPRIssue extends AsyncTask<PullRequest, Void, Boolean> {
+    private class GetPRIssue extends AsyncTask<Void, Void, Boolean> {
 
         @Override
         protected void onPreExecute() {
@@ -752,15 +764,16 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         }
 
         @Override
-        protected Boolean doInBackground(PullRequest... params) {
-            PullRequest pullRequest = params[0];
+        protected Boolean doInBackground(Void... aVoid) {
             IssueService issueService = new IssueService(gitHubClient);
+            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
             MilestoneService milestoneService = new MilestoneService(gitHubClient);
             CollaboratorService collaboratorService = new CollaboratorService(gitHubClient);
             LabelService labelService = new LabelService(gitHubClient);
 
             try {
                 prIssue = issueService.getIssue(repository, pullRequest.getNumber());
+                pullRequest = pullRequestService.getPullRequest(repository, pullRequest.getNumber());
                 prComments = issueService.getComments(repository, prIssue.getNumber());
                 repositoryMilestones = milestoneService.getMilestones(repository, "open");
                 repositoryCollaborators = collaboratorService.getCollaborators(repository);
@@ -820,7 +833,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                 fetchingBackgroundTask.cancel(true);
             }
-            fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+            fetchingBackgroundTask = new GetPRIssue().execute();
         }
     }
 
@@ -905,7 +918,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);
                 }
-                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute();
             }
         }
     }
@@ -935,7 +948,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);
                 }
-                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute();
             }
         }
     }
@@ -965,7 +978,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);
                 }
-                fetchingBackgroundTask = new GetPRIssue().execute(pullRequest);
+                fetchingBackgroundTask = new GetPRIssue().execute();
             }
         }
     }
