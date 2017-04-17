@@ -16,6 +16,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -447,16 +448,31 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 color = getResources().getColor(R.color.pr_open);
             }
             imageViewPRStatus.setImageResource(R.drawable.ic_git_pull_request_white);
-        } else { //if (status.equals("Closed"))
+            linearLayoutPRStatus.setBackgroundColor(color);
+            textViewPRStatus.setText(status);
+        } else if (status.equals("Closed") && !isMerged) {
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 color = context.getColor(R.color.pr_closed);
             } else {
-                color = getResources().getColor(R.color.issue_closed);
+                color = getResources().getColor(R.color.pr_closed);
+            }
+            imageViewPRStatus.setImageResource(R.drawable.ic_git_merge_white);
+            linearLayoutPRStatus.setBackgroundColor(color);
+            textViewPRStatus.setText(status);
+        } else if (status.equals("Closed") && isMerged) {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                color = context.getColor(R.color.pr_merged);
+            } else {
+                color = getResources().getColor(R.color.pr_merged);
             }
             imageViewPRStatus.setImageResource(R.drawable.ic_git_pull_request_white);
+            linearLayoutPRStatus.setBackgroundColor(color);
+            textViewPRStatus.setText("Merged");
+
+        } else {
+            linearLayoutPRStatus.setVisibility(View.GONE);
+            textViewPRStatus.setText(status);
         }
-        linearLayoutPRStatus.setBackgroundColor(color);
-        textViewPRStatus.setText(status);
 
         if (isMergeable) {
             linearLayoutMergeable.setVisibility(View.GONE);
@@ -477,6 +493,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
 
         if (isMerged) {
             fabClose.setVisibility(View.GONE);
+            fabMerge.setVisibility(View.GONE);
         }
     }
 
