@@ -168,6 +168,12 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     }
 
     private void setupOnClickListeners() {
+        rootView.findViewById(R.id.fab_merge).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mergePR();
+            }
+        });
         rootView.findViewById(R.id.fab_close_pr).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -198,6 +204,23 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 setAssignee();
             }
         });
+    }
+
+    private void mergePR() {
+        floatingActionMenu.close(true);
+        new MaterialDialog.Builder(context)
+                .title("Merge Pull Request")
+                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .input("Optional description", pullRequest.getTitle(), new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        String description = input.toString();
+                        new MergePullRequest().execute(description);
+                    }
+                })
+                .positiveText("Merge")
+                .negativeText("Cancel")
+                .show();
     }
 
     private void changePRState() {
@@ -850,6 +873,56 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 swipeRefreshLayout.setRefreshing(false);
             } else if (loadingIndicator.getVisibility() == View.VISIBLE) {
                 loadingIndicator.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private class MergePullRequest extends AsyncTask<String, Void, Boolean> {
+
+        private PullRequest updatedPR;
+        private MaterialDialog loadingDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingDialog = new MaterialDialog.Builder(context)
+                    .title("Merging a Pull Request")
+                    .content("Please wait")
+                    .progress(true, 0)
+                    .show();
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String pullRequestMessage = params[0];
+            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
+            int pullRequestNumber = pullRequest.getNumber();
+
+            try {
+                updatedPR = pullRequestService.getPullRequest(repository, pullRequestNumber);
+
+                if (updatedPR.isMergeable()) {
+                    pullRequestService.merge(repository, pullRequestNumber, pullRequestMessage);
+                } else {
+                    return false;
+                }
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            loadingDialog.dismiss();
+            fetchingBackgroundTask = new GetPRIssue().execute();
+            if (!success && !updatedPR.isMergeable()) {
+                new MaterialDialog.Builder(context)
+                        .title("Error")
+                        .content("Pull Request cannot be merged")
+                        .positiveText("Dismiss")
+                        .show();
             }
         }
     }
