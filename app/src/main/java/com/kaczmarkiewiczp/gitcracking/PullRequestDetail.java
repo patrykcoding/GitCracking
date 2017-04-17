@@ -72,7 +72,7 @@ public class PullRequestDetail extends AppCompatActivity {
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
             if (accountHasBeenModified) {
-                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
             }
         }
     }

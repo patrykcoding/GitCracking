@@ -1,6 +1,7 @@
 package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.DiffAdapter;
@@ -37,6 +40,7 @@ public class CommitDiff extends AppCompatActivity {
     private ProgressBar loadingIndicator;
     private Toolbar toolbar;
     private AccountUtils accountUtils;
+    private NavBarUtils navBarUtils;
     private GitHubClient gitHubClient;
     private DiffAdapter diffAdapter;
     private AsyncTask backgroundTask;
@@ -58,7 +62,7 @@ public class CommitDiff extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(repositoryCommit.getCommit().getMessage());
         setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
         navBarUtils.setNavigationDrawerButtonAsUp();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -90,6 +94,17 @@ public class CommitDiff extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+            }
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.actions, menu);
@@ -100,6 +115,8 @@ public class CommitDiff extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
+                Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
+                findViewById(R.id.action_refresh).startAnimation(rotate);
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
