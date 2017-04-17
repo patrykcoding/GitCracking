@@ -2,7 +2,6 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,8 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.kaczmarkiewiczp.gitcracking.adapter.PRDiffAdapter;
-import com.kaczmarkiewiczp.gitcracking.fragment.PRDiffFragment;
+import com.kaczmarkiewiczp.gitcracking.adapter.DiffAdapter;
 
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.PullRequest;
@@ -22,7 +20,6 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryCommitCompare;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,7 +35,7 @@ public class CommitDiff extends AppCompatActivity {
     Toolbar toolbar;
     private AccountUtils accountUtils;
     private GitHubClient gitHubClient;
-    private PRDiffAdapter diffAdapter;
+    private DiffAdapter diffAdapter;
     private AsyncTask backgroundTask;
 
     @Override
@@ -68,7 +65,7 @@ public class CommitDiff extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        diffAdapter = new PRDiffAdapter();
+        diffAdapter = new DiffAdapter();
         recyclerView.setAdapter(diffAdapter);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_diffs);
