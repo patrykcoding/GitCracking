@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.Comparators;
+import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.PullRequestDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
@@ -172,7 +173,23 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
         bundle.putSerializable("repository", repository);
         intent.putExtras(bundle);
         intent.setClass(getContext(), PullRequestDetail.class);
-        startActivity(intent);
+        startActivityForResult(intent, Consts.PR_DETAIL_INTENT);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case Consts.PR_DETAIL_INTENT:
+                if (resultCode == Consts.DATA_MODIFIED) {
+                    if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                        backgroundTask.cancel(true);
+                    }
+                    backgroundTask = new GetPullRequests().execute(gitHubClient);
+                }
+                return;
+            default:
+                return;
+        }
     }
 
     public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
