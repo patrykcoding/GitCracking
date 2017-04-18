@@ -280,6 +280,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
                 countListener.onPullRequestCountHasChanged(tabSection, pullRequests.size());
             } else if (noError && pullRequests.isEmpty()) {
                 showEmptyView();
+                countListener.onPullRequestCountHasChanged(tabSection, pullRequests.size());
             } else if (errorType != USER_CANCELLED_ERROR) {
                 showErrorMessage(errorType);
             }
