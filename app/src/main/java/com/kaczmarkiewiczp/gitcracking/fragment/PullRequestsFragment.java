@@ -61,9 +61,14 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     private LinearLayout errorView;
     private LinearLayout emptyView;
     private PullRequestCountListener countListener;
+    private PullRequestChangeListener changeListener;
 
     public interface PullRequestCountListener {
         void onPullRequestCountHasChanged(int tabSection, int count);
+    }
+
+    public interface PullRequestChangeListener {
+        void onDataHasChanged(boolean dataHasChanged);
     }
 
     public PullRequestsFragment() {
@@ -114,6 +119,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     public void onAttach(Context context) {
         super.onAttach(context);
         countListener = (PullRequestCountListener) context;
+        changeListener = (PullRequestChangeListener) context;
     }
 
     @Override
@@ -181,15 +187,22 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
         switch (requestCode) {
             case Consts.PR_DETAIL_INTENT:
                 if (resultCode == Consts.DATA_MODIFIED) {
-                    if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                        backgroundTask.cancel(true);
-                    }
-                    backgroundTask = new GetPullRequests().execute(gitHubClient);
+                    changeListener.onDataHasChanged(true);
                 }
                 return;
             default:
                 return;
         }
+    }
+
+    public void reloadFragmentData() {
+        if (rootView == null) {
+            return;
+        }
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetPullRequests().execute(gitHubClient);
     }
 
     public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
