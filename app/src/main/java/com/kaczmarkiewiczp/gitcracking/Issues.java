@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MenuItem;
 
 import android.view.View;
@@ -22,7 +23,7 @@ import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
 
-public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener {
+public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener, IssuesFragment.IssueChangeListener {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -58,7 +59,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), NewIssue.class);
-                startActivity(intent);
+                startActivityForResult(intent, Consts.NEW_ISSUE_INTENT);
             }
         });
     }
@@ -66,11 +67,23 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
-            if (accountHasBeenModified) {
-                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
-            }
+        switch (requestCode) {
+            case 1:
+                if (resultCode == RESULT_OK) {
+                    Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+                    if (accountHasBeenModified) {
+                        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+                    }
+                }
+                return;
+            case Consts.NEW_ISSUE_INTENT:
+                if (resultCode == Consts.DATA_MODIFIED) {
+                    for (int i = 0; i < pagerAdapter.getCount(); i++) {
+                        IssuesFragment fragment = pagerAdapter.getFragment(i);
+                        fragment.reloadFragment();
+                    }
+                }
+                return;
         }
     }
 
@@ -90,12 +103,22 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
         pagerAdapter.setTabBadge(tabSection, count);
     }
 
+    @Override
+    public void onIssueDataHasChanged(boolean dataHasChanged) {
+        for (int i = 0; i < pagerAdapter.getCount(); i++) {
+            IssuesFragment fragment = pagerAdapter.getFragment(i);
+            fragment.reloadFragment();
+        }
+    }
+
     class PagerAdapter extends FragmentPagerAdapter {
         private String tabStrings[] = new String[] {"CREATED", "ASSIGNED"};
         private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
+        private SparseArray<IssuesFragment> fragments;
 
         public PagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
+            fragments = new SparseArray<>();
         }
 
         @Override
@@ -107,6 +130,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                     Bundle args = new Bundle();
                     args.putInt(issuesFragment.ARG_SECTION_NUMBER, position);
                     issuesFragment.setArguments(args);
+                    fragments.put(position, issuesFragment);
                     return issuesFragment;
                 default:
                     return null;
@@ -127,6 +151,10 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
             String title = tabStrings[position] + " (" + count + ")";
             tabTitles[position] = title;
             notifyDataSetChanged();
+        }
+
+        public IssuesFragment getFragment(int position) {
+            return fragments.get(position);
         }
     }
 }

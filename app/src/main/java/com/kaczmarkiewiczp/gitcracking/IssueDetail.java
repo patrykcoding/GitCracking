@@ -2,6 +2,7 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
@@ -61,6 +62,8 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     private Context context;
     private Issue issue;
     private Repository repository;
+    private NavBarUtils navBarUtils;
+    private Toolbar toolbar;
     private List<Comment> issueComments;
     private List<Label> repositoryLabels;
     private List<User> repositoryCollaborators;
@@ -70,6 +73,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar loadingIndicator;
     private AsyncTask issueBackgroundTask;
+    private boolean dataHasBeenModified;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,10 +88,10 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             return;
         }
         context = this;
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issue #" + issue.getNumber());
         setSupportActionBar(toolbar);
-        NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
         navBarUtils.setNavigationDrawerButtonAsUp();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -115,10 +119,29 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     }
 
     @Override
+    public void onBackPressed() {
+        if (dataHasBeenModified) {
+            setResult(Consts.DATA_MODIFIED);
+        }
+        finish();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
             issueBackgroundTask.cancel(true);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+            if (accountHasBeenModified) {
+                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+            }
         }
     }
 
@@ -801,6 +824,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             if (!success) {
                 return;
             }
+            dataHasBeenModified = true;
             setContent();
         }
     }
@@ -880,6 +904,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
+                dataHasBeenModified = true;
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment created", Snackbar.LENGTH_LONG).show();
                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
@@ -909,6 +934,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
+                dataHasBeenModified = true;
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
@@ -938,6 +964,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
+                dataHasBeenModified = true;
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
                 Snackbar.make(relativeLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {

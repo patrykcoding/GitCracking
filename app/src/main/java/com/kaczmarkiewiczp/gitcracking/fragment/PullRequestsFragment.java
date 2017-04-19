@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
-import com.kaczmarkiewiczp.gitcracking.Comparators;
+import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.PullRequestDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.PullRequestsAdapter;
@@ -35,8 +34,6 @@ import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
@@ -60,9 +57,14 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     private LinearLayout errorView;
     private LinearLayout emptyView;
     private PullRequestCountListener countListener;
+    private PullRequestChangeListener changeListener;
 
     public interface PullRequestCountListener {
         void onPullRequestCountHasChanged(int tabSection, int count);
+    }
+
+    public interface PullRequestChangeListener {
+        void onPRDataHasChanged(boolean dataHasChanged);
     }
 
     public PullRequestsFragment() {
@@ -113,6 +115,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     public void onAttach(Context context) {
         super.onAttach(context);
         countListener = (PullRequestCountListener) context;
+        changeListener = (PullRequestChangeListener) context;
     }
 
     @Override
@@ -172,7 +175,30 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
         bundle.putSerializable("repository", repository);
         intent.putExtras(bundle);
         intent.setClass(getContext(), PullRequestDetail.class);
-        startActivity(intent);
+        startActivityForResult(intent, Consts.PR_DETAIL_INTENT);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case Consts.PR_DETAIL_INTENT:
+                if (resultCode == Consts.DATA_MODIFIED) {
+                    changeListener.onPRDataHasChanged(true);
+                }
+                return;
+            default:
+                return;
+        }
+    }
+
+    public void reloadFragmentData() {
+        if (rootView == null) {
+            return;
+        }
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetPullRequests().execute(gitHubClient);
     }
 
     public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
@@ -250,6 +276,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
                 countListener.onPullRequestCountHasChanged(tabSection, pullRequests.size());
             } else if (noError && pullRequests.isEmpty()) {
                 showEmptyView();
+                countListener.onPullRequestCountHasChanged(tabSection, pullRequests.size());
             } else if (errorType != USER_CANCELLED_ERROR) {
                 showErrorMessage(errorType);
             }

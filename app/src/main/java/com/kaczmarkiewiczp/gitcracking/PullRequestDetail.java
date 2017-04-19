@@ -24,7 +24,7 @@ import com.kaczmarkiewiczp.gitcracking.fragment.PRDiffFragment;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 
-public class PullRequestDetail extends AppCompatActivity {
+public class PullRequestDetail extends AppCompatActivity implements PRDetailFragment.PullRequestChangeListener {
 
     private PullRequest pullRequest;
     private Repository repository;
@@ -34,6 +34,7 @@ public class PullRequestDetail extends AppCompatActivity {
     private TabLayout tabLayout;
     private Toolbar toolbar;
     private NavBarUtils navBarUtils;
+    private boolean dataHasBeenModified;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,14 @@ public class PullRequestDetail extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (dataHasBeenModified) {
+            setResult(Consts.DATA_MODIFIED);
+        }
+        finish();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
@@ -86,6 +95,11 @@ public class PullRequestDetail extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDataHasBeenModified(boolean dataHasBeenModified) {
+        this.dataHasBeenModified = dataHasBeenModified;
     }
 
     class PagerAdapter extends FragmentPagerAdapter {

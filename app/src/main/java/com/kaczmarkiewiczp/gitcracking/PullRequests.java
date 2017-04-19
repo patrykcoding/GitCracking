@@ -9,13 +9,19 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.PullRequestsFragment;
 
-public class PullRequests extends AppCompatActivity implements PullRequestsFragment.PullRequestCountListener {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class PullRequests extends AppCompatActivity implements PullRequestsFragment.PullRequestCountListener, PullRequestsFragment.PullRequestChangeListener {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -73,12 +79,22 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
         pagerAdapter.setTabBadge(tabSection, count);
     }
 
+    @Override
+    public void onPRDataHasChanged(boolean dataHasChanged) {
+        for (int i = 0; i < pagerAdapter.getCount(); i++) {
+            PullRequestsFragment fragment = pagerAdapter.getFragment(i);
+            fragment.reloadFragmentData();
+        }
+    }
+
     class PagerAdapter extends FragmentPagerAdapter {
         private String tabStrings[] = new String[] {"CREATED", "ASSIGNED"};
         private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
+        private SparseArray<PullRequestsFragment> fragments;
 
         public PagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
+            fragments = new SparseArray<>();
         }
 
         @Override
@@ -90,6 +106,7 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
                     Bundle args = new Bundle();
                     args.putInt(pullRequestsFragment.ARG_SECTION_NUMBER, position);
                     pullRequestsFragment.setArguments(args);
+                    fragments.put(position, pullRequestsFragment);
                     return pullRequestsFragment;
                 default:
                     return null;
@@ -110,6 +127,10 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
             String title = tabStrings[position] + " (" + count + ")";
             tabTitles[position] = title;
             notifyDataSetChanged();
+        }
+
+        public PullRequestsFragment getFragment(int position) {
+            return fragments.get(position);
         }
     }
 }

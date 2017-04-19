@@ -451,6 +451,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 intent.setClass(context, IssueDetail.class);
 
                 progressDialog.dismiss();
+                setResult(Consts.DATA_MODIFIED);
                 startActivity(intent);
                 finish();
             }

@@ -80,6 +80,11 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
     private List<Label> repositoryLabels;
     private CoordinatorLayout coordinatorLayout;
     private AsyncTask fetchingBackgroundTask;
+    private PullRequestChangeListener changeListener;
+
+    public interface PullRequestChangeListener {
+        void onDataHasBeenModified(boolean dataHasBeenModified);
+    }
 
     public PRDetailFragment() {
         // requires empty constructor
@@ -130,6 +135,12 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         }
 
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        changeListener = (PullRequestChangeListener) context;
     }
 
     @Override
@@ -916,6 +927,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             loadingDialog.dismiss();
+            changeListener.onDataHasBeenModified(true);
             fetchingBackgroundTask = new GetPRIssue().execute();
             if (!success && !updatedPR.isMergeable()) {
                 new MaterialDialog.Builder(context)
@@ -955,6 +967,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             super.onPostExecute(success);
             if (success) {
                 pullRequest = updatedPR;
+                changeListener.onDataHasBeenModified(true);
                 fetchingBackgroundTask = new GetPRIssue().execute();
             } else {
                 loadingIndicator.setVisibility(View.GONE);
@@ -985,6 +998,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 return;
             }
             prIssue = updatedPRIssue;
+            changeListener.onDataHasBeenModified(true);
             setContent();
             if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                 fetchingBackgroundTask.cancel(true);
@@ -1071,6 +1085,8 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment created", Snackbar.LENGTH_LONG).show();
 
+                changeListener.onDataHasBeenModified(true);
+
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);
                 }
@@ -1130,6 +1146,8 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             if (success) {
                 CoordinatorLayout coordinatorLayout = (CoordinatorLayout) rootView.findViewById(R.id.cl_pull_request);
                 Snackbar.make(coordinatorLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
+
+                changeListener.onDataHasBeenModified(true);
 
                 if (fetchingBackgroundTask != null && fetchingBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     fetchingBackgroundTask.cancel(true);

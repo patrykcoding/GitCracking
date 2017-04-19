@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.IssueDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.IssuesAdapter;
@@ -63,9 +64,14 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
     private LinearLayout errorView;
     private LinearLayout emptyView;
     private IssueCountListener countListener;
+    private IssueChangeListener changeListener;
 
     public interface IssueCountListener {
         void onIssueCountHasChanged(int tabSection, int count);
+    }
+
+    public interface IssueChangeListener {
+        void onIssueDataHasChanged(boolean dataHasChanged);
     }
 
     public IssuesFragment() {
@@ -117,6 +123,7 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
     public void onAttach(Context context) {
         super.onAttach(context);
         countListener = (IssueCountListener) context;
+        changeListener = (IssueChangeListener) context;
     }
 
     @Override
@@ -176,7 +183,30 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
         bundle.putSerializable("repository", issueRepository);
         intent.putExtras(bundle);
         intent.setClass(context, IssueDetail.class);
-        startActivity(intent);
+        startActivityForResult(intent, Consts.ISSUE_DETAIL_INTENT);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case Consts.ISSUE_DETAIL_INTENT:
+                if (resultCode == Consts.DATA_MODIFIED) {
+                    changeListener.onIssueDataHasChanged(true);
+                }
+                return;
+            default:
+                return;
+        }
+    }
+
+    public void reloadFragment() {
+        if (rootView == null) {
+            return;
+        }
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetIssues().execute(gitHubClient);
     }
 
     public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
