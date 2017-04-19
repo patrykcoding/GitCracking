@@ -19,15 +19,19 @@ import java.util.ArrayList;
 public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapter.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter  {
 
     private ArrayList<Repository> repositories;
+    private RepositoryClickListener onClickListener;
     private Context context;
 
-    public RepositoriesAdapter(Context context) {
-        repositories = new ArrayList<>();
-        this.context = context;
-
+    public interface RepositoryClickListener {
+        void onRepositoryClicked(Repository clickedRepository);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public RepositoriesAdapter(RepositoryClickListener listener) {
+        repositories = new ArrayList<>();
+        onClickListener = listener;
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public final TextView textViewName;
         public final TextView textViewDescription;
@@ -47,12 +51,21 @@ public class RepositoriesAdapter extends RecyclerView.Adapter<RepositoriesAdapte
             textViewForks = (TextView) view.findViewById(R.id.tv_repositories_forks);
             textViewWatchers = (TextView) view.findViewById(R.id.tv_repositories_stars);
             textViewSize = (TextView) view.findViewById(R.id.tv_repositories_storage);
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int positionedClicked = getAdapterPosition();
+            Repository repositoryClicked = repositories.get(positionedClicked);
+            onClickListener.onRepositoryClicked(repositoryClicked);
         }
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        context = parent.getContext();
 
         int layoutIdForListItem = R.layout.repositories_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);

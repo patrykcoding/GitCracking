@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,7 +32,7 @@ import java.util.Collections;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
-public class Repositories extends AppCompatActivity {
+public class Repositories extends AppCompatActivity implements RepositoriesAdapter.RepositoryClickListener {
     private final int NETWORK_ERROR = 0;
     private final int API_ERROR = 1;
     private final int USER_CANCELLED_ERROR = 2;
@@ -150,6 +151,11 @@ public class Repositories extends AppCompatActivity {
         message.setText(getString(R.string.no_repositories));
         swipeRefreshLayout.setVisibility(View.GONE);
         emptyView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onRepositoryClicked(Repository clickedRepository) {
+        Log.i("#Repositories", "repo clicked");
     }
 
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Boolean> {
