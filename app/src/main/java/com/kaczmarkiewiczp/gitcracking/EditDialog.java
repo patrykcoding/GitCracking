@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 
 public class EditDialog extends DialogFragment {
@@ -26,7 +27,7 @@ public class EditDialog extends DialogFragment {
     private EditListener listener;
 
     public interface EditListener {
-        void onSaveEdit(EditDialog editDialog);
+        void onSaveEdit(EditDialog editDialog, String title, String description);
     }
 
     @NonNull
@@ -54,7 +55,7 @@ public class EditDialog extends DialogFragment {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.action_save) {
-                    // TODO save edit
+                    saveButtonPressed();
                     return true;
                 }
                 return false;
@@ -91,6 +92,18 @@ public class EditDialog extends DialogFragment {
             editTextDescription.setHint(descriptionHint);
         }
     }
+
+    private void saveButtonPressed() {
+        String title = editTextTitle.getText().toString();
+        String description = editTextDescription.getText().toString();
+
+        if (title.isEmpty()) {
+            Toast.makeText(getActivity(), "Title cannot be empty", Toast.LENGTH_LONG).show();
+            return;
+        }
+        listener.onSaveEdit(this, title, description);
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }

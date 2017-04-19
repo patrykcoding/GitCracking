@@ -772,8 +772,16 @@ public class IssueDetail extends AppCompatActivity
     }
 
     @Override
-    public void onSaveEdit(EditDialog editDialog) {
-
+    public void onSaveEdit(EditDialog editDialog, String title, String description) {
+        if (issue.getTitle().equals(title) && issue.getBody().equals(description)) {
+            // ignore if there are no changes
+            editDialog.dismiss();
+            return;
+        }
+        issue.setTitle(title);
+        issue.setBody(description);
+        editDialog.dismiss();
+        new UpdateIssue().execute(issue);
     }
 
     /************************************************************************************************
