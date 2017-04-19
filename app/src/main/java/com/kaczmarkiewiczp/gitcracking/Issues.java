@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MenuItem;
 
 import android.view.View;
@@ -22,7 +23,7 @@ import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
 
-public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener {
+public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener, IssuesFragment.IssueChangeListener {
 
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
@@ -90,12 +91,22 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
         pagerAdapter.setTabBadge(tabSection, count);
     }
 
+    @Override
+    public void onIssueDataHasChanged(boolean dataHasChanged) {
+        for (int i = 0; i < pagerAdapter.getCount(); i++) {
+            IssuesFragment fragment = pagerAdapter.getFragment(i);
+            fragment.reloadFragment();
+        }
+    }
+
     class PagerAdapter extends FragmentPagerAdapter {
         private String tabStrings[] = new String[] {"CREATED", "ASSIGNED"};
         private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
+        private SparseArray<IssuesFragment> fragments;
 
         public PagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
+            fragments = new SparseArray<>();
         }
 
         @Override
@@ -107,6 +118,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                     Bundle args = new Bundle();
                     args.putInt(issuesFragment.ARG_SECTION_NUMBER, position);
                     issuesFragment.setArguments(args);
+                    fragments.put(position, issuesFragment);
                     return issuesFragment;
                 default:
                     return null;
@@ -127,6 +139,10 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
             String title = tabStrings[position] + " (" + count + ")";
             tabTitles[position] = title;
             notifyDataSetChanged();
+        }
+
+        public IssuesFragment getFragment(int position) {
+            return fragments.get(position);
         }
     }
 }

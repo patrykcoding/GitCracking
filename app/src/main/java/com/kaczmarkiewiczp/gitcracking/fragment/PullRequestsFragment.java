@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +19,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
-import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.PullRequestDetail;
 import com.kaczmarkiewiczp.gitcracking.R;
@@ -36,8 +34,6 @@ import org.eclipse.egit.github.core.service.UserService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
@@ -68,7 +64,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     }
 
     public interface PullRequestChangeListener {
-        void onDataHasChanged(boolean dataHasChanged);
+        void onPRDataHasChanged(boolean dataHasChanged);
     }
 
     public PullRequestsFragment() {
@@ -187,7 +183,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
         switch (requestCode) {
             case Consts.PR_DETAIL_INTENT:
                 if (resultCode == Consts.DATA_MODIFIED) {
-                    changeListener.onDataHasChanged(true);
+                    changeListener.onPRDataHasChanged(true);
                 }
                 return;
             default:

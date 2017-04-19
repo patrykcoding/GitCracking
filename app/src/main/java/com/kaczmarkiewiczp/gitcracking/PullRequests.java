@@ -80,7 +80,7 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
     }
 
     @Override
-    public void onDataHasChanged(boolean dataHasChanged) {
+    public void onPRDataHasChanged(boolean dataHasChanged) {
         for (int i = 0; i < pagerAdapter.getCount(); i++) {
             PullRequestsFragment fragment = pagerAdapter.getFragment(i);
             fragment.reloadFragmentData();
