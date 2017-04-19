@@ -71,41 +71,50 @@ public class DiffAdapter extends RecyclerView.Adapter<DiffAdapter.ViewHolder> {
         holder.linearLayoutDiffLines.removeAllViews();
         holder.textViewDiffFile.setText(filename);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        String[] diffLines = diff.split("\\r?\\n");
-        for (String line : diffLines) {
-            TextView textView = new TextView(context);
-            textView.setText(line);
-            textView.setLayoutParams(layoutParams);
-            textView.setPadding(0, 0, 0, 4);
+        if (diff != null) {
+            String[] diffLines = diff.split("\\r?\\n");
+            for (String line : diffLines) {
+                TextView textView = new TextView(context);
+                textView.setText(line);
+                textView.setLayoutParams(layoutParams);
+                textView.setPadding(0, 0, 0, 4);
 
-            if (line.startsWith("+")) {
-                int color;
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    color = context.getColor(R.color.diff_addition);
-                } else {
-                    color = context.getResources().getColor(R.color.diff_addition);
+                if (line.startsWith("+")) {
+                    int color;
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        color = context.getColor(R.color.diff_addition);
+                    } else {
+                        color = context.getResources().getColor(R.color.diff_addition);
+                    }
+                    textView.setBackgroundColor(color);
+                } else if (line.startsWith("-")) {
+                    int color;
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        color = context.getColor(R.color.diff_deletion);
+                    } else {
+                        color = context.getResources().getColor(R.color.diff_deletion);
+                    }
+                    textView.setBackgroundColor(color);
+                } else if (line.startsWith("@@")) {
+                    int color;
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        color = context.getColor(R.color.diff_hunk_range);
+                    } else {
+                        color = context.getResources().getColor(R.color.diff_hunk_range);
+                    }
+                    textView.setBackgroundColor(color);
+                    textView.setTextColor(Color.WHITE);
                 }
-                textView.setBackgroundColor(color);
-            } else if (line.startsWith("-")) {
-                int color;
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    color = context.getColor(R.color.diff_deletion);
-                } else {
-                    color = context.getResources().getColor(R.color.diff_deletion);
-                }
-                textView.setBackgroundColor(color);
-            } else if (line.startsWith("@@")) {
-                int color;
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    color = context.getColor(R.color.diff_hunk_range);
-                } else {
-                    color = context.getResources().getColor(R.color.diff_hunk_range);
-                }
-                textView.setBackgroundColor(color);
-                textView.setTextColor(Color.WHITE);
+                holder.linearLayoutDiffLines.addView(textView);
             }
+        } else {
+            TextView textView = new TextView(context);
+            textView.setText("No changes");
+            textView.setLayoutParams(layoutParams);
+            textView.setPadding(12, 0, 0, 4);
             holder.linearLayoutDiffLines.addView(textView);
         }
+
         holder.relativeLayoutFileName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
