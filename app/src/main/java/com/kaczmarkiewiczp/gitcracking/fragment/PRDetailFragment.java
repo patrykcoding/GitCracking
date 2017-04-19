@@ -16,7 +16,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,6 +39,7 @@ import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.CreateLabelDialog;
 import com.kaczmarkiewiczp.gitcracking.CreateMilestoneDialog;
+import com.kaczmarkiewiczp.gitcracking.EditDialog;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Comment;
@@ -63,7 +63,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.MilestoneCreationListener, CreateLabelDialog.labelCreationListener {
+public class PRDetailFragment extends Fragment
+        implements CreateMilestoneDialog.MilestoneCreationListener,
+        CreateLabelDialog.labelCreationListener,
+        EditDialog.EditListener {
 
     private View rootView;
     private Context context;
@@ -161,7 +164,7 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.actions, menu);
+        inflater.inflate(R.menu.issue_detail, menu);
     }
 
     @Override
@@ -172,6 +175,9 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
                     fetchingBackgroundTask.cancel(true);
                 }
                 fetchingBackgroundTask = new GetPRIssue().execute();
+                return true;
+            case R.id.action_edit:
+                editPullRequest();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -830,6 +836,37 @@ public class PRDetailFragment extends Fragment implements CreateMilestoneDialog.
             }
         });
         builder.show();
+    }
+
+    private void editPullRequest() {
+        EditDialog editDialog = new EditDialog();
+        editDialog.setTargetFragment(this, 0);
+
+        String toolbarTitle = "Edit Pull Request " + pullRequest.getNumber();
+        String currentTitle = pullRequest.getTitle();
+        String currentDescription = pullRequest.getBody();
+
+        editDialog.setTitle(toolbarTitle);
+        editDialog.setTitle(currentTitle);
+        editDialog.setDescription(currentDescription);
+        editDialog.setTitleHint("Pull Request title");
+        editDialog.setDescriptionHint("Optional Pull Request description");
+        editDialog.setToolbarTitle(toolbarTitle);
+
+        editDialog.show(getFragmentManager(), "Edit Pull Request");
+    }
+
+    @Override
+    public void onSaveEdit(EditDialog editDialog, String title, String description) {
+        if (pullRequest.getTitle().equals(title) && pullRequest.getBody().equals(description)) {
+            // ignore if there are no changes
+            editDialog.dismiss();
+            return;
+        }
+        pullRequest.setTitle(title);
+        pullRequest.setBody(description);
+        editDialog.dismiss();
+        new UpdatePullRequest().execute(pullRequest);
     }
 
     /***********************************************************************************************

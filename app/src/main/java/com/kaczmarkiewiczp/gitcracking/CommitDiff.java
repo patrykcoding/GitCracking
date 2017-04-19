@@ -107,7 +107,7 @@ public class CommitDiff extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.actions, menu);
+        menuInflater.inflate(R.menu.refresh, menu);
         return true;
     }
 

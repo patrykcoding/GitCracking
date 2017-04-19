@@ -88,7 +88,7 @@ public class PRDiffFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.actions, menu);
+        inflater.inflate(R.menu.refresh, menu);
     }
 
     @Override

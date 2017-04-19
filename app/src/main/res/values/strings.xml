@@ -36,4 +36,5 @@
     <string name="dot">⋅</string>
     <string name="and">and</string>
     <string name="conflicts">Conflicts</string>
+    <string name="refresh">refresh</string>
 </resources>

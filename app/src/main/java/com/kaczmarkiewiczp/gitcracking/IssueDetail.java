@@ -57,7 +57,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class IssueDetail extends AppCompatActivity implements CreateMilestoneDialog.MilestoneCreationListener, CreateLabelDialog.labelCreationListener {
+public class IssueDetail extends AppCompatActivity
+        implements CreateMilestoneDialog.MilestoneCreationListener,
+        CreateLabelDialog.labelCreationListener,
+        EditDialog.EditListener {
 
     private Context context;
     private Issue issue;
@@ -148,7 +151,7 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.actions, menu);
+        menuInflater.inflate(R.menu.issue_detail, menu);
         return true;
     }
 
@@ -164,6 +167,9 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
                      issueBackgroundTask.cancel(true);
                  }
                  issueBackgroundTask = new GetIssue().execute(issue);
+                 return true;
+             case R.id.action_edit:
+                 editIssue();
                  return true;
              default:
                 return super.onOptionsItemSelected(item);
@@ -747,6 +753,35 @@ public class IssueDetail extends AppCompatActivity implements CreateMilestoneDia
             }
         });
         builder.show();
+    }
+
+    private void editIssue() {
+        EditDialog editDialog = new EditDialog();
+        String toolbarTitle = "Edit Issue " + issue.getNumber();
+        String currentTitle = issue.getTitle();
+        String currentDescription = issue.getBody();
+
+        editDialog.setTitle(toolbarTitle);
+        editDialog.setTitle(currentTitle);
+        editDialog.setDescription(currentDescription);
+        editDialog.setTitleHint("Issue title");
+        editDialog.setDescriptionHint("Optional issue description");
+        editDialog.setToolbarTitle(toolbarTitle);
+
+        editDialog.show(getSupportFragmentManager(), "Edit issue");
+    }
+
+    @Override
+    public void onSaveEdit(EditDialog editDialog, String title, String description) {
+        if (issue.getTitle().equals(title) && issue.getBody().equals(description)) {
+            // ignore if there are no changes
+            editDialog.dismiss();
+            return;
+        }
+        issue.setTitle(title);
+        issue.setBody(description);
+        editDialog.dismiss();
+        new UpdateIssue().execute(issue);
     }
 
     /************************************************************************************************

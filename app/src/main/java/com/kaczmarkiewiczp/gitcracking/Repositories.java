@@ -28,7 +28,6 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
@@ -104,7 +103,7 @@ public class Repositories extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.actions, menu);
+        menuInflater.inflate(R.menu.refresh, menu);
         return true;
     }
 
