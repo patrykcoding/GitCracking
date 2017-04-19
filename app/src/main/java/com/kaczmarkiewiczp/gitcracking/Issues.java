@@ -59,7 +59,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), NewIssue.class);
-                startActivity(intent);
+                startActivityForResult(intent, Consts.NEW_ISSUE_INTENT);
             }
         });
     }
@@ -67,11 +67,23 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
-            if (accountHasBeenModified) {
-                navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
-            }
+        switch (requestCode) {
+            case 1:
+                if (resultCode == RESULT_OK) {
+                    Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
+                    if (accountHasBeenModified) {
+                        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+                    }
+                }
+                return;
+            case Consts.NEW_ISSUE_INTENT:
+                if (resultCode == Consts.DATA_MODIFIED) {
+                    for (int i = 0; i < pagerAdapter.getCount(); i++) {
+                        IssuesFragment fragment = pagerAdapter.getFragment(i);
+                        fragment.reloadFragment();
+                    }
+                }
+                return;
         }
     }
 
