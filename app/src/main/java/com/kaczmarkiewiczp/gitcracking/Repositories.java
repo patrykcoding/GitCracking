@@ -155,7 +155,12 @@ public class Repositories extends AppCompatActivity implements RepositoriesAdapt
 
     @Override
     public void onRepositoryClicked(Repository clickedRepository) {
-        Log.i("#Repositories", "repo clicked");
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(Consts.REPOSITORY_ARG, clickedRepository);
+        intent.putExtras(bundle);
+        intent.setClass(this, RepositoryDetail.class);
+        startActivity(intent);
     }
 
     public class GetRepositories extends AsyncTask<GitHubClient, Void, Boolean> {

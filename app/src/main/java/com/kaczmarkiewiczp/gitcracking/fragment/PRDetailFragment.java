@@ -123,10 +123,8 @@ public class PRDetailFragment extends Fragment
         setHasOptionsMenu(true);
 
         coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.cl_pull_request);
-        PullRequest savedPR = (PullRequest) bundle.getSerializable("pull request");
         Issue savedIssue = (Issue) bundle.getSerializable("prIssue");
-        if (savedIssue != null && savedPR != null) {
-            pullRequest = savedPR;
+        if (savedIssue != null && pullRequest != null) {
             prIssue = savedIssue;
             setContent();
         } else {
