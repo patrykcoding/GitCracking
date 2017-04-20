@@ -38,7 +38,7 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
         toolbar.setTitle("Pull Requests");
         setSupportActionBar(toolbar);
         navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
-        if (getIntent().getBooleanExtra("hasParent", false)) {
+        if (getIntent().getBooleanExtra(Consts.HAS_PARENT, false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
