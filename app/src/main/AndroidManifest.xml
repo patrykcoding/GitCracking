@@ -30,6 +30,7 @@
         <activity android:name=".NewIssue" />
         <activity android:name=".PullRequestDetail" />
         <activity android:name=".CommitDiff" />
+        <activity android:name=".RepositoryDetail"></activity>
     </application>
 
 </manifest>

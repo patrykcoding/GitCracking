@@ -37,4 +37,10 @@
     <string name="and">and</string>
     <string name="conflicts">Conflicts</string>
     <string name="refresh">refresh</string>
+    <string name="issues">Issues</string>
+    <string name="pulls">Pulls</string>
+    <string name="forks">Forks</string>
+    <string name="readme">README</string>
+    <string name="slash">/</string>
+    <string name="dash">-</string>
 </resources>
