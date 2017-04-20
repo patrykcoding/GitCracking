@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Html;
 import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +26,9 @@ import org.eclipse.egit.github.core.RepositoryContents;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.ContentsService;
 import org.eclipse.egit.github.core.service.MarkdownService;
+import org.eclipse.egit.github.core.service.PullRequestService;
+
+import java.io.IOException;
 
 public class RepoHomeFragment extends Fragment {
 
@@ -74,6 +76,7 @@ public class RepoHomeFragment extends Fragment {
         setHasOptionsMenu(true);
 
         new GetReadMe().execute();
+        new GetWidgetData().execute();
         return view;
     }
 
@@ -125,6 +128,42 @@ public class RepoHomeFragment extends Fragment {
             } else {
                 textViewReadme.setText(Html.fromHtml(readme));
             }
+        }
+    }
+
+    private class GetWidgetData extends AsyncTask<Void, Void, Boolean> {
+
+        private int pullRequestCount;
+        private int issuesCount;
+        private int forksCount;
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
+
+            try {
+                pullRequestCount = pullRequestService.getPullRequests(repository, PullRequestService.PR_STATE).size();
+                issuesCount = repository.getOpenIssues() - pullRequestCount;
+                forksCount = repository.getForks();
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (!success) {
+                return;
+            }
+            TextView textViewIssuesCount = (TextView) rootView.findViewById(R.id.tv_issues_count);
+            TextView textViewPRCount = (TextView) rootView.findViewById(R.id.tv_pull_request_count);
+            TextView textViewForksCount = (TextView) rootView.findViewById(R.id.tv_forks_count);
+
+            textViewIssuesCount.setText(String.valueOf(issuesCount));
+            textViewPRCount.setText(String.valueOf(pullRequestCount));
+            textViewForksCount.setText(String.valueOf(forksCount));
         }
     }
 }
