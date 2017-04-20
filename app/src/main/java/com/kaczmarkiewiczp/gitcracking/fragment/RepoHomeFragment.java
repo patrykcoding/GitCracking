@@ -82,7 +82,7 @@ public class RepoHomeFragment extends Fragment {
                 backgroundTasks.put(README_TASK, new GetReadMe().execute());
             }
         });
-        
+
         // TODO set on click listeners
         TextView textViewRepoOwner = (TextView) view.findViewById(R.id.tv_repo_owner);
         textViewRepoOwner.setText(repository.getOwner().getLogin());
@@ -115,6 +115,18 @@ public class RepoHomeFragment extends Fragment {
         if (savedReadme != null) {
             Bundle bundle = getArguments();
             bundle.putString(SAVED_README, savedReadme);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (backgroundTasks != null && numberOfTasksRunning > 0) {
+            for (AsyncTask backgroundTask : backgroundTasks.values()) {
+                if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                    backgroundTask.cancel(true);
+                }
+            }
         }
     }
 
