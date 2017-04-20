@@ -29,8 +29,12 @@ import org.eclipse.egit.github.core.service.MarkdownService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class RepoHomeFragment extends Fragment {
+
+    private final String WIDGET_TASK = "widget";
+    private final String README_TASK = "readme";
 
     private View rootView;
     private Context context;
@@ -38,6 +42,8 @@ public class RepoHomeFragment extends Fragment {
     private GitHubClient gitHubClient;
     private ProgressBar loadingIndicator;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private HashMap<String, AsyncTask> backgroundTasks;
+    private int numberOfTasksRunning;
 
     public RepoHomeFragment() {
         // requires empty constructor
@@ -54,13 +60,23 @@ public class RepoHomeFragment extends Fragment {
 
         AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
+        backgroundTasks = new HashMap<>();
+        numberOfTasksRunning = 0;
 
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_repo_home);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO
+                if (backgroundTasks != null) {
+                    for (AsyncTask backgroundTask : backgroundTasks.values()) {
+                        if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                            backgroundTask.cancel(true);
+                        }
+                    }
+                }
+                backgroundTasks.put(WIDGET_TASK, new GetWidgetData().execute());
+                backgroundTasks.put(README_TASK, new GetReadMe().execute());
             }
         });
         // TODO set on click listeners
@@ -89,7 +105,15 @@ public class RepoHomeFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                // TODO refresh
+                if (backgroundTasks != null) {
+                    for (AsyncTask backgroundTask : backgroundTasks.values()) {
+                        if (backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                            backgroundTask.cancel(true);
+                        }
+                    }
+                }
+                backgroundTasks.put(WIDGET_TASK, new GetWidgetData().execute());
+                backgroundTasks.put(README_TASK, new GetReadMe().execute());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -97,6 +121,17 @@ public class RepoHomeFragment extends Fragment {
     }
 
     private class GetReadMe extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            numberOfTasksRunning++;
+            if (!swipeRefreshLayout.isRefreshing()) {
+                if (loadingIndicator.getVisibility() != View.VISIBLE) {
+                    loadingIndicator.setVisibility(View.VISIBLE);
+                }
+            }
+        }
 
         @Override
         protected String doInBackground(Void... params) {
@@ -122,11 +157,39 @@ public class RepoHomeFragment extends Fragment {
         @Override
         protected void onPostExecute(String readme) {
             super.onPostExecute(readme);
+            if (readme == null) {
+                numberOfTasksRunning--;
+                return;
+            }
             TextView textViewReadme = (TextView) rootView.findViewById(R.id.tv_readme);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 textViewReadme.setText(Html.fromHtml(readme, Html.FROM_HTML_MODE_COMPACT));
             } else {
                 textViewReadme.setText(Html.fromHtml(readme));
+            }
+
+            numberOfTasksRunning--;
+            if (numberOfTasksRunning == 0) {
+                if (swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+                if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                    loadingIndicator.setVisibility(View.GONE);
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            numberOfTasksRunning--;
+            if (numberOfTasksRunning == 0) {
+                if (swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+                if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                    loadingIndicator.setVisibility(View.GONE);
+                }
             }
         }
     }
@@ -136,6 +199,17 @@ public class RepoHomeFragment extends Fragment {
         private int pullRequestCount;
         private int issuesCount;
         private int forksCount;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            numberOfTasksRunning++;
+            if (!swipeRefreshLayout.isRefreshing()) {
+                if (loadingIndicator.getVisibility() != View.VISIBLE) {
+                    loadingIndicator.setVisibility(View.VISIBLE);
+                }
+            }
+        }
 
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -155,6 +229,7 @@ public class RepoHomeFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (!success) {
+                numberOfTasksRunning--;
                 return;
             }
             TextView textViewIssuesCount = (TextView) rootView.findViewById(R.id.tv_issues_count);
@@ -164,6 +239,30 @@ public class RepoHomeFragment extends Fragment {
             textViewIssuesCount.setText(String.valueOf(issuesCount));
             textViewPRCount.setText(String.valueOf(pullRequestCount));
             textViewForksCount.setText(String.valueOf(forksCount));
+
+            numberOfTasksRunning--;
+            if (numberOfTasksRunning == 0) {
+                if (swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+                if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                    loadingIndicator.setVisibility(View.GONE);
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            numberOfTasksRunning--;
+            if (numberOfTasksRunning == 0) {
+                if (swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+                if (loadingIndicator.getVisibility() == View.VISIBLE) {
+                    loadingIndicator.setVisibility(View.GONE);
+                }
+            }
         }
     }
 }
