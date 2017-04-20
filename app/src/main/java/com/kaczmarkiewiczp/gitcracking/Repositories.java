@@ -90,6 +90,7 @@ public class Repositories extends AppCompatActivity implements RepositoriesAdapt
         });
         backgroundTask = new GetRepositories().execute(gitHubClient);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

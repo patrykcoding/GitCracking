@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Html;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +30,7 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.ContentsService;
 import org.eclipse.egit.github.core.service.MarkdownService;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -85,7 +87,7 @@ public class RepoHomeFragment extends Fragment {
             }
         });
 
-        setUponClickListeners();
+        setupOnClickListeners();
 
         TextView textViewRepoOwner = (TextView) view.findViewById(R.id.tv_repo_owner);
         textViewRepoOwner.setText(repository.getOwner().getLogin());
@@ -157,7 +159,24 @@ public class RepoHomeFragment extends Fragment {
         }
     }
 
-    private void setUponClickListeners() {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case Consts.REPO_INTENT:
+                if (resultCode == Consts.DATA_MODIFIED) {
+                    if (backgroundTasks != null) {
+                        backgroundTasks.get(WIDGET_TASK).cancel(true);
+                    }
+                    Log.i("#RepoHomeFragment", "onActivityResult");
+                    backgroundTasks.put(WIDGET_TASK, new GetWidgetData().execute());
+                }
+                return;
+            default:
+                return;
+        }
+    }
+
+    private void setupOnClickListeners() {
         rootView.findViewById(R.id.ll_issues).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -167,7 +186,7 @@ public class RepoHomeFragment extends Fragment {
                 intent.putExtras(bundle);
                 intent.putExtra(Consts.HAS_PARENT, true);
                 intent.setClass(context, Issues.class);
-                startActivity(intent);
+                startActivityForResult(intent, Consts.REPO_INTENT);
             }
         });
         rootView.findViewById(R.id.ll_pull_requests).setOnClickListener(new View.OnClickListener() {
@@ -279,8 +298,10 @@ public class RepoHomeFragment extends Fragment {
         @Override
         protected Boolean doInBackground(Void... params) {
             PullRequestService pullRequestService = new PullRequestService(gitHubClient);
+            RepositoryService repositoryService = new RepositoryService(gitHubClient);
 
             try {
+                repository = repositoryService.getRepository(repository);
                 pullRequestCount = pullRequestService.getPullRequests(repository, PullRequestService.PR_STATE).size();
                 issuesCount = repository.getOpenIssues() - pullRequestCount;
                 forksCount = repository.getForks();

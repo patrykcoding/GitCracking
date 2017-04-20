@@ -306,6 +306,7 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
 
             } else if (noError && issues.isEmpty()) {
                 showEmptyView();
+                countListener.onIssueCountHasChanged(tabSection, 0);
             } else if (errorType != USER_CANCELLED_ERROR) {
                 showErrorMessage(errorType);
             }
