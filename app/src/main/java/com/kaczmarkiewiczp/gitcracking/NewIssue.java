@@ -59,15 +59,23 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
         context = this;
 
-        newIssue = new Issue();
-        isRepositoryListReady = false;
-        isRepositoryDataReady = false;
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            selectedRepository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        }
 
+        newIssue = new Issue();
+        // if repository is specified then isRepositoryListReady is irrelevant, therefore make it true
+        isRepositoryListReady = selectedRepository != null;
+        isRepositoryDataReady = false;
 
         textViewRepository = (TextView) findViewById(R.id.btn_select_repo);
         textViewLabels = (TextView) findViewById(R.id.btn_select_labels);
         textViewMilestone = (TextView) findViewById(R.id.btn_select_milestone);
         textViewAssignee = (TextView) findViewById(R.id.btn_select_assignee);
+        if (selectedRepository != null) {
+            textViewRepository.setVisibility(View.GONE);
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("New Issue");
@@ -81,7 +89,11 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         AccountUtils accountUtils = new AccountUtils(this);
         gitHubClient = accountUtils.getGitHubClient();
 
-        new GetRepositories().execute(gitHubClient);
+        if (selectedRepository != null) {
+            new GetRepositoryData().execute(selectedRepository);
+        } else {
+            new GetRepositories().execute(gitHubClient);
+        }
 
         setUpOnClickListeners();
     }

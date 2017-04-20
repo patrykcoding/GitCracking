@@ -80,7 +80,9 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
         context = view.getContext();
 
         Bundle bundle = getArguments();
-        repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        if (bundle != null) {
+            repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        }
 
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);

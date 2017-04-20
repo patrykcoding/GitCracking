@@ -42,7 +42,9 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
 
         // repository is passed in when a specific repository starts this activity
         Bundle bundle = getIntent().getExtras();
-        repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        if (bundle != null) {
+            repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        }
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issues");
@@ -68,7 +70,13 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
         findViewById(R.id.fab_new_issue).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), NewIssue.class);
+                Intent intent = new Intent();
+                if (repository != null) {
+                    Bundle args = new Bundle();
+                    args.putSerializable(Consts.REPOSITORY_ARG, repository);
+                    intent.putExtras(args);
+                }
+                intent.setClass(getApplicationContext(), NewIssue.class);
                 startActivityForResult(intent, Consts.NEW_ISSUE_INTENT);
             }
         });
