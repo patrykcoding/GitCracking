@@ -35,6 +35,7 @@ public class RepoHomeFragment extends Fragment {
 
     private final String WIDGET_TASK = "widget";
     private final String README_TASK = "readme";
+    private final String SAVED_README = "saved readme";
 
     private View rootView;
     private Context context;
@@ -42,6 +43,7 @@ public class RepoHomeFragment extends Fragment {
     private GitHubClient gitHubClient;
     private ProgressBar loadingIndicator;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private String savedReadme;
     private HashMap<String, AsyncTask> backgroundTasks;
     private int numberOfTasksRunning;
 
@@ -49,6 +51,7 @@ public class RepoHomeFragment extends Fragment {
         // requires empty constructor
     }
 
+    @SuppressWarnings("deprecation") // for Html.fromHtml -- check in code for android version
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -79,6 +82,7 @@ public class RepoHomeFragment extends Fragment {
                 backgroundTasks.put(README_TASK, new GetReadMe().execute());
             }
         });
+        
         // TODO set on click listeners
         TextView textViewRepoOwner = (TextView) view.findViewById(R.id.tv_repo_owner);
         textViewRepoOwner.setText(repository.getOwner().getLogin());
@@ -91,9 +95,27 @@ public class RepoHomeFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        new GetReadMe().execute();
-        new GetWidgetData().execute();
+        savedReadme = bundle.getString(SAVED_README);
+        if (savedReadme != null) {
+            TextView textViewReadme = (TextView) view.findViewById(R.id.tv_readme);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                textViewReadme.setText(Html.fromHtml(savedReadme, Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                textViewReadme.setText(Html.fromHtml(savedReadme));
+            }        } else  {
+            backgroundTasks.put(README_TASK, new GetReadMe().execute());
+        }
+        backgroundTasks.put(WIDGET_TASK, new GetWidgetData().execute());
         return view;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (savedReadme != null) {
+            Bundle bundle = getArguments();
+            bundle.putString(SAVED_README, savedReadme);
+        }
     }
 
     @Override
@@ -161,6 +183,7 @@ public class RepoHomeFragment extends Fragment {
                 numberOfTasksRunning--;
                 return;
             }
+            savedReadme = readme;
             TextView textViewReadme = (TextView) rootView.findViewById(R.id.tv_readme);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 textViewReadme.setText(Html.fromHtml(readme, Html.FROM_HTML_MODE_COMPACT));
