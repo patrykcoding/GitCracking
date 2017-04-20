@@ -32,12 +32,14 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
     private Toolbar toolbar;
     private NavBarUtils navBarUtils;
     private Repository repository;
+    private boolean dataHasBeenModified;
     private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issues);
+        dataHasBeenModified = false;
         context = this;
 
         // repository is passed in when a specific repository starts this activity
@@ -100,12 +102,23 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                 return;
             case Consts.NEW_ISSUE_INTENT:
                 if (resultCode == Consts.DATA_MODIFIED) {
+                    dataHasBeenModified = true;
                     for (int i = 0; i < pagerAdapter.getCount(); i++) {
                         IssuesFragment fragment = pagerAdapter.getFragment(i);
                         fragment.reloadFragment();
                     }
                 }
                 return;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (dataHasBeenModified) {
+            setResult(Consts.DATA_MODIFIED);
+            finish();
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -127,6 +140,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
 
     @Override
     public void onIssueDataHasChanged(boolean dataHasChanged) {
+        dataHasBeenModified = true;
         for (int i = 0; i < pagerAdapter.getCount(); i++) {
             IssuesFragment fragment = pagerAdapter.getFragment(i);
             fragment.reloadFragment();
