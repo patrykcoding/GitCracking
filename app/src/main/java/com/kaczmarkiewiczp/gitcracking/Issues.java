@@ -21,6 +21,7 @@ import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
 
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
 
 public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener, IssuesFragment.IssueChangeListener {
@@ -30,6 +31,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
     private TabLayout tabLayout;
     private Toolbar toolbar;
     private NavBarUtils navBarUtils;
+    private Repository repository;
     private Context context;
 
     @Override
@@ -38,11 +40,19 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
         setContentView(R.layout.activity_issues);
         context = this;
 
+        // repository is passed in when a specific repository starts this activity
+        Bundle bundle = getIntent().getExtras();
+        repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Issues");
         setSupportActionBar(toolbar);
-        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
-        if (getIntent().getBooleanExtra("hasParent", false)) {
+        if (repository == null) {
+            navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+        } else {
+            navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+        }
+        if (getIntent().getBooleanExtra(Consts.HAS_PARENT, false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -72,7 +82,11 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                 if (resultCode == RESULT_OK) {
                     Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
                     if (accountHasBeenModified) {
-                        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+                        if (repository == null) {
+                            navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
+                        } else {
+                            navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+                        }
                     }
                 }
                 return;
@@ -129,6 +143,9 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                     IssuesFragment issuesFragment = new IssuesFragment();
                     Bundle args = new Bundle();
                     args.putInt(issuesFragment.ARG_SECTION_NUMBER, position);
+                    if (repository != null) {
+                        args.putSerializable(Consts.REPOSITORY_ARG, repository);
+                    }
                     issuesFragment.setArguments(args);
                     fragments.put(position, issuesFragment);
                     return issuesFragment;

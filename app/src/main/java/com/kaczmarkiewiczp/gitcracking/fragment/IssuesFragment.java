@@ -59,6 +59,7 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
     private LinearLayout emptyView;
     private IssueCountListener countListener;
     private IssueChangeListener changeListener;
+    private Repository repository;
 
     public interface IssueCountListener {
         void onIssueCountHasChanged(int tabSection, int count);
@@ -77,6 +78,10 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
         final View view = inflater.inflate(R.layout.fragment_issues, container, false);
         rootView = view;
         context = view.getContext();
+
+        Bundle bundle = getArguments();
+        repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);
         errorView = (LinearLayout) view.findViewById(R.id.ll_connection_err);
@@ -203,7 +208,7 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
         backgroundTask = new GetIssues().execute(gitHubClient);
     }
 
-    public class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
+    private class GetIssues extends AsyncTask<GitHubClient, Void, Boolean> {
 
         private ArrayList<Issue> issues;
         private ArrayList<Repository> repositories;
@@ -233,15 +238,26 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
 
             try {
                 String user = userService.getUser().getLogin();
-                for (Repository repository : repositoryService.getRepositories()) {
+
+                List<Repository> allRepositories;
+                if (repository == null) {
+                    // get all issues from all repositories
+                    allRepositories = repositoryService.getRepositories();
+                } else {
+                    // get issues only for specific repository
+                    allRepositories = new ArrayList<>();
+                    allRepositories.add(repository);
+                }
+
+                for (Repository repo : allRepositories) {
                     if (isCancelled()) {
                         errorType = USER_CANCELLED_ERROR;
                         return false;
                     }
-                    if (repository.getOpenIssues() < 1) {
+                    if (repo.getOpenIssues() < 1) {
                         continue;
                     }
-                    List<Issue> repositoryIssues = issueService.getIssues(repository, null);
+                    List<Issue> repositoryIssues = issueService.getIssues(repo, null);
                     for (Issue issue : repositoryIssues) {
                         if (issue.getPullRequest() != null) {
                             // github treats pull requests as issues, if this is a PR, skip it
@@ -250,11 +266,11 @@ public class IssuesFragment extends Fragment implements IssuesAdapter.IssueClick
                         if (tabSection == SECTION_ASSIGNED) {
                             if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(user)) {
                                 issues.add(issue);
-                                repositories.add(repository);
+                                repositories.add(repo);
                             }
                         } else if (tabSection == SECTION_CREATED) {
                             issues.add(issue);
-                            repositories.add(repository);
+                            repositories.add(repo);
                         }
 
                     }

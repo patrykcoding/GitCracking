@@ -61,7 +61,7 @@ public class Repositories extends AppCompatActivity implements RepositoriesAdapt
         toolbar.setTitle("Repositories");
         setSupportActionBar(toolbar);
         navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.REPOSITORIES);
-        if (getIntent().getBooleanExtra("hasParent", false)) {
+        if (getIntent().getBooleanExtra(Consts.HAS_PARENT, false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);

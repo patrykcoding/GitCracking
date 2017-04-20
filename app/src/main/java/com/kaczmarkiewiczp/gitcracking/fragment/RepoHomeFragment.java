@@ -1,6 +1,7 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.Consts;
+import com.kaczmarkiewiczp.gitcracking.Issues;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Repository;
@@ -83,7 +85,8 @@ public class RepoHomeFragment extends Fragment {
             }
         });
 
-        // TODO set on click listeners
+        setUponClickListeners();
+
         TextView textViewRepoOwner = (TextView) view.findViewById(R.id.tv_repo_owner);
         textViewRepoOwner.setText(repository.getOwner().getLogin());
         TextView textViewRepoName = (TextView) view.findViewById(R.id.tv_repo_name);
@@ -152,6 +155,33 @@ public class RepoHomeFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void setUponClickListeners() {
+        rootView.findViewById(R.id.ll_issues).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(Consts.REPOSITORY_ARG, repository);
+                intent.putExtras(bundle);
+                intent.putExtra(Consts.HAS_PARENT, true);
+                intent.setClass(context, Issues.class);
+                startActivity(intent);
+            }
+        });
+        rootView.findViewById(R.id.ll_pull_requests).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        rootView.findViewById(R.id.ll_forks).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     private class GetReadMe extends AsyncTask<Void, Void, String> {

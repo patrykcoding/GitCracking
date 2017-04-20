@@ -32,7 +32,7 @@ public class People extends AppCompatActivity implements PeopleFragment.PeopleCo
         toolbar.setTitle("People");
         setSupportActionBar(toolbar);
         navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PEOPLE);
-        if (getIntent().getBooleanExtra("hasParent", false)) {
+        if (getIntent().getBooleanExtra(Consts.HAS_PARENT, false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
