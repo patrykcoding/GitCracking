@@ -19,6 +19,7 @@ import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.adapter.DiffAdapter;
 
+import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
@@ -35,7 +36,6 @@ public class CommitDiff extends AppCompatActivity {
     private Context context;
     private RepositoryCommit repositoryCommit;
     private Repository repository;
-    private PullRequest pullRequest;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar loadingIndicator;
     private Toolbar toolbar;
@@ -53,8 +53,7 @@ public class CommitDiff extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         repositoryCommit = (RepositoryCommit) bundle.getSerializable("commit");
         repository = (Repository) bundle.getSerializable("repository");
-        pullRequest = (PullRequest) bundle.getSerializable("pull request");
-        if (repositoryCommit == null || repository == null || pullRequest == null) {
+        if (repositoryCommit == null || repository == null) {
             finish();
             return;
         }
@@ -147,7 +146,8 @@ public class CommitDiff extends AppCompatActivity {
 
             try {
                 commit = commitService.getCommit(repository, repositoryCommit.getSha());
-                repositoryCommitCompare = commitService.compare(repository, pullRequest.getBase().getSha(), commit.getSha());
+                Commit parent = commit.getParents().get(0);
+                repositoryCommitCompare = commitService.compare(repository, parent.getSha(), commit.getSha());
             } catch (IOException e) {
                 return false;
             }
