@@ -21,7 +21,6 @@ import com.kaczmarkiewiczp.gitcracking.adapter.DiffAdapter;
 
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitFile;
-import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryCommitCompare;
@@ -51,7 +50,7 @@ public class CommitDiff extends AppCompatActivity {
         setContentView(R.layout.commit_diffs);
 
         Bundle bundle = getIntent().getExtras();
-        repositoryCommit = (RepositoryCommit) bundle.getSerializable(Consts.COMIT_ARG);
+        repositoryCommit = (RepositoryCommit) bundle.getSerializable(Consts.COMMIT_ARG);
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
         if (repositoryCommit == null || repository == null) {
             finish();

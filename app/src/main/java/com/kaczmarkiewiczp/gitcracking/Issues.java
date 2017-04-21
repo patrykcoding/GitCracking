@@ -105,7 +105,9 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                     dataHasBeenModified = true;
                     for (int i = 0; i < pagerAdapter.getCount(); i++) {
                         IssuesFragment fragment = pagerAdapter.getFragment(i);
-                        fragment.reloadFragment();
+                        if (fragment != null) {
+                            fragment.reloadFragment();
+                        }
                     }
                 }
                 return;
