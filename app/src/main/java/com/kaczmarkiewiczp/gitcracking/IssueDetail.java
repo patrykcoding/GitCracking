@@ -757,7 +757,7 @@ public class IssueDetail extends AppCompatActivity
 
     private void editIssue() {
         EditDialog editDialog = new EditDialog();
-        String toolbarTitle = "Edit Issue " + issue.getNumber();
+        String toolbarTitle = "Edit Issue #" + issue.getNumber();
         String currentTitle = issue.getTitle();
         String currentDescription = issue.getBody();
 

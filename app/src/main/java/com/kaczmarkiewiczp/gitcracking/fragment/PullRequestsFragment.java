@@ -126,6 +126,14 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.refresh, menu);
     }

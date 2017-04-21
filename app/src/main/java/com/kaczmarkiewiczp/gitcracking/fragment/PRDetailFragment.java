@@ -840,7 +840,7 @@ public class PRDetailFragment extends Fragment
         EditDialog editDialog = new EditDialog();
         editDialog.setTargetFragment(this, 0);
 
-        String toolbarTitle = "Edit Pull Request " + pullRequest.getNumber();
+        String toolbarTitle = "Edit Pull Request #" + pullRequest.getNumber();
         String currentTitle = pullRequest.getTitle();
         String currentDescription = pullRequest.getBody();
 

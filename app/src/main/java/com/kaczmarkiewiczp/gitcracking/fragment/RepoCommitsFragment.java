@@ -102,7 +102,7 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
     public void onCommitClick(RepositoryCommit repositoryCommit) {
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
-        bundle.putSerializable(Consts.COMIT_ARG, repositoryCommit);
+        bundle.putSerializable(Consts.COMMIT_ARG, repositoryCommit);
         bundle.putSerializable(Consts.REPOSITORY_ARG, repository);
         intent.putExtras(bundle);
         intent.setClass(context, CommitDiff.class);
