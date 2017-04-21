@@ -17,6 +17,8 @@ import android.view.animation.AnimationUtils;
 
 import com.kaczmarkiewiczp.gitcracking.fragment.PullRequestsFragment;
 
+import org.eclipse.egit.github.core.Repository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,16 +30,27 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
     private TabLayout tabLayout;
     private Toolbar toolbar;
     private NavBarUtils navBarUtils;
+    private Repository repository;
+    private boolean dataHasBeenModified;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pull_requests);
 
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        }
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Pull Requests");
         setSupportActionBar(toolbar);
-        navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
+        if (repository == null) {
+            navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.PULL_REQUESTS);
+        } else {
+            navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
+        }
         if (getIntent().getBooleanExtra(Consts.HAS_PARENT, false)) {
             navBarUtils.setNavigationDrawerButtonAsUp();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -81,9 +94,20 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
 
     @Override
     public void onPRDataHasChanged(boolean dataHasChanged) {
+        dataHasBeenModified = dataHasChanged;
         for (int i = 0; i < pagerAdapter.getCount(); i++) {
             PullRequestsFragment fragment = pagerAdapter.getFragment(i);
             fragment.reloadFragmentData();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (dataHasBeenModified) {
+            setResult(Consts.DATA_MODIFIED);
+            finish();
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -105,6 +129,9 @@ public class PullRequests extends AppCompatActivity implements PullRequestsFragm
                     PullRequestsFragment pullRequestsFragment = new PullRequestsFragment();
                     Bundle args = new Bundle();
                     args.putInt(pullRequestsFragment.ARG_SECTION_NUMBER, position);
+                    if (repository != null) {
+                        args.putSerializable(Consts.REPOSITORY_ARG, repository);
+                    }
                     pullRequestsFragment.setArguments(args);
                     fragments.put(position, pullRequestsFragment);
                     return pullRequestsFragment;

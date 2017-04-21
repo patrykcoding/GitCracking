@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.Issues;
+import com.kaczmarkiewiczp.gitcracking.PullRequests;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.Repository;
@@ -192,7 +193,13 @@ public class RepoHomeFragment extends Fragment {
         rootView.findViewById(R.id.ll_pull_requests).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent = new Intent();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(Consts.REPOSITORY_ARG, repository);
+                intent.putExtras(bundle);
+                intent.putExtra(Consts.HAS_PARENT, true);
+                intent.setClass(context, PullRequests.class);
+                startActivityForResult(intent, Consts.REPO_INTENT);
             }
         });
         rootView.findViewById(R.id.ll_forks).setOnClickListener(new View.OnClickListener() {

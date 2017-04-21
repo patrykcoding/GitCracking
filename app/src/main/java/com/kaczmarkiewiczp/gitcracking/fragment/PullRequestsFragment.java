@@ -56,6 +56,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     private AsyncTask backgroundTask;
     private LinearLayout errorView;
     private LinearLayout emptyView;
+    private Repository repository;
     private PullRequestCountListener countListener;
     private PullRequestChangeListener changeListener;
 
@@ -75,6 +76,12 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_pull_requests, container, false);
         rootView = view;
+
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        }
+
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         emptyView = (LinearLayout) view.findViewById(R.id.ll_empty_view);
         errorView = (LinearLayout) view.findViewById(R.id.ll_connection_err);
@@ -201,6 +208,10 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
         backgroundTask = new GetPullRequests().execute(gitHubClient);
     }
 
+    /***********************************************************************************************
+     * Background tasks
+     **********************************************************************************************/
+
     public class GetPullRequests extends AsyncTask<GitHubClient, Void, Boolean> {
 
         private ArrayList<PullRequest> pullRequests;
@@ -231,12 +242,23 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
 
             try {
                 String user = userService.getUser().getLogin();
-                for (Repository repository : repositoryService.getRepositories()) {
+
+                List<Repository> allRepositories;
+                if (repository == null) {
+                    // get all pull requests from all repositories
+                    allRepositories = repositoryService.getRepositories();
+                } else {
+                    // get pull requests only for specific repository
+                    allRepositories = new ArrayList<>();
+                    allRepositories.add(repository);
+                }
+
+                for (Repository repo : allRepositories) {
                     if (isCancelled()) {
                         errorType = USER_CANCELLED_ERROR;
                         return false;
                     }
-                    List<PullRequest> repositoryPullRequests = pullRequestService.getPullRequests(repository, "open");
+                    List<PullRequest> repositoryPullRequests = pullRequestService.getPullRequests(repo, "open");
                     for (PullRequest pullRequest : repositoryPullRequests) {
                         if (tabSection == SECTION_ASSIGNED) {
                             if (pullRequest.getAssignee() != null && pullRequest.getAssignee().getLogin().equals(user)) {
@@ -245,7 +267,7 @@ public class PullRequestsFragment extends Fragment implements PullRequestsAdapte
                         } else if (tabSection == SECTION_CREATED) {
                             pullRequests.add(pullRequest);
                         }
-                        repositories.add(repository);
+                        repositories.add(repo);
                     }
                 }
             } catch (RequestException e) {
