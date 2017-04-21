@@ -9,5 +9,6 @@ public class Consts {
     public static final int REPO_INTENT = 5;
 
     public static final String REPOSITORY_ARG = "repository";
+    public static final String COMIT_ARG = "commit";
     public static final String HAS_PARENT = "has parent";
 }

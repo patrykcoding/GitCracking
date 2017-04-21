@@ -168,7 +168,6 @@ public class RepoHomeFragment extends Fragment {
                     if (backgroundTasks != null) {
                         backgroundTasks.get(WIDGET_TASK).cancel(true);
                     }
-                    Log.i("#RepoHomeFragment", "onActivityResult");
                     backgroundTasks.put(WIDGET_TASK, new GetWidgetData().execute());
                 }
                 return;

@@ -23,32 +23,24 @@ import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.CommitsAdapter;
 
-import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.PullRequestService;
+import org.eclipse.egit.github.core.service.CommitService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-public class CommitsFragment extends Fragment implements CommitsAdapter.CommitClickListener {
+public class RepoCommitsFragment extends Fragment implements CommitsAdapter.CommitClickListener {
 
     private View rootView;
     private Context context;
-    private PullRequest pullRequest;
     private Repository repository;
+    private GitHubClient gitHubClient;
+    private ProgressBar loadingIndicator;
     private CommitsAdapter commitsAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private ProgressBar loadingIndicator;
-    private AccountUtils accountUtils;
-    private GitHubClient gitHubClient;
     private AsyncTask backgroundTask;
-
-    public CommitsFragment() {
-        // requires empty constructor
-    }
 
     @Nullable
     @Override
@@ -56,10 +48,8 @@ public class CommitsFragment extends Fragment implements CommitsAdapter.CommitCl
         final View view = inflater.inflate(R.layout.fragment_commits, container, false);
         rootView = view;
         context = view.getContext();
-
         Bundle bundle = getArguments();
-        pullRequest = (PullRequest) bundle.getSerializable("pull request");
-        repository = (Repository) bundle.getSerializable("repository");
+        repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_commits);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -75,17 +65,17 @@ public class CommitsFragment extends Fragment implements CommitsAdapter.CommitCl
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetCommits().execute(gitHubClient);
+                backgroundTask = new GetCommits().execute();
             }
         });
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
 
-        accountUtils = new AccountUtils(context);
+        AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
 
         setHasOptionsMenu(true);
-        backgroundTask = new GetCommits().execute(gitHubClient);
 
+        backgroundTask = new GetCommits().execute();
         return view;
     }
 
@@ -101,9 +91,10 @@ public class CommitsFragment extends Fragment implements CommitsAdapter.CommitCl
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetCommits().execute(gitHubClient);
-                default:
-                    return super.onOptionsItemSelected(item);
+                backgroundTask = new GetCommits().execute();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -118,9 +109,9 @@ public class CommitsFragment extends Fragment implements CommitsAdapter.CommitCl
         startActivity(intent);
     }
 
-    private class GetCommits extends AsyncTask<GitHubClient, Void, Boolean> {
+    private class GetCommits extends AsyncTask<Void, Void, Boolean> {
 
-        private List<RepositoryCommit> commits;
+        private List<RepositoryCommit> repositoryCommits;
 
         @Override
         protected void onPreExecute() {
@@ -128,39 +119,35 @@ public class CommitsFragment extends Fragment implements CommitsAdapter.CommitCl
             if (!swipeRefreshLayout.isRefreshing()) {
                 loadingIndicator.setVisibility(View.VISIBLE);
             }
-            commits = new ArrayList<>();
         }
 
         @Override
-        protected Boolean doInBackground(GitHubClient... params) {
-            GitHubClient gitHubClient = params[0];
-            PullRequestService pullRequestService = new PullRequestService(gitHubClient);
+        protected Boolean doInBackground(Void... params) {
+            CommitService commitService = new CommitService(gitHubClient);
 
             try {
-                commits = pullRequestService.getCommits(repository, pullRequest.getNumber());
+                repositoryCommits = commitService.getCommits(repository);
             } catch (IOException e) {
                 return false;
             }
-
             return true;
         }
 
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            } else {
+                loadingIndicator.setVisibility(View.GONE);
+            }
             if (!success) {
                 return;
             }
-
             commitsAdapter.clearCommits();
-            for (RepositoryCommit repositoryCommit : commits) {
-                commitsAdapter.addCommit(repositoryCommit);
-            }
 
-            if (swipeRefreshLayout.isRefreshing()) {
-                swipeRefreshLayout.setRefreshing(false);
-            } else if (loadingIndicator.getVisibility() == View.VISIBLE) {
-                loadingIndicator.setVisibility(View.GONE);
+            for (RepositoryCommit repositoryCommit : repositoryCommits) {
+                commitsAdapter.addCommit(repositoryCommit);
             }
         }
     }

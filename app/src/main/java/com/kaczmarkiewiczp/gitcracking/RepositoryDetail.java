@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.kaczmarkiewiczp.gitcracking.fragment.RepoCommitsFragment;
 import com.kaczmarkiewiczp.gitcracking.fragment.RepoHomeFragment;
 
 import org.eclipse.egit.github.core.Repository;
@@ -92,11 +93,17 @@ public class RepositoryDetail extends AppCompatActivity {
             args.putSerializable(Consts.REPOSITORY_ARG, repository);
             switch (position) {
                 case 0:
-                case 1: // TODO remove
-                case 2: // TODO remove
                     RepoHomeFragment repoHomeFragment = new RepoHomeFragment();
                     repoHomeFragment.setArguments(args);
                     return repoHomeFragment;
+                case 1:
+                    RepoCommitsFragment repoCommitsFragment = new RepoCommitsFragment();
+                    repoCommitsFragment.setArguments(args);
+                    return repoCommitsFragment;
+                case 2:
+                    RepoHomeFragment repoHomeFragment2 = new RepoHomeFragment();
+                    repoHomeFragment2.setArguments(args);
+                    return repoHomeFragment2;
                 default:
                     return null;
             }
