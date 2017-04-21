@@ -112,7 +112,6 @@ public class CommitsFragment extends Fragment implements CommitsAdapter.CommitCl
         Bundle bundle = new Bundle();
         bundle.putSerializable("commit", repositoryCommit);
         bundle.putSerializable("repository", repository);
-        bundle.putSerializable("pull request", pullRequest);
         intent.putExtras(bundle);
         intent.setClass(context, CommitDiff.class);
         startActivity(intent);
