@@ -51,8 +51,8 @@ public class CommitDiff extends AppCompatActivity {
         setContentView(R.layout.commit_diffs);
 
         Bundle bundle = getIntent().getExtras();
-        repositoryCommit = (RepositoryCommit) bundle.getSerializable("commit");
-        repository = (Repository) bundle.getSerializable("repository");
+        repositoryCommit = (RepositoryCommit) bundle.getSerializable(Consts.COMIT_ARG);
+        repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
         if (repositoryCommit == null || repository == null) {
             finish();
             return;

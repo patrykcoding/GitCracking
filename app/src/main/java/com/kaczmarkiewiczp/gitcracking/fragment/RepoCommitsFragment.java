@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.CommitDiff;
 import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.CommitsAdapter;
@@ -99,7 +100,13 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
 
     @Override
     public void onCommitClick(RepositoryCommit repositoryCommit) {
-        // TODO
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(Consts.COMIT_ARG, repositoryCommit);
+        bundle.putSerializable(Consts.REPOSITORY_ARG, repository);
+        intent.putExtras(bundle);
+        intent.setClass(context, CommitDiff.class);
+        startActivity(intent);
     }
 
     private class GetCommits extends AsyncTask<Void, Void, Boolean> {
