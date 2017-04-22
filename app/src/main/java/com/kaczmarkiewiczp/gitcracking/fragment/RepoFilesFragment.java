@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,9 +28,14 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.ContentsService;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickListener {
+
+    private final String SAVED_FILES = "saved files HashMap";
+    private final String CURRENT_PATH = "current path";
 
     private View rootView;
     private Context context;
@@ -39,8 +43,10 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     private GitHubClient gitHubClient;
     private ProgressBar loadingIndicator;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private AsyncTask backgroundTask;
+    private AsyncTask<String, Void, Boolean> backgroundTask;
     private FilesAdapter filesAdapter;
+    private HashMap<String, List<RepositoryContents>> savedFiles;
+    private String currentPath;
 
     @Nullable
     @Override
@@ -65,7 +71,11 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetFiles().execute();
+                if (currentPath != null) {
+                    backgroundTask = new GetFiles().execute(currentPath);
+                } else {
+                    backgroundTask = new GetFiles().execute();
+                }
             }
         });
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
@@ -75,8 +85,37 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
 
         setHasOptionsMenu(true);
 
-        backgroundTask = new GetFiles().execute();
+        savedFiles = (HashMap<String, List<RepositoryContents>>) bundle.getSerializable(SAVED_FILES);
+        if (savedFiles == null) {
+            savedFiles = new HashMap<>();
+        }
+        currentPath = bundle.getString(CURRENT_PATH);
+        if (currentPath != null) {
+            backgroundTask = new GetFiles().execute(currentPath);
+        } else {
+            backgroundTask = new GetFiles().execute();
+        }
         return view;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Bundle bundle = getArguments();
+        if (savedFiles != null) {
+            bundle.putSerializable(SAVED_FILES, savedFiles);
+        }
+        if (currentPath != null) {
+            bundle.putString(CURRENT_PATH, currentPath);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
     }
 
     @Override
@@ -91,7 +130,11 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
-                backgroundTask = new GetFiles().execute();
+                if (currentPath != null) {
+                    backgroundTask = new GetFiles().execute(currentPath);
+                } else {
+                    backgroundTask = new GetFiles().execute();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -106,6 +149,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             return;
         }
         String path = repositoryContents.getPath();
+        currentPath = path;
 
         if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
             backgroundTask.cancel(true);
@@ -140,7 +184,15 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 if (path == null || path.isEmpty()) {
                     repositoryContentsList = contentsService.getContents(repository);
                 } else {
+                    if (savedFiles.containsKey(path)) {
+                        repositoryContentsList = savedFiles.get(path);
+                        if (repositoryContentsList != null && !repositoryContentsList.isEmpty()) {
+                            return true;
+                        }
+                    }
+
                     repositoryContentsList = contentsService.getContents(repository, path);
+                    savedFiles.put(path, new ArrayList<>(repositoryContentsList));
                 }
             } catch (IOException e) {
                 return false;

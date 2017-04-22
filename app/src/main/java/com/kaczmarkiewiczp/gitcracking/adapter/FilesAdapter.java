@@ -14,7 +14,6 @@ import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.RepositoryContents;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +28,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
     }
 
     public FilesAdapter(OnClickListener listener) {
-        files = new ArrayList<>();
         onClickListener = listener;
     }
 
@@ -75,6 +73,10 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
     }
 
     public void clearFiles() {
+        if (files == null) {
+            return;
+        }
+
         int itemCount = files.size();
         files.clear();
         notifyItemRangeRemoved(0, itemCount);
