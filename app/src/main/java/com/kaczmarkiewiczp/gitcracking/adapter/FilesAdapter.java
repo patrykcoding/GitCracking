@@ -9,11 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.kaczmarkiewiczp.gitcracking.Comparators;
 import com.kaczmarkiewiczp.gitcracking.R;
 
 import org.eclipse.egit.github.core.RepositoryContents;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> {
@@ -68,6 +70,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
 
     public void addFiles(List<RepositoryContents> files) {
         this.files = files;
+        Collections.sort(files, new Comparators.FilesComparator());
         notifyItemRangeInserted(0, files.size());
     }
 
