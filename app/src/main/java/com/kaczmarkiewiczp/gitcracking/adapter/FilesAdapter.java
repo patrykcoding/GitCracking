@@ -88,6 +88,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
             imageViewFileIcon = (ImageView) view.findViewById(R.id.iv_file_icon);
             textViewFileName = (TextView) view.findViewById(R.id.tv_filename);
             textViewFileSize = (TextView) view.findViewById(R.id.tv_file_size);
+
+            view.setOnClickListener(this);
         }
 
         @Override

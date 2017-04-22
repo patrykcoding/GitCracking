@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -99,7 +100,17 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
 
     @Override
     public void onFileClicked(RepositoryContents repositoryContents) {
-        Toast.makeText(context, "File clicked", Toast.LENGTH_SHORT).show();
+        if (!repositoryContents.getType().equals("dir")) {
+            Toast.makeText(context, "Opening files is not supported yet", Toast.LENGTH_SHORT).show();
+            // TODO open file
+            return;
+        }
+        String path = repositoryContents.getPath();
+
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetFiles().execute(path);
     }
 
     private class GetFiles extends AsyncTask<String, Void, Boolean> {
