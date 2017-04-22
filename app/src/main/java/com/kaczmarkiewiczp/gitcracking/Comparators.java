@@ -6,6 +6,7 @@ import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryContents;
 import org.eclipse.egit.github.core.User;
 
 import java.util.Comparator;
@@ -54,6 +55,22 @@ public class Comparators {
 
         @Override
         public int compare(Label o1, Label o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        }
+    }
+
+    public static class FilesComparator implements Comparator<RepositoryContents> {
+
+        @Override
+        public int compare(RepositoryContents o1, RepositoryContents o2) {
+            if (o1.getType().equals("dir") && !o2.getType().equals("dir")) {
+                return -1;
+            }
+
+            if (!o1.getType().equals("dir") && o2.getType().equals("dir")) {
+                return 1;
+            }
+
             return o1.getName().compareToIgnoreCase(o2.getName());
         }
     }

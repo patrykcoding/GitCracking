@@ -14,7 +14,9 @@ import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.kaczmarkiewiczp.gitcracking.adapter.FilesAdapter;
 import com.kaczmarkiewiczp.gitcracking.fragment.RepoCommitsFragment;
+import com.kaczmarkiewiczp.gitcracking.fragment.RepoFilesFragment;
 import com.kaczmarkiewiczp.gitcracking.fragment.RepoHomeFragment;
 
 import org.eclipse.egit.github.core.Repository;
@@ -101,9 +103,9 @@ public class RepositoryDetail extends AppCompatActivity {
                     repoCommitsFragment.setArguments(args);
                     return repoCommitsFragment;
                 case 2:
-                    RepoHomeFragment repoHomeFragment2 = new RepoHomeFragment();
-                    repoHomeFragment2.setArguments(args);
-                    return repoHomeFragment2;
+                    RepoFilesFragment repoFilesFragment = new RepoFilesFragment();
+                    repoFilesFragment.setArguments(args);
+                    return repoFilesFragment;
                 default:
                     return null;
             }
