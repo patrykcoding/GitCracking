@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.BreadCrumbs;
 import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.FilesAdapter;
@@ -32,7 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickListener {
+public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickListener, BreadCrumbs.OnClickListener {
 
     private final String SAVED_FILES = "saved files HashMap";
     private final String CURRENT_PATH = "current path";
@@ -45,6 +47,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     private SwipeRefreshLayout swipeRefreshLayout;
     private AsyncTask<String, Void, Boolean> backgroundTask;
     private FilesAdapter filesAdapter;
+    private BreadCrumbs breadCrumbs;
     private HashMap<String, List<RepositoryContents>> savedFiles;
     private String currentPath;
 
@@ -56,6 +59,10 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         context = view.getContext();
         Bundle bundle = getArguments();
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+
+        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
+        breadCrumbs = (BreadCrumbs) view.findViewById(R.id.bc_breadcrumbs);
+        breadCrumbs.setCallback(this);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_files);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -73,12 +80,12 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 }
                 if (currentPath != null) {
                     backgroundTask = new GetFiles().execute(currentPath);
+                    breadCrumbs.setPath(currentPath);
                 } else {
                     backgroundTask = new GetFiles().execute();
                 }
             }
         });
-        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
 
         AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
@@ -92,6 +99,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         currentPath = bundle.getString(CURRENT_PATH);
         if (currentPath != null) {
             backgroundTask = new GetFiles().execute(currentPath);
+            breadCrumbs.setPath(currentPath);
         } else {
             backgroundTask = new GetFiles().execute();
         }
@@ -132,6 +140,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 }
                 if (currentPath != null) {
                     backgroundTask = new GetFiles().execute(currentPath);
+                    breadCrumbs.setPath(currentPath);
                 } else {
                     backgroundTask = new GetFiles().execute();
                 }
@@ -155,6 +164,17 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             backgroundTask.cancel(true);
         }
         backgroundTask = new GetFiles().execute(path);
+        breadCrumbs.setPath(path);
+    }
+
+    @Override
+    public void onBreadCrumbSelected(String path) {
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        currentPath = path;
+        backgroundTask = new GetFiles().execute(path);
+        breadCrumbs.setPath(path);
     }
 
     private class GetFiles extends AsyncTask<String, Void, Boolean> {
@@ -181,7 +201,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             }
 
             try {
-                if (path == null || path.isEmpty()) {
+                if (path == null || path.trim().isEmpty()) {
                     repositoryContentsList = contentsService.getContents(repository);
                 } else {
                     if (savedFiles.containsKey(path)) {
