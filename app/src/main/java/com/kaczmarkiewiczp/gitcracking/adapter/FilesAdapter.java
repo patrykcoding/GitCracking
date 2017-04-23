@@ -52,6 +52,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
         holder.textViewFileName.setText(fileName);
         if (file.getType().equals("dir")) {
             holder.imageViewFileIcon.setImageResource(R.drawable.ic_folder_grey_24dp);
+            holder.textViewFileSize.setText("");
         } else {
             holder.imageViewFileIcon.setImageResource(R.drawable.ic_file_grey_24dp);
             holder.textViewFileSize.setText(fileSize);
