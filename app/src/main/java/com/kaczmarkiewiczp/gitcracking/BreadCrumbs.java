@@ -51,7 +51,7 @@ public class BreadCrumbs extends HorizontalScrollView implements View.OnClickLis
         if (path.trim().isEmpty()) {
             return;
         }
-        
+
         StringBuilder leadingPath = new StringBuilder(path.length());
         String[] crumbs = path.split("/");
         for (String crumb : crumbs){

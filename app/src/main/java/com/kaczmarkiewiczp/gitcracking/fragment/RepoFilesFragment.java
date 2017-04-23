@@ -60,6 +60,10 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         Bundle bundle = getArguments();
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
 
+        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
+        breadCrumbs = (BreadCrumbs) view.findViewById(R.id.bc_breadcrumbs);
+        breadCrumbs.setCallback(this);
+
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_files);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -76,14 +80,12 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 }
                 if (currentPath != null) {
                     backgroundTask = new GetFiles().execute(currentPath);
+                    breadCrumbs.setPath(currentPath);
                 } else {
                     backgroundTask = new GetFiles().execute();
                 }
             }
         });
-        loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
-        breadCrumbs = (BreadCrumbs) view.findViewById(R.id.bc_breadcrumbs);
-        breadCrumbs.setCallback(this);
 
         AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
@@ -97,6 +99,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         currentPath = bundle.getString(CURRENT_PATH);
         if (currentPath != null) {
             backgroundTask = new GetFiles().execute(currentPath);
+            breadCrumbs.setPath(currentPath);
         } else {
             backgroundTask = new GetFiles().execute();
         }
@@ -137,6 +140,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 }
                 if (currentPath != null) {
                     backgroundTask = new GetFiles().execute(currentPath);
+                    breadCrumbs.setPath(currentPath);
                 } else {
                     backgroundTask = new GetFiles().execute();
                 }
