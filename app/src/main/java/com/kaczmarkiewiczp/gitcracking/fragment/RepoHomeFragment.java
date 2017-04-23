@@ -96,7 +96,10 @@ public class RepoHomeFragment extends Fragment {
         textViewRepoName.setText(repository.getName());
         TextView textViewRepoDescription = (TextView) view.findViewById(R.id.tv_repo_description);
         if (repository.getDescription() != null) {
+            textViewRepoDescription.setVisibility(View.VISIBLE);
             textViewRepoDescription.setText(repository.getDescription());
+        } else {
+            textViewRepoDescription.setVisibility(View.GONE);
         }
 
         setHasOptionsMenu(true);
