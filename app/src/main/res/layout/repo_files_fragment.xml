@@ -22,9 +22,10 @@
                 android:paddingBottom="8dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:background="@color/colorPrimaryLight"
-                android:elevation="4dp">
-            </com.kaczmarkiewiczp.gitcracking.BreadCrumbs>
+                android:elevation="4dp"
+                android:scrollbars="none"
+                android:background="@color/colorPrimaryLight" >
+        </com.kaczmarkiewiczp.gitcracking.BreadCrumbs>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_files"

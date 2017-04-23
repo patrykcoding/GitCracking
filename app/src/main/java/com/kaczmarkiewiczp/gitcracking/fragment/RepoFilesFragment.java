@@ -165,7 +165,11 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
 
     @Override
     public void onBreadCrumbSelected(String path) {
-        Log.i("#RepoFilesFragment", "clicked '" + path + "'");
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetFiles().execute(path);
+        breadCrumbs.setPath(path);
     }
 
     private class GetFiles extends AsyncTask<String, Void, Boolean> {
@@ -192,7 +196,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             }
 
             try {
-                if (path == null || path.isEmpty()) {
+                if (path == null || path.trim().isEmpty()) {
                     repositoryContentsList = contentsService.getContents(repository);
                 } else {
                     if (savedFiles.containsKey(path)) {

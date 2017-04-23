@@ -1,7 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,7 @@ public class BreadCrumbs extends HorizontalScrollView implements View.OnClickLis
 
     private LinearLayout childFrame;
     private Context context;
+    private int numberOfCrumbs;
     private OnClickListener clickListener;
 
     public interface OnClickListener {
@@ -31,9 +31,7 @@ public class BreadCrumbs extends HorizontalScrollView implements View.OnClickLis
     }
 
     private void init(Context context) {
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(24, 8, 24, 8);
-
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         childFrame = new LinearLayout(context);
         childFrame.setLayoutParams(layoutParams);
         this.context = context;
@@ -47,31 +45,33 @@ public class BreadCrumbs extends HorizontalScrollView implements View.OnClickLis
 
     public void setPath(String path) {
         childFrame.removeAllViews();
+        numberOfCrumbs = 0;
         addRootCrumb();
-        addArrow();
 
+        if (path.trim().isEmpty()) {
+            return;
+        }
+        
         StringBuilder leadingPath = new StringBuilder(path.length());
         String[] crumbs = path.split("/");
-        for (int i = 0; i < crumbs.length; i++) {
-            leadingPath.append(crumbs[i]);
-            addCrumb(leadingPath.toString(), crumbs[i]);
+        for (String crumb : crumbs){
+            leadingPath.append(crumb);
+            addArrow();
+            addCrumb(leadingPath.toString(), crumb);
             leadingPath.append("/");
-            if (i < crumbs.length - 1) {
-                addArrow();
-            }
         }
     }
 
     private void addRootCrumb() {
-        TextView textViewRoot = new TextView(context);
-        textViewRoot.setText("/");
-        textViewRoot.setTag(" ");
-        textViewRoot.setPadding(0, 0, 8, 0);
-        textViewRoot.setOnClickListener(this);
-        childFrame.addView(textViewRoot);
+        ImageView imageViewRoot = new ImageView(context);
+        imageViewRoot.setImageResource(R.drawable.ic_home_black_24dp);
+        imageViewRoot.setTag(" ");
+        imageViewRoot.setOnClickListener(this);
+        childFrame.addView(imageViewRoot);
     }
 
     private void addCrumb(String path, String crumbTitle) {
+        numberOfCrumbs++;
         TextView textViewCrumb = new TextView(context);
         textViewCrumb.setText(crumbTitle);
         textViewCrumb.setTag(path);
@@ -84,6 +84,13 @@ public class BreadCrumbs extends HorizontalScrollView implements View.OnClickLis
         ImageView imageViewArrow = new ImageView(context);
         imageViewArrow.setImageResource(R.drawable.ic_navigate_next_black_24dp);
         childFrame.addView(imageViewArrow);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+        View child = childFrame.getChildAt(numberOfCrumbs);
+        smoothScrollTo(child.getLeft(), 0);
     }
 
     @Override
