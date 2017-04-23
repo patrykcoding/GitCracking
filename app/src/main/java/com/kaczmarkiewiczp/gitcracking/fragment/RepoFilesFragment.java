@@ -75,6 +75,9 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                if (savedFiles != null) {
+                    savedFiles.clear();
+                }
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
@@ -135,6 +138,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
+                savedFiles.clear();
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
                 }
@@ -206,9 +210,8 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                 } else {
                     if (savedFiles.containsKey(path)) {
                         repositoryContentsList = savedFiles.get(path);
-                        if (repositoryContentsList != null && !repositoryContentsList.isEmpty()) {
-                            return true;
-                        }
+                        savedFiles.put(path, new ArrayList<>(repositoryContentsList));
+                        return true;
                     }
 
                     repositoryContentsList = contentsService.getContents(repository, path);
