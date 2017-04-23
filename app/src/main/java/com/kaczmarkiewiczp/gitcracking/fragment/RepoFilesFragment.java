@@ -172,6 +172,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
             backgroundTask.cancel(true);
         }
+        currentPath = path;
         backgroundTask = new GetFiles().execute(path);
         breadCrumbs.setPath(path);
     }
