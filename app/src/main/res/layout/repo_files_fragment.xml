@@ -14,21 +14,18 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <HorizontalScrollView
-                android:id="@+id/sv_breadcrumbs"
+            <com.kaczmarkiewiczp.gitcracking.BreadCrumbs
+                android:id="@+id/bc_breadcrumbs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:background="@color/colorPrimaryLight"
                 android:elevation="4dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
-                    android:text="Temporary > bread > crumbs"/>
-            </HorizontalScrollView>
+            </com.kaczmarkiewiczp.gitcracking.BreadCrumbs>
+
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_files"
                 android:layout_width="match_parent"

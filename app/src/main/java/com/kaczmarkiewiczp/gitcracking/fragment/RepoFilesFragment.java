@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
+import com.kaczmarkiewiczp.gitcracking.BreadCrumbs;
 import com.kaczmarkiewiczp.gitcracking.Consts;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.FilesAdapter;
@@ -32,7 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickListener {
+public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickListener, BreadCrumbs.OnClickListener {
 
     private final String SAVED_FILES = "saved files HashMap";
     private final String CURRENT_PATH = "current path";
@@ -45,6 +47,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     private SwipeRefreshLayout swipeRefreshLayout;
     private AsyncTask<String, Void, Boolean> backgroundTask;
     private FilesAdapter filesAdapter;
+    private BreadCrumbs breadCrumbs;
     private HashMap<String, List<RepositoryContents>> savedFiles;
     private String currentPath;
 
@@ -79,6 +82,8 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             }
         });
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
+        breadCrumbs = (BreadCrumbs) view.findViewById(R.id.bc_breadcrumbs);
+        breadCrumbs.setCallback(this);
 
         AccountUtils accountUtils = new AccountUtils(context);
         gitHubClient = accountUtils.getGitHubClient();
@@ -155,6 +160,12 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             backgroundTask.cancel(true);
         }
         backgroundTask = new GetFiles().execute(path);
+        breadCrumbs.setPath(path);
+    }
+
+    @Override
+    public void onBreadCrumbSelected(String path) {
+        Log.i("#RepoFilesFragment", "clicked '" + path + "'");
     }
 
     private class GetFiles extends AsyncTask<String, Void, Boolean> {
