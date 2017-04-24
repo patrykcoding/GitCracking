@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.kaczmarkiewiczp.gitcracking.R;
 
+import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.RepositoryCommit;
 
 import java.util.ArrayList;
@@ -46,19 +47,39 @@ public class CommitsAdapter extends RecyclerView.Adapter<CommitsAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         RepositoryCommit repositoryCommit = commits.get(position);
-        String userIconUrl = repositoryCommit.getAuthor().getAvatarUrl();
-        String commitMessage = repositoryCommit.getCommit().getMessage();
-        String commitAuthor = repositoryCommit.getAuthor().getLogin();
-        String committedBy = "committed by " + commitAuthor;
-        String commitHash = repositoryCommit.getSha().substring(0,8);
+        String commitMessage;
+        String commitAuthor;
+        String userIconUrl;
+        String commitHash;
 
-        Glide
-                .with(context)
-                .load(userIconUrl)
-                .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
-                .placeholder(R.drawable.progress_animation)
-                .crossFade()
-                .into(holder.imageViewUserIcon);
+        if (repositoryCommit.getAuthor() == null) {
+            Commit commit = repositoryCommit.getCommit();
+            commitMessage = commit.getMessage();
+            if (commit.getAuthor().getEmail() != null) {
+                commitAuthor = commit.getAuthor().getEmail();
+            } else if (commit.getAuthor().getName() != null) {
+                commitAuthor = commit.getAuthor().getName();
+            } else {
+                commitAuthor = "unknown";
+            }
+            commitHash = commit.getSha();
+
+            holder.imageViewUserIcon.setImageResource(android.R.drawable.sym_def_app_icon);
+        } else {
+            userIconUrl = repositoryCommit.getAuthor().getAvatarUrl();
+            commitMessage = repositoryCommit.getCommit().getMessage();
+            commitAuthor = repositoryCommit.getAuthor().getLogin();
+            commitHash = repositoryCommit.getSha().substring(0, 8);
+
+            Glide
+                    .with(context)
+                    .load(userIconUrl)
+                    .error(context.getDrawable(android.R.drawable.sym_def_app_icon))
+                    .placeholder(R.drawable.progress_animation)
+                    .crossFade()
+                    .into(holder.imageViewUserIcon);
+        }
+        String committedBy = "committed by " + commitAuthor;
         holder.textViewCommit.setText(commitMessage);
         holder.textViewUser.setText(committedBy);
         holder.textViewHash.setText(commitHash);
