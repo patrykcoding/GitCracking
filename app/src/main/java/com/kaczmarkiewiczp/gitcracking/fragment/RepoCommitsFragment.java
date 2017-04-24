@@ -31,6 +31,8 @@ import org.eclipse.egit.github.core.service.CommitService;
 import java.io.IOException;
 import java.util.List;
 
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
+
 public class RepoCommitsFragment extends Fragment implements CommitsAdapter.CommitClickListener {
 
     private View rootView;
@@ -57,6 +59,8 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         recyclerView.setHasFixedSize(true);
         commitsAdapter = new CommitsAdapter(this);
         recyclerView.setAdapter(commitsAdapter);
+        recyclerView.setItemAnimator(new SlideInUpAnimator());
+        recyclerView.getItemAnimator().setAddDuration(1000);
         recyclerView.setVisibility(View.VISIBLE);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_commits);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
