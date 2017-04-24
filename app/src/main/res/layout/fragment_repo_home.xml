@@ -198,13 +198,12 @@
                             android:textColor="@color/accent"
                             android:text="@string/readme" />
 
-                        <TextView
-                            android:id="@+id/tv_readme"
+                        <us.feras.mdv.MarkdownView
+                            android:id="@+id/mv_readme"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:paddingBottom="24dp"
-                            android:autoLink="all"
-                            tools:text="This is a repository readme" />
+                            android:paddingBottom="24dp">
+                        </us.feras.mdv.MarkdownView>
                     </LinearLayout>
                 </android.support.v7.widget.CardView>
             </LinearLayout>
