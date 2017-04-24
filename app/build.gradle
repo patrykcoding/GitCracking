@@ -62,5 +62,6 @@ dependencies {
     compile 'com.github.QuadFlask:colorpicker:0.0.13'
     compile 'com.afollestad.material-dialogs:core:0.9.4.2'
     compile 'us.feras.mdv:markdownview:1.1.0'
+    compile 'com.pddstudio:highlightjs-android:1.5.0'
     testCompile 'junit:junit:4.12'
 }
