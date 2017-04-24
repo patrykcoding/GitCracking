@@ -36,6 +36,8 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import java.io.IOException;
 import java.util.HashMap;
 
+import us.feras.mdv.MarkdownView;
+
 public class RepoHomeFragment extends Fragment {
 
     private final String WIDGET_TASK = "widget";
@@ -106,12 +108,9 @@ public class RepoHomeFragment extends Fragment {
 
         savedReadme = bundle.getString(SAVED_README);
         if (savedReadme != null) {
-            TextView textViewReadme = (TextView) view.findViewById(R.id.tv_readme);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                textViewReadme.setText(Html.fromHtml(savedReadme, Html.FROM_HTML_MODE_COMPACT));
-            } else {
-                textViewReadme.setText(Html.fromHtml(savedReadme));
-            }        } else  {
+            MarkdownView markdownViewReadme = (MarkdownView) view.findViewById(R.id.mv_readme);
+            markdownViewReadme.loadMarkdown(savedReadme);
+        } else  {
             backgroundTasks.put(README_TASK, new GetReadMe().execute());
         }
         backgroundTasks.put(WIDGET_TASK, new GetWidgetData().execute());
@@ -254,12 +253,8 @@ public class RepoHomeFragment extends Fragment {
                 return;
             }
             savedReadme = readme;
-            TextView textViewReadme = (TextView) rootView.findViewById(R.id.tv_readme);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                textViewReadme.setText(Html.fromHtml(readme, Html.FROM_HTML_MODE_COMPACT));
-            } else {
-                textViewReadme.setText(Html.fromHtml(readme));
-            }
+            MarkdownView markdownViewReadme = (MarkdownView) rootView.findViewById(R.id.mv_readme);
+            markdownViewReadme.loadMarkdown(readme);
 
             numberOfTasksRunning--;
             if (numberOfTasksRunning == 0) {
