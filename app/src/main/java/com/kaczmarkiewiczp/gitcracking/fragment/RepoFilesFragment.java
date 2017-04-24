@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.kaczmarkiewiczp.gitcracking.AccountUtils;
 import com.kaczmarkiewiczp.gitcracking.BreadCrumbs;
 import com.kaczmarkiewiczp.gitcracking.Consts;
+import com.kaczmarkiewiczp.gitcracking.FileViewerDialog;
 import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.FilesAdapter;
 
@@ -156,19 +158,19 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
 
     @Override
     public void onFileClicked(RepositoryContents repositoryContents) {
-        if (!repositoryContents.getType().equals("dir")) {
-            Toast.makeText(context, "Opening files is not supported yet", Toast.LENGTH_SHORT).show();
-            // TODO open file
-            return;
-        }
         String path = repositoryContents.getPath();
-        currentPath = path;
 
-        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-            backgroundTask.cancel(true);
+        if (repositoryContents.getType().equals("dir")) {
+            currentPath = path;
+
+            if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+                backgroundTask.cancel(true);
+            }
+            backgroundTask = new GetFiles().execute(path);
+            breadCrumbs.setPath(path);
+        } else {
+            new GetFileContent().execute(path);
         }
-        backgroundTask = new GetFiles().execute(path);
-        breadCrumbs.setPath(path);
     }
 
     @Override
@@ -180,6 +182,45 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         backgroundTask = new GetFiles().execute(path);
         breadCrumbs.setPath(path);
     }
+
+    private class GetFileContent extends AsyncTask<String, Void, RepositoryContents> {
+
+        @Override
+        protected RepositoryContents doInBackground(String... params) {
+            ContentsService contentsService = new ContentsService(gitHubClient);
+            String path = params[0];
+            RepositoryContents file;
+
+            try {
+                List<RepositoryContents> repositoryContent = contentsService.getContents(repository, path);
+                if (repositoryContent.size() == 0) {
+                    return null;
+                }
+                file = repositoryContent.get(0);
+
+            } catch (IOException e) {
+                return null;
+            }
+            return file;
+        }
+
+        @Override
+        protected void onPostExecute(RepositoryContents file) {
+            super.onPostExecute(file);
+            if (file == null) {
+                return;
+            }
+            String base64Content = file.getContent();
+            byte[] data = Base64.decode(base64Content, Base64.DEFAULT);
+            String fileContent = new String(data);
+
+            FileViewerDialog fileViewerDialog = new FileViewerDialog();
+            fileViewerDialog.setFileContent(fileContent);
+            fileViewerDialog.setToolbarTitle(file.getName());
+            fileViewerDialog.show(getFragmentManager(), "File Viewer");
+        }
+    }
+
 
     private class GetFiles extends AsyncTask<String, Void, Boolean> {
 
