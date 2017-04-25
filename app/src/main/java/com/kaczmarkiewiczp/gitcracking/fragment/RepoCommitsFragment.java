@@ -65,6 +65,9 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         Bundle bundle = getArguments();
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
         currentBranch = bundle.getString(BRANCH_ARGS);
+        if (currentBranch == null && repository.getDefaultBranch() != null) {
+            currentBranch = repository.getDefaultBranch();
+        }
         branchMap = new HashMap<>();
         isBranchListReady = false;
 
