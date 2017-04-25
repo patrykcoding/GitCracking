@@ -244,6 +244,8 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             public void onClick(DialogInterface dialog, int which) {
                 currentBranch = branchList.get(selectedOption[0]).getName();
                 savedFiles.clear();
+                currentPath = "";
+                breadCrumbs.setPath(currentPath);
                 backgroundTask = new GetFiles().execute(currentPath);
             }
         });
@@ -257,10 +259,11 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         protected RepositoryContents doInBackground(String... params) {
             ContentsService contentsService = new ContentsService(gitHubClient);
             String path = params[0];
+            String sha = branchMap.get(currentBranch);
             RepositoryContents file;
 
             try {
-                List<RepositoryContents> repositoryContent = contentsService.getContents(repository, path);
+                List<RepositoryContents> repositoryContent = contentsService.getContents(repository, path, sha);
                 if (repositoryContent.size() == 0) {
                     return null;
                 }
