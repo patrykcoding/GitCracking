@@ -1,5 +1,6 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -52,6 +53,7 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
     private List<RepositoryBranch> branchList;
     private HashMap<String, String> branchMap;
     private String currentBranch;
+    private boolean isBranchListReady;
     private AsyncTask backgroundTask;
 
     @Nullable
@@ -64,6 +66,7 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
         currentBranch = bundle.getString(BRANCH_ARGS);
         branchMap = new HashMap<>();
+        isBranchListReady = false;
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_commits);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -149,7 +152,7 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
 
     private void displayBranches() {
         if (branchList == null) {
-            // TODO show loading
+            new ShowLoadingDialog().execute();
             return;
         }
 
@@ -231,6 +234,12 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         private List<RepositoryBranch> repositoryBranches;
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            isBranchListReady = false;
+        }
+
+        @Override
         protected Boolean doInBackground(Void... params) {
             RepositoryService repositoryService = new RepositoryService(gitHubClient);
 
@@ -249,7 +258,36 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
                 return;
             }
             branchList = repositoryBranches;
+            isBranchListReady = true;
             updateBranchesMap();
+        }
+    }
+
+    private class ShowLoadingDialog extends AsyncTask<Void, Void, Void> {
+
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = ProgressDialog.show(context, "Getting Branches", "Please wait", true);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            while (!isBranchListReady) {
+                if (isCancelled()) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            progressDialog.dismiss();
+            displayBranches();
         }
     }
 }
