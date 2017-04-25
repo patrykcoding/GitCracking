@@ -1,14 +1,17 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,17 +27,21 @@ import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.CommitsAdapter;
 
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
 public class RepoCommitsFragment extends Fragment implements CommitsAdapter.CommitClickListener {
 
+    private String BRANCH_ARGS = "currentBranchArgument";
     private View rootView;
     private Context context;
     private Repository repository;
@@ -42,6 +49,9 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
     private ProgressBar loadingIndicator;
     private CommitsAdapter commitsAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private List<RepositoryBranch> branchList;
+    private HashMap<String, String> branchMap;
+    private String currentBranch;
     private AsyncTask backgroundTask;
 
     @Nullable
@@ -52,6 +62,8 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         context = view.getContext();
         Bundle bundle = getArguments();
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        currentBranch = bundle.getString(BRANCH_ARGS);
+        branchMap = new HashMap<>();
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_commits);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -79,18 +91,31 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
 
         setHasOptionsMenu(true);
 
+        new GetBranches().execute();
         backgroundTask = new GetCommits().execute();
         return view;
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        Bundle bundle = getArguments();
+        if (currentBranch != null) {
+            bundle.putString(BRANCH_ARGS, currentBranch);
+        }
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.refresh, menu);
+        inflater.inflate(R.menu.repo_detail, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_branch:
+                displayBranches();
+                return true;
             case R.id.action_refresh:
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
                     backgroundTask.cancel(true);
@@ -113,6 +138,50 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         startActivity(intent);
     }
 
+    private void updateBranchesMap() {
+        if (branchMap == null) {
+            branchMap = new HashMap<>();
+        }
+        for (RepositoryBranch branch : branchList) {
+            branchMap.put(branch.getName(), branch.getCommit().getSha());
+        }
+    }
+
+    private void displayBranches() {
+        if (branchList == null) {
+            // TODO show loading
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Select a branch");
+        final int[] selectedOption = new int[1];
+        selectedOption[0] = -1;
+        String[] options = new String[branchList.size()];
+        int i = 0;
+        for (RepositoryBranch branch : branchList) {
+            if (branch.getName().equals(currentBranch)) {
+                selectedOption[0] = i;
+            }
+            options[i++] = branch.getName();
+        }
+        builder.setSingleChoiceItems(options, selectedOption[0], new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                currentBranch = branchList.get(selectedOption[0]).getName();
+                backgroundTask = new GetCommits().execute();
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
     private class GetCommits extends AsyncTask<Void, Void, Boolean> {
 
         private List<RepositoryCommit> repositoryCommits;
@@ -128,9 +197,10 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         @Override
         protected Boolean doInBackground(Void... params) {
             CommitService commitService = new CommitService(gitHubClient);
+            String sha = branchMap.get(currentBranch);
 
             try {
-                repositoryCommits = commitService.getCommits(repository);
+                repositoryCommits = commitService.getCommits(repository, sha, null);
             } catch (IOException e) {
                 return false;
             }
@@ -153,6 +223,33 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
             for (RepositoryCommit repositoryCommit : repositoryCommits) {
                 commitsAdapter.addCommit(repositoryCommit);
             }
+        }
+    }
+
+    private class GetBranches extends AsyncTask<Void, Void, Boolean> {
+
+        private List<RepositoryBranch> repositoryBranches;
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+            try {
+                repositoryBranches = repositoryService.getBranches(repository);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (!success) {
+                return;
+            }
+            branchList = repositoryBranches;
+            updateBranchesMap();
         }
     }
 }

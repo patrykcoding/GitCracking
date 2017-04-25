@@ -64,7 +64,9 @@ public class RepositoryDetail extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
-                findViewById(R.id.action_refresh).startAnimation(rotate);
+                if (findViewById(R.id.action_refresh) != null) {
+                    findViewById(R.id.action_refresh).startAnimation(rotate);
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
