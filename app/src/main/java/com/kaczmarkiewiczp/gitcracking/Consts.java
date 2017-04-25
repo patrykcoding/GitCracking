@@ -11,4 +11,6 @@ public class Consts {
     public static final String REPOSITORY_ARG = "repository";
     public static final String COMMIT_ARG = "commit";
     public static final String HAS_PARENT = "has parent";
+    public static final String BRANCH_ARG = "currentBranchArgument";
+
 }

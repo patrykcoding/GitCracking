@@ -12,7 +12,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,7 +41,6 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
 public class RepoCommitsFragment extends Fragment implements CommitsAdapter.CommitClickListener {
 
-    private String BRANCH_ARGS = "currentBranchArgument";
     private View rootView;
     private Context context;
     private Repository repository;
@@ -64,7 +62,7 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         context = view.getContext();
         Bundle bundle = getArguments();
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
-        currentBranch = bundle.getString(BRANCH_ARGS);
+        currentBranch = bundle.getString(Consts.BRANCH_ARG);
         if (currentBranch == null && repository.getDefaultBranch() != null) {
             currentBranch = repository.getDefaultBranch();
         }
@@ -107,7 +105,7 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         super.onStop();
         Bundle bundle = getArguments();
         if (currentBranch != null) {
-            bundle.putString(BRANCH_ARGS, currentBranch);
+            bundle.putString(Consts.BRANCH_ARG, currentBranch);
         }
     }
 
