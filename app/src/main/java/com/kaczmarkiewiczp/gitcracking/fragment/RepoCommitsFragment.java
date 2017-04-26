@@ -53,6 +53,11 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
     private String currentBranch;
     private boolean isBranchListReady;
     private AsyncTask backgroundTask;
+    private BranchChangeListener branchListener;
+
+    public interface BranchChangeListener {
+        void onBranchChanged(String branchName);
+    }
 
     @Nullable
     @Override
@@ -98,6 +103,12 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         new GetBranches().execute();
         backgroundTask = new GetCommits().execute();
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        branchListener = (BranchChangeListener) context;
     }
 
     @Override
@@ -178,12 +189,20 @@ public class RepoCommitsFragment extends Fragment implements CommitsAdapter.Comm
         builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                currentBranch = branchList.get(selectedOption[0]).getName();
-                backgroundTask = new GetCommits().execute();
+                String branch = branchList.get(selectedOption[0]).getName();
+                branchListener.onBranchChanged(branch);
             }
         });
         builder.setNegativeButton("Cancel", null);
         builder.show();
+    }
+
+    public void switchBranch(String newBranch) {
+        currentBranch = newBranch;
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetCommits().execute();
     }
 
     private class GetCommits extends AsyncTask<Void, Void, Boolean> {

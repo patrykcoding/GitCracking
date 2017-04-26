@@ -61,6 +61,11 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     private boolean isBranchListReady;
     private HashMap<String, List<RepositoryContents>> savedFiles;
     private String currentPath;
+    private BranchChangeListener branchListener;
+
+    public interface BranchChangeListener {
+        void onBranchChanged(String branchName);
+    }
 
     @Nullable
     @Override
@@ -126,6 +131,12 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             backgroundTask = new GetFiles().execute();
         }
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        branchListener = (BranchChangeListener) context;
     }
 
     @Override
@@ -242,15 +253,23 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                currentBranch = branchList.get(selectedOption[0]).getName();
-                savedFiles.clear();
-                currentPath = "";
-                breadCrumbs.setPath(currentPath);
-                backgroundTask = new GetFiles().execute(currentPath);
+                String branch = branchList.get(selectedOption[0]).getName();
+                branchListener.onBranchChanged(branch);
             }
         });
         builder.setNegativeButton("Cancel", null);
         builder.show();
+    }
+
+    public void switchBranch(String newBranch) {
+        currentBranch = newBranch;
+        savedFiles.clear();
+        currentPath = "";
+        breadCrumbs.setPath(currentPath);
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetFiles().execute(currentPath);
     }
 
     private class GetFileContent extends AsyncTask<String, Void, RepositoryContents> {
