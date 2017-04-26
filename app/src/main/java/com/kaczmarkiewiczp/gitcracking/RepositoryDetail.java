@@ -21,7 +21,9 @@ import com.kaczmarkiewiczp.gitcracking.fragment.RepoHomeFragment;
 
 import org.eclipse.egit.github.core.Repository;
 
-public class RepositoryDetail extends AppCompatActivity {
+import java.util.ArrayList;
+
+public class RepositoryDetail extends AppCompatActivity implements RepoCommitsFragment.BranchChangeListener, RepoFilesFragment.BranchChangeListener {
 
     private Repository repository;
     private Context context;
@@ -29,6 +31,7 @@ public class RepositoryDetail extends AppCompatActivity {
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
     private TabLayout tabLayout;
+    private String branch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +67,9 @@ public class RepositoryDetail extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
-                findViewById(R.id.action_refresh).startAnimation(rotate);
+                if (findViewById(R.id.action_refresh) != null) {
+                    findViewById(R.id.action_refresh).startAnimation(rotate);
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -81,30 +86,53 @@ public class RepositoryDetail extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBranchChanged(String branchName) {
+        branch = branchName;
+        for (int i = 0; i < pagerAdapter.getCount(); i++) {
+            Object fragment = pagerAdapter.getFragment(i);
+            if (fragment instanceof RepoCommitsFragment) {
+                RepoCommitsFragment repoCommitsFragment = (RepoCommitsFragment) fragment;
+                repoCommitsFragment.switchBranch(branchName);
+            } else if (fragment instanceof RepoFilesFragment) {
+                RepoFilesFragment repoFilesFragment = (RepoFilesFragment) fragment;
+                repoFilesFragment.switchBranch(branchName);
+            }
+        }
+    }
+
     private class PagerAdapter extends FragmentPagerAdapter {
 
         private String tabTitles[] = new String[] {"HOME", "COMMITS", "FILES"};
+        private ArrayList<Object> fragments;
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
+            fragments = new ArrayList<>(3);
         }
 
         @Override
         public Fragment getItem(int position) {
             Bundle args = new Bundle();
             args.putSerializable(Consts.REPOSITORY_ARG, repository);
+            if (branch != null) {
+                args.putString(Consts.BRANCH_ARG, branch);
+            }
             switch (position) {
                 case 0:
                     RepoHomeFragment repoHomeFragment = new RepoHomeFragment();
                     repoHomeFragment.setArguments(args);
+                    fragments.add(repoHomeFragment);
                     return repoHomeFragment;
                 case 1:
                     RepoCommitsFragment repoCommitsFragment = new RepoCommitsFragment();
                     repoCommitsFragment.setArguments(args);
+                    fragments.add(repoCommitsFragment);
                     return repoCommitsFragment;
                 case 2:
                     RepoFilesFragment repoFilesFragment = new RepoFilesFragment();
                     repoFilesFragment.setArguments(args);
+                    fragments.add(repoFilesFragment);
                     return repoFilesFragment;
                 default:
                     return null;
@@ -119,6 +147,10 @@ public class RepositoryDetail extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             return tabTitles[position];
+        }
+
+        public Object getFragment(int position) {
+            return fragments.get(position);
         }
     }
 }

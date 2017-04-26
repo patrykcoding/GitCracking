@@ -1,11 +1,14 @@
 package com.kaczmarkiewiczp.gitcracking.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
@@ -27,9 +30,11 @@ import com.kaczmarkiewiczp.gitcracking.R;
 import com.kaczmarkiewiczp.gitcracking.adapter.FilesAdapter;
 
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryContents;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.ContentsService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,8 +55,17 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     private AsyncTask<String, Void, Boolean> backgroundTask;
     private FilesAdapter filesAdapter;
     private BreadCrumbs breadCrumbs;
+    private List<RepositoryBranch> branchList;
+    private HashMap<String, String> branchMap;
+    private String currentBranch;
+    private boolean isBranchListReady;
     private HashMap<String, List<RepositoryContents>> savedFiles;
     private String currentPath;
+    private BranchChangeListener branchListener;
+
+    public interface BranchChangeListener {
+        void onBranchChanged(String branchName);
+    }
 
     @Nullable
     @Override
@@ -61,6 +75,12 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         context = view.getContext();
         Bundle bundle = getArguments();
         repository = (Repository) bundle.getSerializable(Consts.REPOSITORY_ARG);
+        currentBranch = bundle.getString(Consts.BRANCH_ARG);
+        if (currentBranch == null && repository.getDefaultBranch() != null) {
+            currentBranch = repository.getDefaultBranch();
+        }
+        branchMap = new HashMap<>();
+        isBranchListReady = false;
 
         loadingIndicator = (ProgressBar) view.findViewById(R.id.pb_loading_indicator);
         breadCrumbs = (BreadCrumbs) view.findViewById(R.id.bc_breadcrumbs);
@@ -101,6 +121,8 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         if (savedFiles == null) {
             savedFiles = new HashMap<>();
         }
+
+        new GetBranches().execute();
         currentPath = bundle.getString(CURRENT_PATH);
         if (currentPath != null) {
             backgroundTask = new GetFiles().execute(currentPath);
@@ -112,6 +134,12 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        branchListener = (BranchChangeListener) context;
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         Bundle bundle = getArguments();
@@ -120,6 +148,9 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         }
         if (currentPath != null) {
             bundle.putString(CURRENT_PATH, currentPath);
+        }
+        if (currentBranch != null) {
+            bundle.putString(Consts.BRANCH_ARG, currentBranch);
         }
     }
 
@@ -133,12 +164,15 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.refresh, menu);
+        inflater.inflate(R.menu.repo_detail, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_branch:
+                displayBranches();
+                return true;
             case R.id.action_refresh:
                 savedFiles.clear();
                 if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
@@ -183,16 +217,72 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         breadCrumbs.setPath(path);
     }
 
+    private void updateBranchesMap() {
+        if (branchMap == null) {
+            branchMap = new HashMap<>();
+        }
+        for (RepositoryBranch branch : branchList) {
+            branchMap.put(branch.getName(), branch.getCommit().getSha());
+        }
+    }
+
+    private void displayBranches() {
+        if (branchList == null) {
+            new ShowLoadingDialog().execute();
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Select a branch");
+        final int[] selectedOption = new int[1];
+        selectedOption[0] = -1;
+        String[] options = new String[branchList.size()];
+        int i = 0;
+        for (RepositoryBranch branch : branchList) {
+            if (branch.getName().equals(currentBranch)) {
+                selectedOption[0] = i;
+            }
+            options[i++] = branch.getName();
+        }
+        builder.setSingleChoiceItems(options, selectedOption[0], new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedOption[0] = which;
+            }
+        });
+        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String branch = branchList.get(selectedOption[0]).getName();
+                branchListener.onBranchChanged(branch);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    public void switchBranch(String newBranch) {
+        currentBranch = newBranch;
+        savedFiles.clear();
+        currentPath = "";
+        breadCrumbs.setPath(currentPath);
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetFiles().execute(currentPath);
+    }
+
     private class GetFileContent extends AsyncTask<String, Void, RepositoryContents> {
 
         @Override
         protected RepositoryContents doInBackground(String... params) {
             ContentsService contentsService = new ContentsService(gitHubClient);
             String path = params[0];
+            String sha = branchMap.get(currentBranch);
             RepositoryContents file;
 
             try {
-                List<RepositoryContents> repositoryContent = contentsService.getContents(repository, path);
+                List<RepositoryContents> repositoryContent = contentsService.getContents(repository, path, sha);
                 if (repositoryContent.size() == 0) {
                     return null;
                 }
@@ -238,6 +328,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
         @Override
         protected Boolean doInBackground(String... params) {
             ContentsService contentsService = new ContentsService(gitHubClient);
+            String sha = branchMap.get(currentBranch);
             String path;
             if (params != null && params.length != 0) {
                 path = params[0];
@@ -247,7 +338,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
 
             try {
                 if (path == null || path.trim().isEmpty()) {
-                    repositoryContentsList = contentsService.getContents(repository);
+                    repositoryContentsList = contentsService.getContents(repository, null, sha);
                 } else {
                     if (savedFiles.containsKey(path)) {
                         repositoryContentsList = savedFiles.get(path);
@@ -255,7 +346,7 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
                         return true;
                     }
 
-                    repositoryContentsList = contentsService.getContents(repository, path);
+                    repositoryContentsList = contentsService.getContents(repository, path, sha);
                     savedFiles.put(path, new ArrayList<>(repositoryContentsList));
                 }
             } catch (IOException e) {
@@ -275,6 +366,68 @@ public class RepoFilesFragment extends Fragment implements FilesAdapter.OnClickL
             if (success) {
                 filesAdapter.addFiles(repositoryContentsList);
             }
+        }
+    }
+
+    private class GetBranches extends AsyncTask<Void, Void, Boolean> {
+
+        private List<RepositoryBranch> repositoryBranches;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            isBranchListReady = false;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+            try {
+                repositoryBranches = repositoryService.getBranches(repository);
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (!success) {
+                return;
+            }
+            branchList = repositoryBranches;
+            isBranchListReady = true;
+            updateBranchesMap();
+        }
+    }
+
+    private class ShowLoadingDialog extends AsyncTask<Void, Void, Void> {
+
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = ProgressDialog.show(context, "Getting Branches", "Please wait", true);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            while (!isBranchListReady) {
+                if (isCancelled()) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            progressDialog.dismiss();
+            displayBranches();
         }
     }
 }
