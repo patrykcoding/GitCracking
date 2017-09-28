@@ -98,7 +98,7 @@ public class EditDialog extends DialogFragment {
         String description = editTextDescription.getText().toString();
 
         if (title.isEmpty()) {
-            Toast.makeText(getActivity(), "Title cannot be empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), getString(R.string.title_cannot_be_empty), Toast.LENGTH_LONG).show();
             return;
         }
         listener.onSaveEdit(this, title, description);

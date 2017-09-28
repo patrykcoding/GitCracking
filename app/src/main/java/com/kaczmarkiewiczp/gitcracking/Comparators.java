@@ -1,6 +1,5 @@
 package com.kaczmarkiewiczp.gitcracking;
 
-import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;

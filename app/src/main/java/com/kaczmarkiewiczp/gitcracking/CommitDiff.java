@@ -1,6 +1,5 @@
 package com.kaczmarkiewiczp.gitcracking;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -30,9 +29,11 @@ import org.eclipse.egit.github.core.service.CommitService;
 import java.io.IOException;
 import java.util.List;
 
+/*
+ * Retrieves commit diff for a specific repo and commit and sends it to an adapter
+ */
 public class CommitDiff extends AppCompatActivity {
 
-    private Context context;
     private RepositoryCommit repositoryCommit;
     private Repository repository;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -77,10 +78,7 @@ public class CommitDiff extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    backgroundTask.cancel(true);
-                }
-                backgroundTask = new GetDiff().execute();
+                newBackgroundTask();
             }
         });
         loadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
@@ -91,10 +89,16 @@ public class CommitDiff extends AppCompatActivity {
         backgroundTask = new GetDiff().execute();
     }
 
+    /*
+     * TODO kill background task on exit
+     */
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
+            // if we're coming back from ManageAccounts screen, and a user has been deleted then the nav bar needs to be refreshed
             Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
             if (accountHasBeenModified) {
                 navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
@@ -115,14 +119,18 @@ public class CommitDiff extends AppCompatActivity {
             case R.id.action_refresh:
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
-                if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    backgroundTask.cancel(true);
-                }
-                backgroundTask = new GetDiff().execute();
+                newBackgroundTask();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void newBackgroundTask() {
+        if (backgroundTask != null && backgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            backgroundTask.cancel(true);
+        }
+        backgroundTask = new GetDiff().execute();
     }
 
     private class GetDiff extends AsyncTask<Void, Void, Boolean> {
@@ -148,6 +156,7 @@ public class CommitDiff extends AppCompatActivity {
                 Commit parent = commit.getParents().get(0);
                 repositoryCommitCompare = commitService.compare(repository, parent.getSha(), commit.getSha());
             } catch (IOException e) {
+                // TODO no internet
                 return false;
             }
             return true;
@@ -162,7 +171,7 @@ public class CommitDiff extends AppCompatActivity {
                 loadingIndicator.setVisibility(View.GONE);
             }
 
-            if (!success) {
+            if (!success || isCancelled()) {
                 return;
             }
 

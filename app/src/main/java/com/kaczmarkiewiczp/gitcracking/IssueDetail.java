@@ -13,6 +13,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -57,11 +58,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+/*
+ * Issue Detail Page and all its functions -- adding/changing comments/assignee/labels/milestone/etc
+ */
 public class IssueDetail extends AppCompatActivity
         implements CreateMilestoneDialog.MilestoneCreationListener,
         CreateLabelDialog.labelCreationListener,
         EditDialog.EditListener {
 
+    private final String TAG = IssueDetail.class.getName();
     private Context context;
     private Issue issue;
     private Repository repository;
@@ -87,12 +92,13 @@ public class IssueDetail extends AppCompatActivity
         repository = (Repository) bundle.getSerializable("repository");
         if (issue == null || repository == null) {
             // something really bad happened - return
+            Log.e(TAG, "Passed in issue or repository null in onCreate");
             finish();
             return;
         }
         context = this;
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Issue #" + issue.getNumber());
+        toolbar.setTitle(getString(R.string.issue_number) + issue.getNumber());
         setSupportActionBar(toolbar);
         navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
         navBarUtils.setNavigationDrawerButtonAsUp();
@@ -123,6 +129,7 @@ public class IssueDetail extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        // if issue has been edited, then force the issue list screen to reload
         if (dataHasBeenModified) {
             setResult(Consts.DATA_MODIFIED);
         }
@@ -141,6 +148,7 @@ public class IssueDetail extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
+            // if we're coming back from ManageAccounts screen, and a user has been deleted then the nav bar needs to be refreshed
             Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
             if (accountHasBeenModified) {
                 navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
@@ -182,8 +190,10 @@ public class IssueDetail extends AppCompatActivity
 
         if (currentState.equals(IssueService.STATE_OPEN)) {
             issue = issue.setState(IssueService.STATE_CLOSED);
-        } else {
+        } else if (currentState.equals(IssueService.STATE_CLOSED)){
             issue = issue.setState(IssueService.STATE_OPEN);
+        } else {
+            Log.w(TAG, "unknown issue state: " + currentState);
         }
         new UpdateIssue().execute(issue);
     }
@@ -191,39 +201,39 @@ public class IssueDetail extends AppCompatActivity
     private void addComment() {
         floatingActionMenu.close(true);
         new MaterialDialog.Builder(this)
-                .title("New comment")
+                .title(getString(R.string.new_comment))
                 .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
-                .input("Leave a comment", null, new MaterialDialog.InputCallback() {
+                .input(getString(R.string.leave_a_comment), null, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         String comment = input.toString();
                         if (comment.isEmpty()) {
-                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, getString(R.string.comment_cant_be_empty), Toast.LENGTH_LONG).show();
                             return;
                         }
                         new NewComment().execute(comment);
                     }
                 })
-                .positiveText("Comment")
-                .negativeText("Cancel")
+                .positiveText(getString(R.string.comment))
+                .negativeText(getString(R.string.cancel))
                 .show();
     }
 
     public void setMilestone() {
         floatingActionMenu.close(true);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Milestone");
+        builder.setTitle(getString(R.string.select_milestone));
         int currentMilestone = 0;
         final int[] selectedOption = new int[1];
         String[] options;
-        if (repositoryMilestones == null) {
+        if (repositoryMilestones == null) { // only for NO MILESTONE option
             options = new String[1];
         } else {
             options = new String[repositoryMilestones.size() + 1];
         }
-        options[0] = "NO MILESTONE";
-        int i = 1;
+        options[0] = getString(R.string.no_milestone_option);
         if (repositoryMilestones != null) {
+            int i = 1;
             for (Milestone milestone : repositoryMilestones) {
                 if (issue.getMilestone() != null && issue.getMilestone().getTitle().equals(milestone.getTitle())) {
                     currentMilestone = i;
@@ -238,10 +248,10 @@ public class IssueDetail extends AppCompatActivity
                 selectedOption[0] = which;
             }
         });
-        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.update), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (selectedOption[0] == 0) {
+                if (selectedOption[0] == 0) { // NO MILESTONE option selected
                     Milestone noMilestone = new Milestone();
                     noMilestone.setTitle("");
                     issue.setMilestone(noMilestone);
@@ -253,13 +263,13 @@ public class IssueDetail extends AppCompatActivity
             }
         });
         final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
-        builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(getString(R.string.new_milestone), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(getSupportFragmentManager(), "New Milestone");
+                milestoneDialog.show(getSupportFragmentManager(), getString(R.string.new_milestone));
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 
@@ -276,7 +286,7 @@ public class IssueDetail extends AppCompatActivity
             milestone.setDueOn(dialog.getMilestoneDueDate());
         }
         dialog.dismiss();
-        Snackbar.make(findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+        Snackbar.make(findViewById(android.R.id.content), getString(R.string.milestone_created), Snackbar.LENGTH_LONG)
                 .show();
 
         new NewMilestone().execute(milestone);
@@ -285,7 +295,7 @@ public class IssueDetail extends AppCompatActivity
     private void setAssignee() {
         floatingActionMenu.close(true);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Assignee");
+        builder.setTitle(getString(R.string.select_assignee));
         int currentAssignee = 0;
         final int[] selectedOption = new int[1];
         String[] options;
@@ -294,9 +304,9 @@ public class IssueDetail extends AppCompatActivity
         } else {
             options = new String[repositoryCollaborators.size() + 1];
         }
-        options[0] = "--NO ASSIGNEE--";
-        int i = 1;
+        options[0] = getString(R.string.no_assignee_option);
         if (repositoryCollaborators != null) {
+            int i = 1;
             for (User collaborator : repositoryCollaborators) {
                 if (issue.getAssignee() != null && issue.getAssignee().getLogin().equals(collaborator.getLogin())) {
                     currentAssignee = i;
@@ -311,7 +321,7 @@ public class IssueDetail extends AppCompatActivity
                 selectedOption[0] = which;
             }
         });
-        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.update), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == 0) {
@@ -325,22 +335,22 @@ public class IssueDetail extends AppCompatActivity
                 new UpdateIssue().execute(issue);
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 
     private void setLabels() {
         floatingActionMenu.close(true);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Labels");
-        String[] options = new String[repositoryLabels.size()]; // TODO crash if there are no labels
+        builder.setTitle(getString(R.string.select_labels));
+        String[] options = new String[repositoryLabels.size()];
         final List<Label> issueLabels = issue.getLabels();
-        final boolean[] selection = new boolean[repositoryLabels.size()]; // TODO crash if no labels
+        final boolean[] selection = new boolean[repositoryLabels.size()];
         if (repositoryLabels != null) {
-            for (int i = 0; i < repositoryLabels.size(); i++) {
-                Label label = repositoryLabels.get(i);
+            int i = 0;
+            for (Label label : repositoryLabels) {
                 options[i] = label.getName();
-                selection[i] = issueLabels.contains(label);
+                selection[i++] = issueLabels.contains(label);
             }
         }
         builder.setMultiChoiceItems(options, selection, new DialogInterface.OnMultiChoiceClickListener() {
@@ -350,7 +360,7 @@ public class IssueDetail extends AppCompatActivity
             }
         });
 
-        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.update), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 List<Label> newLabels = new ArrayList<>();
@@ -363,9 +373,9 @@ public class IssueDetail extends AppCompatActivity
                 new UpdateIssue().execute(issue);
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         final CreateLabelDialog createLabelDialog = new CreateLabelDialog();
-        builder.setNeutralButton("New Label", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(getString(R.string.new_label), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 createLabelDialog.show(getSupportFragmentManager(), "New Label");
@@ -384,9 +394,10 @@ public class IssueDetail extends AppCompatActivity
         label.setColor(labelColor);
 
         dialog.dismiss();
-        Snackbar.make(findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
+        Snackbar.make(findViewById(android.R.id.content), getString(R.string.label_created), Snackbar.LENGTH_LONG)
                 .show();
         new NewLabel().execute(label);
+        // TODO label list needs to be refreshed
     }
 
     private void setContent() {
@@ -486,7 +497,7 @@ public class IssueDetail extends AppCompatActivity
         String userIconUrl = issue.getUser().getAvatarUrl();
         Date date = issue.getCreatedAt();
         PrettyTime prettyTime = new PrettyTime();
-        String action = "opened this issue";
+        String action = getString(R.string.opened_this_issue);
 
         ImageView imageViewUserIcon = (ImageView) findViewById(R.id.iv_user_icon);
         TextView textViewUser = (TextView) findViewById(R.id.tv_user_login);
@@ -722,30 +733,30 @@ public class IssueDetail extends AppCompatActivity
     private void editComment(final Comment comment) {
         String commentText = comment.getBodyText();
         new MaterialDialog.Builder(this)
-                .title("Edit comment")
+                .title(getString(R.string.edit_comment))
                 .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
                 .input(null, commentText, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         String newCommentText = input.toString();
                         if (newCommentText.isEmpty()) {
-                            Toast.makeText(context, "Comment can't be empty", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, getString(R.string.comment_cant_be_empty), Toast.LENGTH_LONG).show();
                         }
                         comment.setBody(newCommentText);
                         new EditComment().execute(comment);
                     }
                 })
-                .positiveText("Submit")
-                .negativeText("Cancel")
+                .positiveText(getString(R.string.submit))
+                .negativeText(getString(R.string.cancel))
                 .show();
     }
 
     private void deleteComment(final Comment comment) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Delete comment");
-        builder.setMessage("Delete this comment?");
-        builder.setNegativeButton("No", null);
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.delete_comment));
+        builder.setMessage(getString(R.string.delete_this_comment));
+        builder.setNegativeButton(getString(R.string.no), null);
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String commentId = String.valueOf(comment.getId());
@@ -757,18 +768,18 @@ public class IssueDetail extends AppCompatActivity
 
     private void editIssue() {
         EditDialog editDialog = new EditDialog();
-        String toolbarTitle = "Edit Issue #" + issue.getNumber();
+        String toolbarTitle = getString(R.string.edit_issue_title) + issue.getNumber();
         String currentTitle = issue.getTitle();
         String currentDescription = issue.getBody();
 
         editDialog.setTitle(toolbarTitle);
         editDialog.setTitle(currentTitle);
         editDialog.setDescription(currentDescription);
-        editDialog.setTitleHint("Issue title");
-        editDialog.setDescriptionHint("Optional issue description");
+        editDialog.setTitleHint(getString(R.string.issue_title));
+        editDialog.setDescriptionHint(getString(R.string.optional_issue_description));
         editDialog.setToolbarTitle(toolbarTitle);
 
-        editDialog.show(getSupportFragmentManager(), "Edit issue");
+        editDialog.show(getSupportFragmentManager(), getString(R.string.edit_issue));
     }
 
     @Override
@@ -811,6 +822,7 @@ public class IssueDetail extends AppCompatActivity
                 Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -848,6 +860,7 @@ public class IssueDetail extends AppCompatActivity
                 updatedIssue = issueService.editIssue(repository, issue);
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -877,6 +890,7 @@ public class IssueDetail extends AppCompatActivity
                 newLabel = labelService.createLabel(repository, label);
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -906,6 +920,7 @@ public class IssueDetail extends AppCompatActivity
                 newMilestone = milestoneService.createMilestone(repository, milestone);
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -931,6 +946,7 @@ public class IssueDetail extends AppCompatActivity
                 issueService.createComment(repository, issue.getNumber(), comment);
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -941,7 +957,7 @@ public class IssueDetail extends AppCompatActivity
             if (success) {
                 dataHasBeenModified = true;
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
-                Snackbar.make(relativeLayout, "Comment created", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(relativeLayout, getString(R.string.comment_created), Snackbar.LENGTH_LONG).show();
                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
                     issueBackgroundTask.cancel(true);
                 }
@@ -961,6 +977,7 @@ public class IssueDetail extends AppCompatActivity
                 issueService.editComment(repository, comment);
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -971,7 +988,7 @@ public class IssueDetail extends AppCompatActivity
             if (success) {
                 dataHasBeenModified = true;
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
-                Snackbar.make(relativeLayout, "Comment edited", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(relativeLayout, getString(R.string.comment_edited), Snackbar.LENGTH_LONG).show();
                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
                     issueBackgroundTask.cancel(true);
                 }
@@ -991,6 +1008,7 @@ public class IssueDetail extends AppCompatActivity
                 issueService.deleteComment(repository, commentId);
             } catch (IOException e) {
                 return false;
+                // TODO no internet connection
             }
             return true;
         }
@@ -1001,7 +1019,7 @@ public class IssueDetail extends AppCompatActivity
             if (success) {
                 dataHasBeenModified = true;
                 RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.rl_issue);
-                Snackbar.make(relativeLayout, "Comment removed", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(relativeLayout, getString(R.string.comment_removed), Snackbar.LENGTH_LONG).show();
                 if (issueBackgroundTask != null && issueBackgroundTask.getStatus() == Status.RUNNING) {
                     issueBackgroundTask.cancel(true);
                 }

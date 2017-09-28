@@ -30,7 +30,7 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
         setContentView(R.layout.activity_manage_accounts);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Manage Accounts");
+        toolbar.setTitle(getString(R.string.manage_accounts));
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -90,15 +90,15 @@ public class ManageAccounts extends AppCompatActivity implements AccountsAdapter
         final String user = userName;
         new AlertDialog.Builder(this)
                 .setIcon(R.drawable.ic_dialog_alert_black_24dp)
-                .setTitle("Confirm deletion")
-                .setMessage("Are you sure you want to remove this user?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setTitle(getString(R.string.confirm_deletion))
+                .setMessage(getString(R.string.are_you_sure_delete_user))
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         removeUser(user);
                     }
                 })
-                .setNegativeButton("No", null)
+                .setNegativeButton(getString(R.string.no), null)
                 .setCancelable(false)
                 .show();
     }

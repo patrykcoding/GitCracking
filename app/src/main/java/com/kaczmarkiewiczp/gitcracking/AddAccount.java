@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,7 +11,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +34,9 @@ import java.util.Arrays;
 
 import static xdroid.toaster.Toaster.toast;
 
+/*
+ * Adding new accounts
+ */
 public class AddAccount extends AppCompatActivity {
 
     private Context context;
@@ -55,7 +56,7 @@ public class AddAccount extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-                /* listen for the login button press on keyboard */
+        /* listen for the login button press on keyboard */
         EditText editText = (EditText) findViewById(R.id.et_password);
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -98,14 +99,14 @@ public class AddAccount extends AppCompatActivity {
             etUsername.requestFocus();
             Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
             findViewById(R.id.username_layout).startAnimation(shake);
-            Toast toast = Toast.makeText(context, "Please provide your username", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context, context.getString(R.string.please_provide_username), Toast.LENGTH_SHORT);
             toast.show();
             return;
         } else if (password.length() == 0) {
             etPassword.requestFocus();
             Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
             findViewById(R.id.password_layout).startAnimation(shake);
-            Toast toast = Toast.makeText(context, "Please provide your password", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context, context.getString(R.string.please_provide_password), Toast.LENGTH_SHORT);
             toast.show();
             return;
         } else if (accountUtils.isAlreadyAUser(username)) {
@@ -119,23 +120,22 @@ public class AddAccount extends AppCompatActivity {
 
     private void userExists() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-        alertDialog.setTitle("User already exists");
+        alertDialog.setTitle(context.getString(R.string.user_already_exists));
         alertDialog.setCancelable(true);
-        alertDialog.setNeutralButton("Dismiss", null);
+        alertDialog.setNeutralButton(context.getString(R.string.dismiss), null);
         alertDialog.show();
     }
 
     private void failedLogin() {
-
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-        alertDialog.setTitle("Login Failed");
+        alertDialog.setTitle(context.getString(R.string.login_failed));
         alertDialog.setCancelable(true);
-        alertDialog.setNeutralButton("Dismiss", null);
-        alertDialog.setPositiveButton("Forgot Password",
+        alertDialog.setNeutralButton(context.getString(R.string.dismiss), null);
+        alertDialog.setPositiveButton(context.getString(R.string.forgot_password),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Uri webpage = Uri.parse("https://github.com/password_reset"); // TODO @strings
+                        Uri webpage = Uri.parse(context.getString(R.string.github_reset_password_url));
                         Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
                         if (intent.resolveActivity(getPackageManager()) != null) {
                             startActivity(intent);
@@ -159,8 +159,8 @@ public class AddAccount extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(context);
-            progressDialog.setTitle("Authenticating");
-            progressDialog.setMessage("Please wait...");
+            progressDialog.setTitle(context.getString(R.string.authenticating));
+            progressDialog.setMessage(context.getString(R.string.please_wait));
             progressDialog.setCancelable(false);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -230,7 +230,6 @@ public class AddAccount extends AppCompatActivity {
                 return;
             }
             new AccountUtils(context, userLogin, userName, userIconUrl, authorization);
-            toast("Login successful"); // DEBUG
 
             Intent intent = new Intent(getApplication(), Dashboard.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

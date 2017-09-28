@@ -41,7 +41,6 @@ import static xdroid.toaster.Toaster.toast;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private final String LOG_TAG = "MainActivity";
     private Context context;
     private Intent dashboardIntent;
 
@@ -51,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
         context = this;
         dashboardIntent = new Intent(this, Dashboard.class);
         if (AccountUtils.isAuth(this)) {
-            toast("Authenticated"); // DEBUG
-            Log.d(LOG_TAG, "User is authenticated. Redirecting");
             startActivity(dashboardIntent);
             finish();
             return;
@@ -82,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_main_toolbar);
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
-        Log.d(LOG_TAG, "User not authenticated");
     }
 
     public void loginButtonClicked(View view) {
@@ -96,14 +92,14 @@ public class MainActivity extends AppCompatActivity {
             etUsername.requestFocus();
             Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
             findViewById(R.id.username_layout).startAnimation(shake);
-            Toast toast = Toast.makeText(context, "Please provide your username", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context, getString(R.string.please_provide_username), Toast.LENGTH_SHORT);
             toast.show();
             return;
         } else if (password.length() == 0) {
             etPassword.requestFocus();
             Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wiggle);
             findViewById(R.id.password_layout).startAnimation(shake);
-            Toast toast = Toast.makeText(context, "Please provide your password", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context, getString(R.string.please_provide_password), Toast.LENGTH_SHORT);
             toast.show();
             return;
         }
@@ -113,14 +109,14 @@ public class MainActivity extends AppCompatActivity {
     private void failedLogin() {
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-        alertDialog.setTitle("Login Failed");
+        alertDialog.setTitle(getString(R.string.login_failed));
         alertDialog.setCancelable(true);
-        alertDialog.setNeutralButton("Dismiss", null);
-        alertDialog.setPositiveButton("Forgot Password",
+        alertDialog.setNeutralButton(getString(R.string.dismiss), null);
+        alertDialog.setPositiveButton(getString(R.string.forgot_password),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Uri webpage = Uri.parse("https://github.com/password_reset"); // TODO @strings
+                        Uri webpage = Uri.parse("https://github.com/password_reset");
                         Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
                         if (intent.resolveActivity(getPackageManager()) != null) {
                             startActivity(intent);
@@ -144,8 +140,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(context);
-            progressDialog.setTitle("Authenticating");
-            progressDialog.setMessage("Please wait...");
+            progressDialog.setTitle(getString(R.string.authenticating));
+            progressDialog.setMessage(getString(R.string.please_wait));
             progressDialog.setCancelable(false);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -215,8 +211,6 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             new AccountUtils(context, userLogin, userName, userIconUrl, authorization);
-            toast("Login successful"); // DEBUG
-            Log.d(LOG_TAG, "Authentication successful");
             startActivity(dashboardIntent);
             finish();
         }

@@ -57,9 +57,8 @@ public class Dashboard extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
-        Log.i("#Dashboard", "onCreate");
         toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar);
-        toolbar.setTitle("Dashboard");
+        toolbar.setTitle(getString(R.string.dashboard));
         setSupportActionBar(toolbar);
         navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
 
@@ -86,17 +85,21 @@ public class Dashboard extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (widgetBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    widgetBackgroundTask.cancel(true);
-                }
-                if (newsFeedBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    newsFeedBackgroundTask.cancel(true);
-                }
-                widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
-                newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+                newBackgroundTask();
             }
         });
 
+        widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
+        newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+    }
+
+    private void newBackgroundTask() {
+        if (widgetBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            widgetBackgroundTask.cancel(true);
+        }
+        if (newsFeedBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
+            newsFeedBackgroundTask.cancel(true);
+        }
         widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
         newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
     }
@@ -105,6 +108,7 @@ public class Dashboard extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
+            // if we're coming back from ManageAccounts screen, and a user has been deleted then the nav bar needs to be refreshed
             Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
             if (accountHasBeenModified) {
                 navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.DASHBOARD);
@@ -126,14 +130,7 @@ public class Dashboard extends AppCompatActivity {
                 Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
                 findViewById(R.id.action_refresh).startAnimation(rotate);
 
-                if (widgetBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    widgetBackgroundTask.cancel(true);
-                }
-                if (newsFeedBackgroundTask.getStatus() == AsyncTask.Status.RUNNING) {
-                    newsFeedBackgroundTask.cancel(true);
-                }
-                widgetBackgroundTask = new GetDashboardData().execute(gitHubClient);
-                newsFeedBackgroundTask = new GetNewsFeedData().execute(gitHubClient);
+                newBackgroundTask();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -157,7 +154,6 @@ public class Dashboard extends AppCompatActivity {
         intent.putExtra(Consts.HAS_PARENT, true);
         startActivity(intent);
     }
-
 
     private void showEmptyView() {
         TextView message = (TextView) findViewById(R.id.tv_empty_view);
@@ -201,6 +197,7 @@ public class Dashboard extends AppCompatActivity {
                     events.add(anEventCollection);
                 }
             } catch (NoSuchPageException e) {
+                // TODO no internet connection
                 return false;
             }
             return true;

@@ -78,7 +78,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("New Issue");
+        toolbar.setTitle(getString(R.string.new_issue));
         setSupportActionBar(toolbar);
         NavBarUtils navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.NO_SELECTION);
         navBarUtils.setNavigationDrawerButtonAsUp();
@@ -145,7 +145,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
     private void createIssue() {
         if (selectedRepository == null) {
-            Toast.makeText(context, "You have to select a repository", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.you_have_to_select_a_repository), Toast.LENGTH_LONG).show();
             return;
         }
         EditText editTextTitle = (EditText) findViewById(R.id.et_new_issue_title);
@@ -154,7 +154,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         String comment = editTextComment.getText().toString();
 
         if (title.isEmpty()) {
-            Toast.makeText(context, "Title cannot be empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.title_cannot_be_empty), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -166,13 +166,13 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
     private void setRepository() {
         if (!isRepositoryListReady) {
-            ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Loading Repositories", "Please wait", ShowLoadingDialog.REPOSITORY_LOADING, ShowLoadingDialog.REPOSITORY_CALLBACK);
+            ShowLoadingDialog loadingDialog = new ShowLoadingDialog(getString(R.string.loading_repositories), getString(R.string.please_wait), ShowLoadingDialog.REPOSITORY_LOADING, ShowLoadingDialog.REPOSITORY_CALLBACK);
             loadingDialog.execute();
             return;
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select repository");
+        builder.setTitle(getString(R.string.select_repository));
         String[] options = new String[repositories.size()];
         final int[] selectedOption = new int[1];
         selectedOption[0] = -1;
@@ -189,11 +189,11 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 selectedOption[0] = which;
             }
         });
-        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.select), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == -1) {
-                    Toast.makeText(context, "You have to select a repository", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, getString(R.string.you_have_to_select_a_repository), Toast.LENGTH_LONG).show();
                     return;
                 }
                 int index = selectedOption[0];
@@ -203,23 +203,23 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 new GetRepositoryData().execute(selectedRepository);
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 
     private void setLabels() {
         if (selectedRepository == null) {
-            Toast.makeText(context, "Select repository first", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.select_repository_first), Toast.LENGTH_LONG).show();
             return;
         }
         if (!isRepositoryDataReady) {
-            ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Getting labels", "Please wait", ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.LABELS_CALLBACK);
+            ShowLoadingDialog loadingDialog = new ShowLoadingDialog(getString(R.string.getting_labels), getString(R.string.please_wait), ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.LABELS_CALLBACK);
             loadingDialog.execute();
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select labels");
-        String[] options = new String[repositoryLabels.size()]; // TODO crash if there are no labels
+        builder.setTitle(getString(R.string.select_labels));
+        String[] options = new String[repositoryLabels.size()];
         final List<Label> issueLabels;
         if (newIssue.getLabels() != null) {
             issueLabels = newIssue.getLabels();
@@ -241,7 +241,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 selection[which] = isChecked;
             }
         });
-        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.select), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 List<Label> newLabels = new ArrayList<>();
@@ -261,12 +261,12 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 }
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         final CreateLabelDialog createLabelDialog = new CreateLabelDialog();
-        builder.setNeutralButton("New Label", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(getString(R.string.new_label), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                createLabelDialog.show(getSupportFragmentManager(), "New Label");
+                createLabelDialog.show(getSupportFragmentManager(), getString(R.string.new_label));
             }
         });
         builder.show();
@@ -282,24 +282,24 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         label.setColor(labelColor);
 
         dialog.dismiss();
-        Snackbar.make(findViewById(android.R.id.content), "Label created", Snackbar.LENGTH_LONG)
+        Snackbar.make(findViewById(android.R.id.content), getString(R.string.label_created), Snackbar.LENGTH_LONG)
                 .show();
         new NewLabel().execute(label);
     }
 
     private void setMilestone() {
         if (selectedRepository == null) {
-            Toast.makeText(context, "Select repository first", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.select_repository_first), Toast.LENGTH_LONG).show();
             return;
         }
         if (!isRepositoryDataReady) {
-            ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Getting milestones", "Please wait", ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.MILESTONE_CALLBACK);
+            ShowLoadingDialog loadingDialog = new ShowLoadingDialog(getString(R.string.getting_milestones), getString(R.string.please_wait), ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.MILESTONE_CALLBACK);
             loadingDialog.execute();
             return;
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Milestone");
+        builder.setTitle(getString(R.string.select_milestone));
         int currentMilestone = 0;
         final int[] selectedOption = new int[1];
         String[] options;
@@ -308,7 +308,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         } else {
             options = new String[repositoryMilestones.size() + 1];
         }
-        options[0] = "---NO MILESTONE---";
+        options[0] = getString(R.string.no_milestone_option);
         int i = 1;
         if (repositoryMilestones != null) {
             for (Milestone milestone : repositoryMilestones) {
@@ -325,7 +325,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 selectedOption[0] = which;
             }
         });
-        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.select), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == 0) {
@@ -339,13 +339,13 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             }
         });
         final CreateMilestoneDialog milestoneDialog = new CreateMilestoneDialog();
-        builder.setNeutralButton("New Milestone", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(getString(R.string.new_milestone), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                milestoneDialog.show(getSupportFragmentManager(), "New Milestone");
+                milestoneDialog.show(getSupportFragmentManager(), getString(R.string.new_milestone));
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 
@@ -362,7 +362,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             milestone.setDueOn(dialog.getMilestoneDueDate());
         }
         dialog.dismiss();
-        Snackbar.make(findViewById(android.R.id.content), "Milestone created", Snackbar.LENGTH_LONG)
+        Snackbar.make(findViewById(android.R.id.content), getString(R.string.milestone_created), Snackbar.LENGTH_LONG)
                 .show();
 
         textViewMilestone.setText(milestone.getTitle());
@@ -372,16 +372,16 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
     private void setAssignee() {
         if (selectedRepository == null) {
-            Toast.makeText(context, "Select repository first", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.select_repository_first), Toast.LENGTH_LONG).show();
             return;
         }
         if (!isRepositoryDataReady) {
-            ShowLoadingDialog loadingDialog = new ShowLoadingDialog("Getting collaborators", "Please wait", ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.ASSIGNEE_CALLBACK);
+            ShowLoadingDialog loadingDialog = new ShowLoadingDialog(getString(R.string.getting_collaborators), getString(R.string.please_wait), ShowLoadingDialog.DATA_LOADING, ShowLoadingDialog.ASSIGNEE_CALLBACK);
             loadingDialog.execute();
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Assignee");
+        builder.setTitle(getString(R.string.select_assignee));
         int currentAssignee = 0;
         final int[] selectedOption = new int[1];
         String[] options;
@@ -390,7 +390,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         } else {
             options = new String[repositoryCollaborators.size() + 1];
         }
-        options[0] = "--NO ASSIGNEE--";
+        options[0] = getString(R.string.no_assignee_option);
         int i = 1;
         if (repositoryCollaborators != null) {
             for (User collaborator : repositoryCollaborators) {
@@ -407,7 +407,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 selectedOption[0] = which;
             }
         });
-        builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.select), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (selectedOption[0] == 0) {
@@ -420,7 +420,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 }
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 
@@ -435,7 +435,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressDialog = ProgressDialog.show(context, "Creating new issue", "Please wait", true);
+            progressDialog = ProgressDialog.show(context, getString(R.string.creating_new_issue), getString(R.string.please_wait), true);
         }
 
         @Override
@@ -446,6 +446,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 newIssue = issueService.createIssue(selectedRepository, newIssue);
 
             } catch (IOException e) {
+                // TODO no internet connection
                 return false;
             }
             return true;
@@ -552,6 +553,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
 
                 Collections.sort(repositories, new Comparators.RepositoryComparator());
             } catch (IOException e) {
+                // TODO no internet connection
                 return false;
             }
             return true;
@@ -587,6 +589,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
                 Collections.sort(repositoryMilestones, new Comparators.MilestonesComparator());
                 Collections.sort(repositoryCollaborators, new Comparators.CollaboratorComparator());
             } catch (IOException e) {
+                // TODO no internet connection
                 return false;
             }
             return true;
@@ -611,6 +614,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             try {
                 newLabel = labelService.createLabel(selectedRepository, label);
             } catch (IOException e) {
+                // TODO no internet connection
                 return false;
             }
             return true;
@@ -648,6 +652,7 @@ public class NewIssue extends AppCompatActivity implements CreateMilestoneDialog
             try {
                 newMilestone = milestoneService.createMilestone(selectedRepository, milestone);
             } catch (IOException e) {
+                // TODO no internet connection
                 return false;
             }
             return true;

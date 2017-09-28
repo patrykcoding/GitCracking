@@ -22,7 +22,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-
+/*
+ * Custom dialog for creating milestones
+ */
 public class CreateMilestoneDialog extends DialogFragment {
 
     private String milestoneTitle;
@@ -81,7 +83,7 @@ public class CreateMilestoneDialog extends DialogFragment {
 
         
         Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Create new Milestone");
+        toolbar.setTitle(getString(R.string.create_new_milestone));
         toolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,7 +121,7 @@ public class CreateMilestoneDialog extends DialogFragment {
         String description = editTextDescription.getText().toString();
 
         if (title.isEmpty()) {
-            Toast.makeText(getActivity(), "Title cannot be empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), getString(R.string.title_cannot_be_empty), Toast.LENGTH_LONG).show();
             return;
         }
         milestoneTitle = title;

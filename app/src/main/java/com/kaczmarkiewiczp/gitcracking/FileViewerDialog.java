@@ -13,6 +13,9 @@ import com.pddstudio.highlightjs.HighlightJsView;
 import com.pddstudio.highlightjs.models.Language;
 import com.pddstudio.highlightjs.models.Theme;
 
+/*
+ * Dialog for showing files
+ */
 public class FileViewerDialog extends DialogFragment {
 
     private HighlightJsView highlightJsViewCode;

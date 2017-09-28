@@ -22,6 +22,9 @@ import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
+/*
+ * Custom dialog for creating labels
+ */
 public class CreateLabelDialog extends DialogFragment {
 
     private EditText editTextLabelName;
@@ -47,20 +50,20 @@ public class CreateLabelDialog extends DialogFragment {
 
         final android.support.v7.app.AlertDialog colorPicker = ColorPickerDialogBuilder
                 .with(getActivity())
-                .setTitle("Pick color")
+                .setTitle(getString(R.string.pick_color))
                 .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
                 .density(8)
                 .showColorEdit(true)
                 .setColorEditTextColor(0xff000000)
                 .showAlphaSlider(false)
                 .showLightnessSlider(false)
-                .setPositiveButton("Set", new ColorPickerClickListener() {
+                .setPositiveButton(getString(R.string.set), new ColorPickerClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i, Integer[] integers) {
                         colorSelected(i);
                     }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .build();
 
         editTextLabelName = (EditText) view.findViewById(R.id.et_label_name);
@@ -76,7 +79,7 @@ public class CreateLabelDialog extends DialogFragment {
 
 
         Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Create new Label");
+        toolbar.setTitle(getString(R.string.create_new_label));
         toolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,7 +128,7 @@ public class CreateLabelDialog extends DialogFragment {
         labelName = editTextLabelName.getText().toString();
 
         if (labelName.isEmpty()) {
-            Toast.makeText(getActivity(), "Label name cannot be empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), getString(R.string.label_name_cannot_be_empty), Toast.LENGTH_LONG).show();
             return;
         }
         listener.onSaveLabel(this);

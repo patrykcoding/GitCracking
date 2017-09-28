@@ -2,7 +2,6 @@ package com.kaczmarkiewiczp.gitcracking;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import org.eclipse.egit.github.core.Authorization;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -12,6 +11,9 @@ import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
 
+/*
+ * Class for dealing with user/github accounts
+ */
 public class AccountUtils {
     private static final String SHARED_PREFERENCES = "GitCrackingPrefs";
 
@@ -50,31 +52,31 @@ public class AccountUtils {
         return this.gitHubClient;
     }
 
-    public String getUserLogin() {
+    String getUserLogin() {
         return this.userLogin;
     }
 
-    public String getUserName(String login) {
+    String getUserName(String login) {
         SharedPreferences sp = getSharedPreferences();
         return sp.getString(login + ":name", "");
     }
 
-    public String getUserIconUrl(String login) {
+    String getUserIconUrl(String login) {
         SharedPreferences sp = getSharedPreferences();
         return sp.getString(login + ":icon", "");
     }
 
-    public String getCurrentUser() {
+    String getCurrentUser() {
         SharedPreferences sp = getSharedPreferences();
         return sp.getString("defaultUser", "");
     }
 
-    public Set<String> getAccounts() {
+    Set<String> getAccounts() {
         SharedPreferences sp = getSharedPreferences();
         return sp.getStringSet("accounts", new HashSet<String>());
     }
 
-    public void setDefaultUser(String userLogin) {
+    void setDefaultUser(String userLogin) {
         SharedPreferences sp = getSharedPreferences();
         SharedPreferences.Editor editor = sp.edit();
 
@@ -82,13 +84,13 @@ public class AccountUtils {
         editor.apply();
     }
 
-    public int accountsCount() {
+    int accountsCount() {
         SharedPreferences sp = getSharedPreferences();
         Set<String> accounts = sp.getStringSet("accounts", new HashSet<String>());
         return accounts.size();
     }
 
-    public void removeUser(String userLogin) {
+    void removeUser(String userLogin) {
         SharedPreferences sp = getSharedPreferences();
         SharedPreferences.Editor editor = sp.edit();
 
@@ -115,12 +117,13 @@ public class AccountUtils {
         editor.apply();
     }
 
-    public Boolean isAlreadyAUser(String userLogin) {
+    Boolean isAlreadyAUser(String userLogin) {
+        // TODO check for both username and email
         Set<String> accounts = getAccounts();
         return accounts.contains(userLogin);
     }
 
-    public static boolean isAuth(Context context) {
+    static boolean isAuth(Context context) {
         SharedPreferences sp = context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         String defaultUser = sp.getString("defaultUser", "");
         if (defaultUser.isEmpty()) {

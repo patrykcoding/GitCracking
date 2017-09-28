@@ -1,6 +1,5 @@
 package com.kaczmarkiewiczp.gitcracking;
 
-import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +10,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.MenuItem;
 
@@ -22,8 +20,10 @@ import android.view.animation.AnimationUtils;
 import com.kaczmarkiewiczp.gitcracking.fragment.IssuesFragment;
 
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.client.GitHubClient;
 
+/*
+ * Issues class showing all issues or issues for a specific repository
+ */
 public class Issues extends AppCompatActivity implements IssuesFragment.IssueCountListener, IssuesFragment.IssueChangeListener {
 
     private ViewPager viewPager;
@@ -33,14 +33,12 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
     private NavBarUtils navBarUtils;
     private Repository repository;
     private boolean dataHasBeenModified;
-    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issues);
         dataHasBeenModified = false;
-        context = this;
 
         // repository is passed in when a specific repository starts this activity
         Bundle bundle = getIntent().getExtras();
@@ -49,8 +47,9 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
         }
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Issues");
+        toolbar.setTitle(getString(R.string.issues));
         setSupportActionBar(toolbar);
+        // if this is all issues screen then Issues should be selected in the nav drawer
         if (repository == null) {
             navBarUtils = new NavBarUtils(this, toolbar, NavBarUtils.ISSUES);
         } else {
@@ -88,7 +87,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case 1:
+            case 1: // if we're coming back from ManageAccounts screen, and a user has been deleted then the nav bar needs to be refreshed
                 if (resultCode == RESULT_OK) {
                     Boolean accountHasBeenModified = data.getBooleanExtra("accountHasBeenModified", false);
                     if (accountHasBeenModified) {
@@ -100,6 +99,7 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
                     }
                 }
                 return;
+            // after returning to this screen from a specific issue, reload if issue has been modified
             case Consts.NEW_ISSUE_INTENT:
                 if (resultCode == Consts.DATA_MODIFIED) {
                     dataHasBeenModified = true;
@@ -149,12 +149,12 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
         }
     }
 
-    class PagerAdapter extends FragmentPagerAdapter {
-        private String tabStrings[] = new String[] {"CREATED", "ASSIGNED"};
-        private String tabTitles[] = new String[] {"CREATED", "ASSIGNED"};
+    private class PagerAdapter extends FragmentPagerAdapter {
+        private String tabStrings[] = new String[] {getString(R.string.created_tab), getString(R.string.assigned_tab)};
+        private String tabTitles[] = new String[] {getString(R.string.created_tab), getString(R.string.assigned_tab)};
         private SparseArray<IssuesFragment> fragments;
 
-        public PagerAdapter(FragmentManager fragmentManager) {
+        PagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
             fragments = new SparseArray<>();
         }
@@ -188,13 +188,13 @@ public class Issues extends AppCompatActivity implements IssuesFragment.IssueCou
             return tabTitles[position];
         }
 
-        public void setTabBadge(int position, int count) {
+        void setTabBadge(int position, int count) {
             String title = tabStrings[position] + " (" + count + ")";
             tabTitles[position] = title;
             notifyDataSetChanged();
         }
 
-        public IssuesFragment getFragment(int position) {
+        IssuesFragment getFragment(int position) {
             return fragments.get(position);
         }
     }

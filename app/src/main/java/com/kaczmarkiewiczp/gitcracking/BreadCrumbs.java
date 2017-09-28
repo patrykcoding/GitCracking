@@ -9,6 +9,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+/*
+ * BreadCrumbs class for showing breadcrumbs when viewing files
+ */
 public class BreadCrumbs extends HorizontalScrollView implements View.OnClickListener {
 
     private LinearLayout childFrame;
