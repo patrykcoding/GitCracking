@@ -1,5 +1,21 @@
 # GitCracking
-Android client for GitHub
+Android client for GitHub. This project was part of my capston and was completed in less than four months, fulfilling all the specifications.
+
+### Features:
+- Support multiple accounts
+- List all remotes (public and private)
+- List all issues (open and closed)
+- List all pull requests (open and closed)
+- Opening new issues
+- Editing issues
+- Merging pull requests
+
+### Limitations:
+- 2FA is not supported
+
+### Development Status:
+Unfortunately I don't have time to work on this project. However, I'm hoping that this project will help someone learn Android development, just as it helped me. It can also be used as a good starting point if anyone is interested to create their own GitHub client.
+
 ## Screenshots
 Dashboard|Repositories|Issues
 :-------:|:----------:|:----:|
